@@ -42,6 +42,7 @@ docs/
 │   ├── site-import.md              ← Super Import (static sites → CMS)
 │   ├── html-import.md              ← paste / import HTML into the page tree
 │   ├── editor-preferences.md       ← catalog-driven editor prefs
+│   ├── internationalization.md     ← admin locales, persistence, formatting
 │   └── canvas-iframe-per-frame.md  ← per-breakpoint iframe rendering
 │
 ├── reference/                  ← short cookbook pages for primitives + patterns
@@ -161,6 +162,7 @@ Three categories, three voices:
 | [features/site-import.md](features/site-import.md)               | Super Import — static-site files / ZIP → pages, style rules, media |
 | [features/html-import.md](features/html-import.md)               | HTML string → `PageNode` fragment (paste HTML, AI `insertHtml` tool) |
 | [features/editor-preferences.md](features/editor-preferences.md) | Catalog-driven local UI preferences for the editor                   |
+| [features/internationalization.md](features/internationalization.md) | Admin locale detection, persistence, translation, and formatting     |
 | [features/canvas-iframe-per-frame.md](features/canvas-iframe-per-frame.md) | Per-breakpoint iframe rendering in the visual editor canvas |
 
 ### Reference

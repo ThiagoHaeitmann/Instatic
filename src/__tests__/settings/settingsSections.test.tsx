@@ -78,12 +78,13 @@ describe('PreferencesSection — catalog-driven rendering', () => {
     expect(screen.queryByRole('switch', { name: /reduce motion/i })).toBeNull()
   })
 
-  it('auto-renders one combobox per select catalog entry', () => {
+  it('renders the locale selector and one combobox per select catalog entry', () => {
     render(<PreferencesSection />)
-    // Select preferences: theme, density, textScale, defaultBreakpoint
-    // (auto-save delay is gone — the collab relay persists continuously)
+    // Locale plus editor preferences: theme, density, textScale, defaultBreakpoint.
+    // Locale is stored separately because it is also needed before login.
     const selects = screen.getAllByRole('combobox')
-    expect(selects.length).toBe(4)
+    expect(selects.length).toBe(5)
+    expect(screen.getByRole('combobox', { name: /language/i })).toBeDefined()
     expect(screen.getByRole('combobox', { name: /theme/i })).toBeDefined()
     expect(screen.getByRole('combobox', { name: /ui density/i })).toBeDefined()
     expect(screen.getByRole('combobox', { name: /ui text size/i })).toBeDefined()

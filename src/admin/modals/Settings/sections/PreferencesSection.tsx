@@ -30,16 +30,33 @@ import {
 } from '@site/preferences/editorPreferences'
 import { clearTelemetry } from '@admin/spotlight/telemetry'
 import { clearRecentCommands } from '@admin/spotlight/recentStore'
+import { LanguageSelector, useI18n } from '@admin/i18n'
 import s from '../SettingsModal.module.css'
 
 export function PreferencesSection() {
   const groups = preferencesByCategory()
+  const { t } = useI18n()
 
   return (
     <div>
       <p className={s.sectionDescription}>
         Editor preferences are stored locally on this device and do not affect the site file.
       </p>
+
+      <section className={s.sectionBlock}>
+        <h4 className={s.subHeading}>{t('common.language.label')}</h4>
+        <div className={s.cardGroup}>
+          <div className={s.toggleRow}>
+            <div className={s.toggleRowContent}>
+              <label htmlFor="admin-locale" className={s.toggleRowLabel}>
+                {t('common.language.label')}
+              </label>
+              <p className={s.toggleRowDesc}>{t('common.language.description')}</p>
+            </div>
+            <LanguageSelector id="admin-locale" className={s.preferenceSelect} />
+          </div>
+        </div>
+      </section>
 
       {groups.map((group) => (
         <section key={group.id} className={s.sectionBlock}>

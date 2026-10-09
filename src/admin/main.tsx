@@ -9,6 +9,7 @@ import { ErrorBoundary, flattenErrorChain, logErrorChain } from '@ui/components/
 import { ToastProvider, pushToast } from '@ui/components/Toast'
 import '../styles/globals.css'
 import { installBranchRequestHeaders } from './state/activeBranch'
+import { I18nProvider, initializeI18n, translate } from './i18n'
 
 // `installPluginRuntime()` used to be called here, eagerly. That dragged
 // the whole plugin-host-hooks module (which imports `useEditorStore` from
@@ -56,6 +57,10 @@ function handleRootError(
   }
 }
 
+// Locale is resolved before the first render so pre-auth UI and the document
+// language agree on the first painted frame.
+initializeI18n()
+
 // Every admin request names the branch this tab edits (main sends nothing).
 installBranchRequestHeaders()
 
@@ -68,7 +73,7 @@ const root = createRoot(rootElement, {
       'react-root:uncaught',
       error,
       info,
-      'Unhandled render error',
+      translate('common.errors.unhandledRender'),
     )
   },
   onRecoverableError: (error, info) => {
@@ -114,14 +119,16 @@ await Promise.resolve()
 flushSync(() => {
   root.render(
     <StrictMode>
-      <ErrorBoundary location="admin-shell">
-        <Router>
-          <AdminRoutes />
-        </Router>
-        <AdminZoomGuard />
-        <AdminContextMenuGuard />
-      </ErrorBoundary>
-      <ToastProvider />
+      <I18nProvider>
+        <ErrorBoundary location="admin-shell">
+          <Router>
+            <AdminRoutes />
+          </Router>
+          <AdminZoomGuard />
+          <AdminContextMenuGuard />
+        </ErrorBoundary>
+        <ToastProvider />
+      </I18nProvider>
     </StrictMode>,
   )
 })

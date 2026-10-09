@@ -59,6 +59,12 @@
   animation: instaticAdminSpin 0.8s linear infinite;
 }
 
+.languageControl {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-2xl);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spinIcon {
     animation: none;

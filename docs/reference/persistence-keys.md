@@ -19,6 +19,7 @@ Catalog of every `localStorage` / `sessionStorage` key the admin app writes, and
 
 | Key                                       | Owner                                                                 | Source-of-truth file                                            |
 |-------------------------------------------|-----------------------------------------------------------------------|-----------------------------------------------------------------|
+| `instatic-locale`                               | Explicit admin-interface locale (`en` or `pt-BR`); absent means detect from the browser | `src/admin/i18n/locale.ts` → `LOCALE_STORAGE_KEY` |
 | `instatic-editor-prefs`                         | All editor preferences (auto-save, hover-preview, admin theme, UI text size, density, layers options) — see [docs/features/editor-preferences.md](../features/editor-preferences.md) | `src/admin/pages/site/preferences/editorPreferences.ts` → `EDITOR_PREFS_KEY` |
 | `instatic-editor-layout-v2`                     | Per-workspace sidebar widths + open states (site / content / data / media) and floating panel positions | `src/admin/state/workspaceLayoutStorage.ts` → `EDITOR_LAYOUT_STORAGE_KEY` |
 | `instatic-clipboard-v1`                         | The editor clipboard (copy / cut / paste of layer subtrees)            | `src/admin/pages/site/store/clipboard/clipboardStorage.ts` → `CLIPBOARD_STORAGE_KEY` |
@@ -207,11 +208,13 @@ for (const key of Object.keys(localStorage)) {
 
 ## Related
 
+- [docs/features/internationalization.md](../features/internationalization.md) — admin locale resolution and translation runtime
 - [docs/features/editor-preferences.md](../features/editor-preferences.md) — the canonical preference catalog
 - [docs/features/dashboard.md](../features/dashboard.md) — dashboard layout persistence
 - [docs/features/spotlight.md](../features/spotlight.md) — Spotlight recents + telemetry
 - [docs/reference/typebox-patterns.md](typebox-patterns.md) — `parseJsonWithFallback`, `safeParseJson`
 - Source-of-truth files (selected):
+  - `src/admin/i18n/locale.ts` — `LOCALE_STORAGE_KEY`
   - `src/admin/pages/site/preferences/editorPreferences.ts` — `EDITOR_PREFS_KEY`
   - `src/admin/state/workspaceLayoutStorage.ts` — `EDITOR_LAYOUT_STORAGE_KEY`
   - `src/admin/pages/site/store/clipboard/clipboardStorage.ts` — `CLIPBOARD_STORAGE_KEY`

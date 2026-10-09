@@ -8,7 +8,7 @@ The frontend is a single React 19 + Vite SPA mounted at `/admin`. Inside it, two
 
 ## TL;DR
 
-- **Entry:** `src/admin/main.tsx` mounts `<Router><AdminRoutes /></Router><AdminContextMenuGuard />` with React 19 root-level error callbacks. `flushSync` forces the initial render synchronous to cut LCP.
+- **Entry:** `src/admin/main.tsx` initializes the admin locale, sets the document language, and mounts `<I18nProvider><Router><AdminRoutes /></Router><AdminContextMenuGuard /></I18nProvider>` with React 19 root-level error callbacks. `flushSync` forces the initial render synchronous to cut LCP.
 - **Router:** `src/admin/lib/routing/` — in-house router replacing `react-router-dom`. Ten workspace/page routes are wrapped in a per-route `<ErrorBoundary>` and `<Suspense>`, with root redirects plus a final `path="/admin/*"` catch-all redirecting unknown admin URLs to `/admin/dashboard` (login form when unauthenticated) instead of rendering an empty tree. Public-site 404s are NOT claimed — the publish pipeline's NotFound handling owns those.
 - **Cold path:** entry chunk is tiny. `AuthenticatedAdmin` is `React.lazy` and only loads post-login. Each workspace page is wrapped in `prewarmedLazy(...)`: the active page fires its import at module evaluation; the remaining pages pre-warm via `requestIdleCallback` after first paint so subsequent nav is synchronous (no Suspense flicker).
 - **Workspaces:** `dashboard`, `site` (the editor), `content`, `data`, `media`, `plugins`, `users`, `ai`, `account`, `pluginPage`. Capability-gated by `canAccessWorkspace`.
@@ -612,7 +612,7 @@ The sidebar shell expands/collapses by animating `--*-panel-width`. The panel sl
 | General       | Site name, meta title, meta description, language, favicon                   |
 | Shortcuts     | Auto-rendered keyboard shortcut reference from the keybindings registry       |
 | Publishing    | Self-hosted runtime info + framework CSS tree-shaking toggle                 |
-| Preferences   | Catalog-driven editor preferences (auto-rendered from `PREFERENCE_CATALOG`)  |
+| Preferences   | Admin language plus catalog-driven editor preferences (auto-rendered from `PREFERENCE_CATALOG`) |
 
 Site-specific controls that were previously sections of this modal (Pages roster, Breakpoints/Viewports, Conditions) now live in their dedicated surfaces: the Site Explorer panel and `CanvasContextSelector` (unified condition axis).
 
@@ -624,6 +624,8 @@ Site-specific controls that were previously sections of this modal (Pages roster
 - **Every other admin page** (no in-memory draft): a standalone Zustand store loads the document once via `cmsAdapter`, edits a local copy, and persists immediately with a shell-only `saveSite` (empty dirty sets, so pages / components / layouts are left untouched). After each save it refreshes the `adminUi` site summary and fires `CMS_SITE_RELOAD_EVENT` so the toolbar brand and `useSiteSummary` re-sync. There is no Save button on those pages, so writes commit on blur / toggle.
 
 Because the controller is imported only by the lazy section components, the editor-store import it carries stays inside the `SettingsModal` chunk and never enters the eager graph of the lightweight layouts. This is what makes the modal *actually* global — before it, General and Publishing rendered a permanent skeleton anywhere outside the Site editor.
+
+The admin language selector is independent from `PREFERENCE_CATALOG`: `src/admin/i18n/locale.ts` persists it under `instatic-locale` because locale resolution runs before authentication and before the editor preference catalog loads. The same `LanguageSelector` is mounted by `src/admin/preauth/AdminPreAuthForm.tsx` and Settings → Preferences. See [`features/internationalization.md`](features/internationalization.md).
 
 `CanvasNotch` (`src/admin/pages/site/canvas/CanvasNotch.tsx`) owns the canvas-local insertion chrome. Its quick insert buttons are resolved from each admin's server-side `module-inserter` user preference; the default favorites are Container, Text, and Image. The full module inserter is the management surface for those favorites, so any insertable module, layout preset, or Visual Component can be pinned into the notch without adding a separate settings panel. In Visual Component mode, `CanvasRoot` mounts `VisualComponentModeControl` below the notch so the current component name, rename action, and page-return action stay attached to the canvas rather than the global toolbar. In live mode the notch accepts a `peek` prop — it parks above the top edge (clipped by `overflow:hidden`) and rolls down on hover/`:focus-within` so it does not overlay the page header; a slim `peekHandle` strip remains as the hover target.
 
@@ -732,7 +734,8 @@ See [docs/features/plugin-system.md](features/plugin-system.md) for the plugin S
 - [docs/reference/page-tree.md](reference/page-tree.md) — the `NodeTree` primitive
 - [docs/reference/ui-primitives.md](reference/ui-primitives.md) — UI primitive usage
 - Source-of-truth files:
-  - `src/admin/main.tsx` — React root mount
+  - `src/admin/main.tsx` — React root mount + admin locale initialization
+  - `src/admin/i18n/` — admin locale detection, persistence, messages, formatting, and provider
   - `src/admin/AuthenticatedAdmin.tsx` — post-login shell + prewarmedLazy scheduler
   - `src/admin/lib/prewarmedLazy.ts` — React.lazy alternative with explicit preload + sync fast-path
   - `src/admin/state/adminUi.ts` — cross-shell Zustand store (settings modal, site-import modal, site name/favicon, activeLivePath)

@@ -17,6 +17,7 @@ import styles from './AdminPreAuthForm.module.css'
 import { getErrorMessage } from '@core/utils/errorMessage'
 import { isValidEmail } from '@core/utils/email'
 import { MIN_PASSWORD_LENGTH } from '@core/utils/passwordPolicy'
+import { LanguageSelector, useI18n } from '@admin/i18n'
 
 // Phase the unauthenticated form can be in. 'mfa' is a sub-state reached
 // only after a login submit returns `mfaRequired: true` — never set by the
@@ -29,18 +30,6 @@ interface AdminPreAuthFormProps {
   initialError: string | null
   onPhaseChange: (phase: PreAuthPhase) => void
   onAuthenticated: (user: CmsCurrentUser) => void
-}
-
-interface PhaseCopy {
-  title: string
-  submit: string
-  submitPending: string
-}
-
-const PHASE_COPY: Record<PreAuthPhase, PhaseCopy> = {
-  setup: { title: 'Set Up CMS', submit: 'Create Admin', submitPending: 'Setting up' },
-  login: { title: 'Admin Login', submit: 'Sign In', submitPending: 'Signing in' },
-  mfa: { title: 'Two-Factor Authentication', submit: 'Verify', submitPending: 'Verifying' },
 }
 
 
@@ -68,6 +57,7 @@ export function AdminPreAuthForm({
   onPhaseChange,
   onAuthenticated,
 }: AdminPreAuthFormProps) {
+  const { t } = useI18n()
   const [siteName, setSiteName] = useState('My Site')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -88,18 +78,18 @@ export function AdminPreAuthForm({
     // server rejects those, so catch them here first. Login stays unchecked —
     // an existing account must always be able to sign in.
     if (!isValidEmail(email.trim())) {
-      setError('Enter a valid email address')
+      setError(t('auth.validation.email'))
       return
     }
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`)
+      setError(t('auth.validation.passwordMinimum', { count: MIN_PASSWORD_LENGTH }))
       return
     }
     await runAuthAction(async () => {
       await setupCms({ siteName, email, password, displayName })
       await loginCms({ email, password })
       onAuthenticated(await getCurrentCmsUser())
-    }, 'Setup failed', setSubmitting, setError)
+    }, t('auth.setup.failed'), setSubmitting, setError)
   }
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -113,7 +103,7 @@ export function AdminPreAuthForm({
         return
       }
       onAuthenticated(await getCurrentCmsUser())
-    }, 'Login failed', setSubmitting, setError)
+    }, t('auth.login.failed'), setSubmitting, setError)
   }
 
   async function handleMfaVerify(event: FormEvent<HTMLFormElement>) {
@@ -123,10 +113,26 @@ export function AdminPreAuthForm({
       const user = await getCurrentCmsUser()
       setMfaCode('')
       onAuthenticated(user)
-    }, 'MFA verification failed', setSubmitting, setError)
+    }, t('auth.mfa.failed'), setSubmitting, setError)
   }
 
-  const copy = PHASE_COPY[phase]
+  const copy = {
+    setup: {
+      title: t('auth.setup.title'),
+      submit: t('auth.setup.submit'),
+      submitPending: t('auth.setup.pending'),
+    },
+    login: {
+      title: t('auth.login.title'),
+      submit: t('auth.login.submit'),
+      submitPending: t('auth.login.pending'),
+    },
+    mfa: {
+      title: t('auth.mfa.title'),
+      submit: t('auth.mfa.submit'),
+      submitPending: t('auth.mfa.pending'),
+    },
+  }[phase]
   const submitLabel = submitting ? copy.submitPending : copy.submit
 
   // Pre-auth brand row: when the install has picked a favicon, render it
@@ -165,7 +171,7 @@ export function AdminPreAuthForm({
         <form className={styles.form} onSubmit={onSubmit}>
           {phase === 'mfa' ? (
             <label className={styles.field} htmlFor={mfaCodeId}>
-              <span>Authentication code</span>
+              <span>{t('auth.fields.authenticationCode')}</span>
               <Input
                 id={mfaCodeId}
                 value={mfaCode}
@@ -179,7 +185,7 @@ export function AdminPreAuthForm({
           ) : phase === 'setup' && (
             <>
               <label className={styles.field} htmlFor={siteNameId}>
-                <span>Site name</span>
+                <span>{t('auth.fields.siteName')}</span>
                 <Input
                   id={siteNameId}
                   value={siteName}
@@ -193,7 +199,7 @@ export function AdminPreAuthForm({
                   published pages. Left blank they render nothing — which is
                   why it is offered here rather than only on the account page. */}
               <label className={styles.field} htmlFor={displayNameId}>
-                <span>Your name <span className={styles.hint}>optional, shown on published pages</span></span>
+                <span>{t('auth.fields.yourName')} <span className={styles.hint}>{t('auth.fields.yourNameHint')}</span></span>
                 <Input
                   id={displayNameId}
                   value={displayName}
@@ -208,7 +214,7 @@ export function AdminPreAuthForm({
           {phase !== 'mfa' && (
             <>
               <label className={styles.field} htmlFor={emailId}>
-                <span>Email</span>
+                <span>{t('auth.fields.email')}</span>
                 <Input
                   id={emailId}
                   value={email}
@@ -220,7 +226,7 @@ export function AdminPreAuthForm({
               </label>
 
               <label className={styles.field} htmlFor={passwordId}>
-                <span>Password</span>
+                <span>{t('auth.fields.password')}</span>
                 <Input
                   id={passwordId}
                   value={password}
@@ -254,6 +260,10 @@ export function AdminPreAuthForm({
             <span>{submitLabel}</span>
           </Button>
         </form>
+
+        <div className={styles.languageControl}>
+          <LanguageSelector />
+        </div>
       </section>
     </main>
   )
