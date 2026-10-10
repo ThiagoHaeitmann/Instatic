@@ -1,4 +1,5 @@
-export { I18nProvider, useI18n } from './I18nProvider'
+export { I18nProvider } from './I18nProvider'
+export { useI18n } from './useI18n'
 export { LanguageSelector } from './LanguageSelector'
 export {
   DEFAULT_LOCALE,

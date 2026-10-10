@@ -1,5 +1,5 @@
 import { Select } from '@ui/components/Select'
-import { useI18n } from './I18nProvider'
+import { useI18n } from './useI18n'
 import { normalizeLocale } from './locale'
 
 interface LanguageSelectorProps {
