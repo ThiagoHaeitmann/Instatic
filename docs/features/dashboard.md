@@ -61,6 +61,12 @@ src/core/dashboard/
 
 ---
 
+## Localization
+
+Dashboard-owned copy, widget metadata, count messages, accessibility labels, and drag announcements use `@admin/i18n`. English and Brazilian Portuguese resources live in `src/admin/i18n/dashboardMessages.ts`. First-party widget name/description getters resolve the current locale; `useDashboardWidgets` subscribes to locale changes so block-library searches and labels update without resetting the registry.
+
+Numbers, currencies, byte sizes, and timestamps use the shared locale-aware formatting helpers. Plugin-authored names/descriptions, user names/content titles, paths, and technical identifiers remain unchanged. Tests in `src/__tests__/admin/dashboardI18n.test.tsx` cover mounted locale switching, catalog parity, pluralization, and plugin-label preservation. See [internationalization](internationalization.md).
+
 ## Grid layout
 
 `DashboardGrid` is a 12-column CSS grid with a fixed row height. Each widget cell:

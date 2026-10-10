@@ -1,10 +1,10 @@
+import { localizedPageSlugError } from './siteItemNames'
+import { translate, useI18n } from '@admin/i18n'
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import type { Page } from '@core/page-tree'
 import {
   createUniquePageSlug,
   normalizePageSlug,
-  pageSlugDuplicateError,
-  pageSlugError,
 } from '@core/page-tree'
 import { Button } from '@ui/components/Button'
 import { Dialog } from '@ui/components/Dialog'
@@ -27,10 +27,10 @@ interface SiteCreateDialogProps {
 }
 
 const COPY: Record<SiteCreateKind, { title: string; placeholder: string }> = {
-  page: { title: 'New page', placeholder: 'About' },
-  component: { title: 'New component', placeholder: 'Hero card' },
-  style: { title: 'New stylesheet', placeholder: 'theme' },
-  script: { title: 'New script', placeholder: 'analytics' },
+  page: { get title() { return translate('shell.copy.newPage') }, get placeholder() { return translate('shell.copy.about') } },
+  component: { get title() { return translate('shell.copy.newComponent') }, get placeholder() { return translate('shell.copy.heroCard') } },
+  style: { get title() { return translate('shell.copy.newStylesheet') }, placeholder: 'theme' },
+  script: { get title() { return translate('shell.copy.newScript') }, placeholder: 'analytics' },
 }
 
 const FORM_ID = 'site-create-form'
@@ -41,6 +41,7 @@ export function SiteCreateDialog({
   onCancel,
   onCreate,
 }: SiteCreateDialogProps) {
+  const { t } = useI18n()
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
@@ -53,7 +54,7 @@ export function SiteCreateDialog({
   const generatedSlug = isPage && trimmedName ? createUniquePageSlug(trimmedName, pages) : ''
   const pageSlug = slugTouched ? slug : generatedSlug
   const slugError = isPage && trimmedName
-    ? pageSlugError(pageSlug) || pageSlugDuplicateError(pageSlug, pages)
+    ? localizedPageSlugError(pageSlug, pages)
     : null
 
   // Focus the name field on mount. Dialog's first-focusable would otherwise
@@ -79,7 +80,7 @@ export function SiteCreateDialog({
       footer={
         <>
           <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
-            Cancel
+            {t('shell.copy.cancel')}
           </Button>
           {/* `form` attribute associates this submit button with the form
               that lives in the dialog body. Standard HTML — works across the
@@ -91,14 +92,14 @@ export function SiteCreateDialog({
             form={FORM_ID}
             disabled={!trimmedName || Boolean(slugError)}
           >
-            Create
+            {t('shell.copy.create')}
           </Button>
         </>
       }
     >
       <form id={FORM_ID} className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.field}>
-          <label htmlFor={nameInputId} className={styles.label}>Name</label>
+          <label htmlFor={nameInputId} className={styles.label}>{t('shell.copy.name')}</label>
           <Input
             id={nameInputId}
             ref={inputRef}
@@ -113,7 +114,7 @@ export function SiteCreateDialog({
 
         {isPage && (
           <div className={styles.field}>
-            <label htmlFor={slugInputId} className={styles.label}>Slug</label>
+            <label htmlFor={slugInputId} className={styles.label}>{t('shell.copy.slug')}</label>
             <Input
               id={slugInputId}
               fieldSize="sm"

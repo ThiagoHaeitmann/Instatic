@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * OpenLivePageButton — toolbar icon that opens the live site in a new tab.
  *
@@ -33,9 +34,10 @@ import { ExternalLinkSolidIcon } from 'pixel-art-icons/icons/external-link-solid
 import { useAdminUi } from '@admin/state/adminUi'
 
 export function OpenLivePageButton() {
+  const { t } = useI18n()
   const activeLivePath = useAdminUi((s) => s.activeLivePath)
   const target = activeLivePath ?? '/'
-  const tooltip = activeLivePath ? 'Open live page' : 'Open live site'
+  const tooltip = activeLivePath ? t('shell.copy.openLivePage') : t('shell.copy.openLiveSite')
 
   return (
     <Button

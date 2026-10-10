@@ -1,3 +1,4 @@
+import { formatNumber, formatList, translate, useI18n } from '@admin/i18n'
 /**
  * VCDeletionConfirmDialog — confirmation prompt shown before a Visual Component
  * with active references is deleted.
@@ -27,6 +28,7 @@ export function VCDeletionConfirmDialog({
   onCancel,
   onConfirm,
 }: VCDeletionConfirmDialogProps) {
+  const { t } = useI18n()
   const confirmRef = useRef<HTMLButtonElement>(null)
 
   const pageUsages = impact.usages.filter(
@@ -42,13 +44,13 @@ export function VCDeletionConfirmDialog({
       open
       onClose={onCancel}
       tone="danger"
-      title="Delete component?"
+      title={t('shell.copy.deleteComponentQuestion')}
       size="lg"
       initialFocusRef={confirmRef}
       footer={
         <>
           <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
-            Cancel
+            {t('shell.copy.cancel')}
           </Button>
           <Button
             ref={confirmRef}
@@ -57,28 +59,22 @@ export function VCDeletionConfirmDialog({
             type="button"
             onClick={onConfirm}
           >
-            Delete component
+            {t('shell.copy.deleteComponent')}
           </Button>
         </>
       }
     >
       <p className={styles.summary}>
-        <span className={styles.summaryStrong}>{impact.vc.name}</span>{' '}
-        is used in {buildUsageSummary(impact.pageCount, impact.vcCount)}{' '}
-        (
-        <span className={styles.summaryStrong}>{impact.usages.length}</span>
-        {' '}
-        {impact.usages.length === 1 ? 'instance' : 'instances'}
-        ).
+        {t('shell.component.summary', { name: impact.vc.name, places: buildUsageSummary(impact.pageCount, impact.vcCount), count: impact.usages.length, countLabel: formatNumber(impact.usages.length) })}
       </p>
       <p className={styles.subline}>
-        Proceeding will delete the component and remove every reference from the site.
+        {t('shell.copy.proceedingWillDeleteTheComponentAndRemoveEveryReferenceFrom')}
       </p>
 
       {pageUsages.length > 0 && (
         <div className={styles.usageGroup}>
-          <div className={styles.groupHeader}>In pages</div>
-          <ul className={styles.usageList} aria-label="Pages using this component">
+          <div className={styles.groupHeader}>{t('shell.copy.inPages')}</div>
+          <ul className={styles.usageList} aria-label={t('shell.copy.pagesUsingThisComponent')}>
             {pageUsages.map((usage) => (
               <li key={`page:${usage.source.pageId}:${usage.source.nodeId}`} className={styles.usageItem}>
                 <span className={styles.usageScope}>{usage.source.pageTitle}</span>
@@ -93,8 +89,8 @@ export function VCDeletionConfirmDialog({
 
       {vcUsages.length > 0 && (
         <div className={styles.usageGroup}>
-          <div className={styles.groupHeader}>In other components</div>
-          <ul className={styles.usageList} aria-label="Other components using this component">
+          <div className={styles.groupHeader}>{t('shell.copy.inOtherComponents')}</div>
+          <ul className={styles.usageList} aria-label={t('shell.copy.otherComponentsUsingThisComponent')}>
             {vcUsages.map((usage) => (
               <li key={`vc:${usage.source.vcId}:${usage.source.nodeId}`} className={styles.usageItem}>
                 <span className={styles.usageScope}>{usage.source.vcName}</span>
@@ -123,10 +119,10 @@ export function VCDeletionConfirmDialog({
 function buildUsageSummary(pageCount: number, vcCount: number): string {
   const parts: string[] = []
   if (pageCount > 0) {
-    parts.push(`${pageCount} ${pageCount === 1 ? 'page' : 'pages'}`)
+    parts.push(translate('shell.component.pages', { count: pageCount, countLabel: formatNumber(pageCount) }))
   }
   if (vcCount > 0) {
-    parts.push(`${vcCount} ${vcCount === 1 ? 'component' : 'components'}`)
+    parts.push(translate('shell.component.components', { count: vcCount, countLabel: formatNumber(vcCount) }))
   }
-  return parts.join(' and ')
+  return formatList(parts)
 }

@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * ConfirmDeleteDialog — generic two-button "are you sure?" prompt for
  * destructive actions in the editor.
@@ -33,12 +34,14 @@ interface ConfirmDeleteDialogProps {
 export function ConfirmDeleteDialog({
   title,
   description,
-  confirmLabel = 'Delete',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   onCancel,
   onConfirm,
   tone = 'danger',
 }: ConfirmDeleteDialogProps) {
+  const { t } = useI18n()
+
   const confirmRef = useRef<HTMLButtonElement>(null)
 
   // Enter activates the focused (Confirm) button natively, but we add a
@@ -67,7 +70,7 @@ export function ConfirmDeleteDialog({
       footer={
         <>
           <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
-            {cancelLabel}
+            {cancelLabel ?? t('shell.copy.cancel')}
           </Button>
           <Button
             ref={confirmRef}
@@ -76,7 +79,7 @@ export function ConfirmDeleteDialog({
             type="button"
             onClick={onConfirm}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('shell.copy.delete')}
           </Button>
         </>
       }

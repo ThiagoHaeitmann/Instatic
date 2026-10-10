@@ -1,10 +1,10 @@
+import { localizedPageSlugError } from '../SiteCreateDialog'
+import { useI18n } from '@admin/i18n'
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useAsyncResource } from '@admin/lib/useAsyncResource'
 import type { Page, PageTemplateConfig, TemplateTarget } from '@core/page-tree'
 import {
   normalizePageSlug,
-  pageSlugDuplicateError,
-  pageSlugError,
 } from '@core/page-tree'
 import { listCmsDataTables } from '@core/persistence/cmsData'
 import type { DataTable } from '@core/data/schemas'
@@ -47,11 +47,6 @@ const FALLBACK_COLLECTIONS: DataTable[] = [{
 
 const FORM_ID = 'template-settings-form'
 
-const TARGET_KIND_OPTIONS = [
-  { value: 'everywhere', label: 'Everywhere' },
-  { value: 'postTypes', label: 'Post types' },
-  { value: 'notFound', label: 'Not found (404)' },
-]
 
 export function TemplateSettingsDialog({
   page,
@@ -59,6 +54,12 @@ export function TemplateSettingsDialog({
   onCancel,
   onSave,
 }: TemplateSettingsDialogProps) {
+  const { t } = useI18n()
+  const targetKindOptions = [
+    { value: 'everywhere', label: t('shell.copy.everywhere') },
+    { value: 'postTypes', label: t('shell.copy.postTypes') },
+    { value: 'notFound', label: t('shell.copy.notFound404') },
+  ]
   const initialTarget = page.template?.target
   const [title, setTitle] = useState(page.title)
   const [slug, setSlug] = useState(page.slug)
@@ -90,7 +91,7 @@ export function TemplateSettingsDialog({
   const trimmedTitle = title.trim()
   const normalizedSlug = normalizePageSlug(slug)
   const priorityNumber = Number(priority)
-  const slugValidation = pageSlugError(normalizedSlug) || pageSlugDuplicateError(normalizedSlug, pages, page.id)
+  const slugValidation = localizedPageSlugError(normalizedSlug, pages, page.id)
   const priorityInvalid = !Number.isFinite(priorityNumber)
   const postTypesEmpty = targetKind === 'postTypes' && selectedSlugs.length === 0
 
@@ -132,13 +133,13 @@ export function TemplateSettingsDialog({
     <Dialog
       open
       onClose={onCancel}
-      title="Template settings"
+      title={t('shell.copy.templateSettings')}
       size="sm"
       initialFocusRef={inputRef}
       footer={
         <>
           <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
-            Cancel
+            {t('shell.copy.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -147,14 +148,14 @@ export function TemplateSettingsDialog({
             form={FORM_ID}
             disabled={saveDisabled}
           >
-            Save
+            {t('shell.copy.save')}
           </Button>
         </>
       }
     >
       <form id={FORM_ID} className={dialogStyles.form} onSubmit={handleSubmit}>
         <div className={dialogStyles.field}>
-          <label htmlFor={nameInputId} className={dialogStyles.label}>Name</label>
+          <label htmlFor={nameInputId} className={dialogStyles.label}>{t('shell.copy.name')}</label>
           <Input
             id={nameInputId}
             ref={inputRef}
@@ -167,7 +168,7 @@ export function TemplateSettingsDialog({
         </div>
 
         <div className={dialogStyles.field}>
-          <label htmlFor={slugInputId} className={dialogStyles.label}>Slug</label>
+          <label htmlFor={slugInputId} className={dialogStyles.label}>{t('shell.copy.slug')}</label>
           <Input
             id={slugInputId}
             fieldSize="sm"
@@ -183,41 +184,46 @@ export function TemplateSettingsDialog({
         </div>
 
         <div className={dialogStyles.field}>
-          <label htmlFor={targetSelectId} className={dialogStyles.label}>Applies to</label>
+          <label htmlFor={targetSelectId} className={dialogStyles.label}>{t('shell.copy.appliesTo')}</label>
           <Select
             id={targetSelectId}
-            aria-label="Applies to"
+            aria-label={t('shell.copy.appliesTo')}
             fieldSize="sm"
             value={targetKind}
             onChange={(event) => setTargetKind(event.target.value as TemplateTarget['kind'])}
-            options={TARGET_KIND_OPTIONS}
+            options={targetKindOptions}
           />
         </div>
 
         {targetKind === 'postTypes' && (
           <div className={dialogStyles.field}>
-            <span className={dialogStyles.label}>Post types</span>
-            {collections.map((collection) => (
-              <label key={collection.slug} className={dialogStyles.checkboxRow}>
-                <Checkbox
-                  checked={selectedSlugs.includes(collection.slug)}
-                  onCheckedChange={(checked) => toggleSlug(collection.slug, checked)}
-                  aria-label={collection.pluralLabel || collection.name}
-                />
-                {collection.pluralLabel || collection.name}
-              </label>
-            ))}
+            <span className={dialogStyles.label}>{t('shell.copy.postTypes')}</span>
+            {collections.map((collection) => {
+              const label = collection === FALLBACK_COLLECTIONS[0]
+                ? t('shell.copy.posts')
+                : collection.pluralLabel || collection.name
+              return (
+                <label key={collection.slug} className={dialogStyles.checkboxRow}>
+                  <Checkbox
+                    checked={selectedSlugs.includes(collection.slug)}
+                    onCheckedChange={(checked) => toggleSlug(collection.slug, checked)}
+                    aria-label={label}
+                  />
+                  {label}
+                </label>
+              )
+            })}
             {postTypesEmpty && (
-              <p role="alert" className={dialogStyles.errorText}>Select at least one post type.</p>
+              <p role="alert" className={dialogStyles.errorText}>{t('shell.copy.selectAtLeastOnePostType')}</p>
             )}
           </div>
         )}
 
         <div className={dialogStyles.field}>
-          <label htmlFor={priorityInputId} className={dialogStyles.label}>Priority</label>
+          <label htmlFor={priorityInputId} className={dialogStyles.label}>{t('shell.copy.priority')}</label>
           <Input
             id={priorityInputId}
-            aria-label="Priority"
+            aria-label={t('shell.copy.priority')}
             fieldSize="sm"
             type="number"
             value={priority}

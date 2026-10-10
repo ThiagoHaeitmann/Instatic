@@ -8,6 +8,7 @@
  * belong in Account → Sign-in history. The widget is about
  * *operational* changes to the site.
  */
+import { useI18n, formatDate, formatRelativeTime, translate } from '@admin/i18n'
 import { DashboardSolidIcon } from 'pixel-art-icons/icons/dashboard-solid'
 import { SettingsCogSolidIcon } from 'pixel-art-icons/icons/settings-cog-solid'
 import type { ReactNode } from 'react'
@@ -33,7 +34,7 @@ const AVATAR_SIZE = 22
 /**
  * Pick the verb that fronts each row body. The server has already
  * resolved the target into `targetCode` / `targetText`; this only
- * picks the right English verb for the action.
+ * picks the localized verb for the action.
  *
  * Unknown / future actions fall through to a humanised version of
  * the action string itself ("plugin.foobar" → "plugin foobar") so a
@@ -43,63 +44,63 @@ const AVATAR_SIZE = 22
 function actionVerb(action: string): string {
   switch (action) {
     case 'data.row.create':
-      return 'created'
+      return translate('dashboard.activity.actions.data.row.create')
     case 'data.row.update':
-      return 'edited'
+      return translate('dashboard.activity.actions.data.row.update')
     case 'data.row.delete':
-      return 'deleted'
+      return translate('dashboard.activity.actions.data.row.delete')
     case 'data.row.publish':
-      return 'published'
+      return translate('dashboard.activity.actions.data.row.publish')
     case 'data.row.schedule':
-      return 'scheduled'
+      return translate('dashboard.activity.actions.data.row.schedule')
     case 'data.row.schedule.cancel':
-      return 'unscheduled'
+      return translate('dashboard.activity.actions.data.row.schedule.cancel')
     case 'data.row.status':
-      return 'changed status of'
+      return translate('dashboard.activity.actions.data.row.status')
     case 'data.row.move':
-      return 'moved'
+      return translate('dashboard.activity.actions.data.row.move')
     case 'data.author.assign':
-      return 'reassigned author of'
+      return translate('dashboard.activity.actions.data.author.assign')
     case 'data.table.create':
-      return 'created collection'
+      return translate('dashboard.activity.actions.data.table.create')
     case 'data.table.update':
-      return 'edited collection'
+      return translate('dashboard.activity.actions.data.table.update')
     case 'data.table.delete':
-      return 'deleted collection'
+      return translate('dashboard.activity.actions.data.table.delete')
     case 'publish':
-      return 'published the site'
+      return translate('dashboard.activity.actions.publish')
     case 'plugin.install':
-      return 'installed plugin'
+      return translate('dashboard.activity.actions.plugin.install')
     case 'plugin.update':
-      return 'updated plugin'
+      return translate('dashboard.activity.actions.plugin.update')
     case 'plugin.enable':
-      return 'enabled plugin'
+      return translate('dashboard.activity.actions.plugin.enable')
     case 'plugin.disable':
-      return 'disabled plugin'
+      return translate('dashboard.activity.actions.plugin.disable')
     case 'plugin.delete':
-      return 'removed plugin'
+      return translate('dashboard.activity.actions.plugin.delete')
     case 'plugin.pack.install':
-      return 'installed plugin pack'
+      return translate('dashboard.activity.actions.plugin.pack.install')
     case 'plugin.settings.update':
-      return 'updated settings for'
+      return translate('dashboard.activity.actions.plugin.settings.update')
     case 'user.create':
-      return 'added user'
+      return translate('dashboard.activity.actions.user.create')
     case 'user.update':
-      return 'updated user'
+      return translate('dashboard.activity.actions.user.update')
     case 'user.delete':
-      return 'removed user'
+      return translate('dashboard.activity.actions.user.delete')
     case 'user.suspend':
-      return 'suspended user'
+      return translate('dashboard.activity.actions.user.suspend')
     case 'password.change':
-      return 'changed password for'
+      return translate('dashboard.activity.actions.password.change')
     case 'role.create':
-      return 'created role'
+      return translate('dashboard.activity.actions.role.create')
     case 'role.update':
-      return 'updated role'
+      return translate('dashboard.activity.actions.role.update')
     case 'role.delete':
-      return 'removed role'
+      return translate('dashboard.activity.actions.role.delete')
     case 'role.assign':
-      return 'assigned role'
+      return translate('dashboard.activity.actions.role.assign')
     default:
       return action.replace(/[._]/g, ' ')
   }
@@ -124,41 +125,22 @@ function renderBody(entry: DashboardActivityEntry): ReactNode {
   return verb
 }
 
-/**
- * Short relative-time label sized for the widget's narrow column.
- *
- *   < 1m         → "now"
- *   < 60m        → "<n>m"
- *   < 24h        → "<n>h"
- *   < 7d         → "<n>d"
- *   < 30d        → "yest." / "<n>d"
- *   anything else → coarse "MMM D" date
- *
- * Strictly past-only — `audit_events` are stamped at write time, so
- * a future timestamp would mean clock skew; in that case we just
- * render "now" rather than a misleading "in 3h".
- */
-function formatRelative(iso: string): string {
+/** Compact locale-aware timestamps; older entries use a calendar date. */
+function formatRelative(iso: string | null): string {
+  if (iso === null) return '—'
   const ts = Date.parse(iso)
-  if (Number.isNaN(ts)) return ''
-  const deltaMs = Date.now() - ts
-  if (deltaMs < 0) return 'now'
-
-  const min = deltaMs / 60_000
-  if (min < 1) return 'now'
-  if (min < 60) return `${Math.round(min)}m`
-
-  const hr = min / 60
-  if (hr < 24) return `${Math.round(hr)}h`
-
-  const day = hr / 24
-  if (day < 2) return 'yest.'
-  if (day < 30) return `${Math.round(day)}d`
-
-  return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  if (Number.isNaN(ts)) return '—'
+  const minutes = (ts - Date.now()) / 60_000
+  const options = { numeric: 'auto', style: 'short' } as const
+  if (Math.abs(minutes) < 1) return formatRelativeTime(0, 'second', options)
+  if (Math.abs(minutes) < 60) return formatRelativeTime(Math.round(minutes), 'minute', options)
+  if (Math.abs(minutes) < 1440) return formatRelativeTime(Math.round(minutes / 60), 'hour', options)
+  if (Math.abs(minutes) < 43200) return formatRelativeTime(Math.round(minutes / 1440), 'day', options)
+  return formatDate(ts, { month: 'short', day: 'numeric' })
 }
 
 export function ActivityWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const stats = useRecentActivityStats()
   const rows = stats?.rows ?? []
   const isLoading = stats === null
@@ -167,7 +149,7 @@ export function ActivityWidget({ span, editing }: DashboardWidgetRendererProps) 
   return (
     <Widget
       widgetId="activity"
-      title="Activity"
+      title={t('dashboard.widgets.activity.name')}
       icon={DashboardSolidIcon}
       tint="peach"
       span={span}
@@ -177,8 +159,7 @@ export function ActivityWidget({ span, editing }: DashboardWidgetRendererProps) 
       <div className={styles.feed}>
         {isEmpty && (
           <p className={cn(styles.feedTime, styles.feedEmpty)}>
-            Nothing has happened yet — edits, publishes, and plugin changes
-            will appear here.
+            {t('dashboard.activity.empty')}
           </p>
         )}
         {!isLoading && !isEmpty && rows.map((r) => (
@@ -187,10 +168,10 @@ export function ActivityWidget({ span, editing }: DashboardWidgetRendererProps) 
               <UserAvatar
                 user={r.actor}
                 size={AVATAR_SIZE}
-                alt={`Avatar for ${r.actor.displayName || r.actor.email}`}
+                alt={t('dashboard.activity.avatar', { name: r.actor.displayName || r.actor.email })}
               />
             ) : (
-              <span className={styles.feedSystemAvatar} title="System" aria-hidden="true">
+              <span className={styles.feedSystemAvatar} title={t('dashboard.widgets.activity.name')} aria-hidden="true">
                 <SettingsCogSolidIcon size={12} />
               </span>
             )}

@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * UserAvatar — circular avatar with `<img>` rendering and an initials
  * fallback. Used everywhere a user identity surfaces in the admin shell
@@ -42,11 +43,12 @@ function deriveInitial(user: { displayName: string; email: string }): string {
 }
 
 export function UserAvatar({ user, size, alt, className }: UserAvatarProps): ReactNode {
+  const { t } = useI18n()
   const [imageFailed, setImageFailed] = useState(false)
   const url = resolveAvatarUrl(user, { size })
   const showImage = url !== null && !imageFailed
   const displayName = user.displayName.trim() || user.email
-  const altText = alt === null ? '' : alt ?? `Avatar for ${displayName}`
+  const altText = alt === null ? '' : alt ?? t('shell.avatar.for', { name: displayName })
 
   const style: CSSProperties = { '--avatar-size': `${size}px` } as CSSProperties
 

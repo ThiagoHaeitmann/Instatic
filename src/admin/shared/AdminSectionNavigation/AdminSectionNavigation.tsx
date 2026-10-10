@@ -1,3 +1,4 @@
+import { formatNumber, useI18n } from '@admin/i18n'
 /**
  * AdminSectionNavigation — the row of section links shown inside the
  * editor toolbar (Site · Content · Plugins · Users · …plugin pages).
@@ -69,6 +70,7 @@ export function AdminSectionNavigation({
   currentUser,
   onWorkspaceNavigateStart,
 }: AdminSectionNavigationProps) {
+  const { t } = useI18n()
   // Hydrate from the session cache so the nav links don't flash empty
   // on every re-mount.
   const [pluginPages, setPluginPages] = useState<PluginAdminPageRoute[]>(
@@ -130,7 +132,7 @@ export function AdminSectionNavigation({
         <NavItem
           to="/admin/dashboard"
           icon={<DashboardSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />}
-          label="Dashboard"
+          label={t('shell.copy.dashboard')}
           active={section === 'dashboard'}
           onNavigateStart={onWorkspaceNavigateStart}
         />
@@ -139,7 +141,7 @@ export function AdminSectionNavigation({
         <NavItem
           to="/admin/site"
           icon={<LayoutSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />}
-          label="Site"
+          label={t('shell.copy.site')}
           active={section === 'site' || section === 'branchReview'}
           onNavigateStart={onWorkspaceNavigateStart}
         />
@@ -148,7 +150,7 @@ export function AdminSectionNavigation({
         <NavItem
           to="/admin/content"
           icon={<ArticleSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />}
-          label="Content"
+          label={t('shell.copy.content')}
           active={section === 'content'}
           onNavigateStart={onWorkspaceNavigateStart}
         />
@@ -157,7 +159,7 @@ export function AdminSectionNavigation({
         <NavItem
           to="/admin/data"
           icon={<DatabaseSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />}
-          label="Data"
+          label={t('shell.copy.data')}
           active={section === 'data'}
           onNavigateStart={onWorkspaceNavigateStart}
         />
@@ -166,7 +168,7 @@ export function AdminSectionNavigation({
         <NavItem
           to="/admin/media"
           icon={<ImagesSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />}
-          label="Media"
+          label={t('shell.copy.media')}
           active={section === 'media'}
           onNavigateStart={onWorkspaceNavigateStart}
         />
@@ -181,7 +183,7 @@ export function AdminSectionNavigation({
         <NavItem
           to="/admin/ai"
           icon={<AiBoxSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />}
-          label="AI"
+          label={t('shell.copy.aI')}
           active={section === 'ai'}
           onNavigateStart={onWorkspaceNavigateStart}
         />
@@ -190,7 +192,7 @@ export function AdminSectionNavigation({
         <NavItem
           to="/admin/users"
           icon={<UsersSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />}
-          label="Users"
+          label={t('shell.copy.users')}
           active={section === 'users'}
           onNavigateStart={onWorkspaceNavigateStart}
         />
@@ -227,6 +229,7 @@ function NavItem({
   active: boolean
   onNavigateStart?: () => unknown
 }) {
+
   if (active) {
     return (
       <span className={toolbarStyles.activeSection}>
@@ -256,6 +259,7 @@ function PluginsNavLink({
   active: boolean
   onNavigateStart?: () => unknown
 }) {
+  const { t } = useI18n()
   const issuesCount = useSyncExternalStore(
     subscribePluginIssues,
     getPluginsInErrorCount,
@@ -264,8 +268,8 @@ function PluginsNavLink({
   const dot = issuesCount > 0 ? (
     <output
       className={toolbarStyles.pluginsErrorDot}
-      aria-label={`${issuesCount} plugin${issuesCount === 1 ? '' : 's'} in error state`}
-      title={`${issuesCount} plugin${issuesCount === 1 ? '' : 's'} need${issuesCount === 1 ? 's' : ''} attention`}
+      aria-label={t('shell.plugins.error', { count: issuesCount, countLabel: formatNumber(issuesCount) })}
+      title={t('shell.plugins.attention', { count: issuesCount, countLabel: formatNumber(issuesCount) })}
     />
   ) : null
 
@@ -273,7 +277,7 @@ function PluginsNavLink({
     return (
       <span className={toolbarStyles.activeSection}>
         <PackageSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />
-        <span>Plugins</span>
+        <span>{t('shell.copy.plugins')}</span>
         {dot}
       </span>
     )
@@ -281,7 +285,7 @@ function PluginsNavLink({
   return (
     <AdminRouteLink to="/admin/plugins" onNavigateStart={onNavigateStart}>
       <PackageSolidIcon size={NAV_ICON_SIZE} aria-hidden="true" />
-      <span>Plugins</span>
+      <span>{t('shell.copy.plugins')}</span>
       {dot}
     </AdminRouteLink>
   )
@@ -301,6 +305,7 @@ function AdminRouteLink({
   children: ReactNode
   onNavigateStart?: () => unknown
 }) {
+
   const navigate = useAdminNavigate()
   const location = useLocation()
 

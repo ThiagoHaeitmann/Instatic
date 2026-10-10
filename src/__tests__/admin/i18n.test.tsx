@@ -20,6 +20,7 @@ import {
   useI18n,
 } from '@admin/i18n'
 import { translateMessage } from '../../admin/i18n/runtime'
+import { englishMessages, portugueseBrazilMessages } from '../../admin/i18n/messages'
 
 beforeEach(() => {
   localStorage.clear()
@@ -58,6 +59,17 @@ describe('admin i18n locale resolution', () => {
 })
 
 describe('admin i18n messages', () => {
+  it('ships complete catalogs with exact key and interpolation parity', () => {
+    expect(Object.keys(portugueseBrazilMessages).sort()).toEqual(Object.keys(englishMessages).sort())
+    for (const key of Object.keys(englishMessages) as (keyof typeof englishMessages)[]) {
+      const english = englishMessages[key]
+      const portuguese = portugueseBrazilMessages[key]
+      const placeholders = (value: string) => [...value.matchAll(/\{\{(\w+)\}\}/g)].map((match) => match[1]).sort()
+      expect(english.trim().length).toBeGreaterThan(0)
+      expect(portuguese.trim().length).toBeGreaterThan(0)
+      expect(placeholders(portuguese)).toEqual(placeholders(english))
+    }
+  })
   it('interpolates named values', () => {
     setLocale('pt-BR')
     expect(translateMessage('pt-BR', 'greeting', { name: 'Ana' }, { greeting: 'Olá, {{name}}!' }, {})).toBe('Olá, Ana!')

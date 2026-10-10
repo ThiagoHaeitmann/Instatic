@@ -35,6 +35,7 @@
  *   - The close button (when provided) gets an `aria-label` that
  *     defaults to "Close" but can be overridden via `closeLabel`.
  */
+import { useUiI18n } from '@ui/localization'
 import type { ReactNode } from 'react'
 import { CloseIcon } from 'pixel-art-icons/icons/close'
 import { Button } from '@ui/components/Button'
@@ -92,10 +93,11 @@ export function FloatingActionBar({
   label,
   children,
   onClose,
-  closeLabel = 'Close',
+  closeLabel,
   open = true,
   className,
 }: FloatingActionBarProps) {
+  const { t } = useUiI18n()
   const { mounted, exiting } = useDelayedUnmount(open, EXIT_DURATION_MS)
 
   if (!mounted) return null
@@ -123,7 +125,7 @@ export function FloatingActionBar({
           variant="ghost"
           size="sm"
           iconOnly
-          aria-label={closeLabel}
+          aria-label={closeLabel ?? t('ui.close')}
           tooltip={closeLabel}
           onClick={onClose}
         >

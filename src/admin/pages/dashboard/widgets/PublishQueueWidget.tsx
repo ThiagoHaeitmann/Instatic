@@ -10,6 +10,7 @@
  * Data flows through `usePublishLineupStats()` — the server already
  * orders and limits the list so the widget just renders.
  */
+import { useI18n, formatDate, formatRelativeTime, translate } from '@admin/i18n'
 import { CloudUploadSolidIcon } from 'pixel-art-icons/icons/cloud-upload-solid'
 import type { DashboardWidgetRendererProps } from '@core/dashboard'
 import { Widget } from '@ui/components/Widget'
@@ -27,52 +28,27 @@ function badgeClass(status: DashboardPublishLineupRow['status']): string {
 }
 
 function badgeLabel(status: DashboardPublishLineupRow['status']): string {
-  if (status === 'scheduled') return 'scheduled'
-  if (status === 'published') return 'published'
-  return 'draft'
+  if (status === 'scheduled') return translate('dashboard.publish.scheduled')
+  if (status === 'published') return translate('dashboard.publish.published')
+  return translate('dashboard.publish.draft')
 }
 
-/**
- * Format an ISO datetime as a short human-relative label.
- *
- *   future →  "in 12m" / "in 3h" / "in 2d"
- *   past   →  "5m ago" / "3h ago" / "yesterday" / "5d ago"
- *
- * Drafts pass null and get an em-dash. The thresholds are picked to
- * read well in the widget's narrow column — anything older than ~30
- * days falls through to a coarse date so the row stays compact.
- */
+/** Compact locale-aware timestamps; older entries use a calendar date. */
 function formatRelative(iso: string | null): string {
   if (iso === null) return '—'
   const ts = Date.parse(iso)
   if (Number.isNaN(ts)) return '—'
-  const deltaMs = ts - Date.now()
-  const absMin = Math.abs(deltaMs) / 60_000
-  const future = deltaMs > 0
-
-  if (absMin < 1) return future ? 'soon' : 'just now'
-  if (absMin < 60) {
-    const n = Math.round(absMin)
-    return future ? `in ${n}m` : `${n}m ago`
-  }
-  const absHr = absMin / 60
-  if (absHr < 24) {
-    const n = Math.round(absHr)
-    return future ? `in ${n}h` : `${n}h ago`
-  }
-  const absDay = absHr / 24
-  if (absDay < 30) {
-    const n = Math.round(absDay)
-    if (!future && n === 1) return 'yesterday'
-    return future ? `in ${n}d` : `${n}d ago`
-  }
-  // Beyond a month — fall back to a date so the row doesn't read like
-  // "in 73d" which is more noise than signal.
-  const d = new Date(ts)
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  const minutes = (ts - Date.now()) / 60_000
+  const options = { numeric: 'auto', style: 'short' } as const
+  if (Math.abs(minutes) < 1) return formatRelativeTime(0, 'second', options)
+  if (Math.abs(minutes) < 60) return formatRelativeTime(Math.round(minutes), 'minute', options)
+  if (Math.abs(minutes) < 1440) return formatRelativeTime(Math.round(minutes / 60), 'hour', options)
+  if (Math.abs(minutes) < 43200) return formatRelativeTime(Math.round(minutes / 1440), 'day', options)
+  return formatDate(ts, { month: 'short', day: 'numeric' })
 }
 
 export function PublishQueueWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const stats = usePublishLineupStats()
   const rows = stats?.rows ?? []
   const isLoading = stats === null
@@ -81,7 +57,7 @@ export function PublishQueueWidget({ span, editing }: DashboardWidgetRendererPro
   return (
     <Widget
       widgetId="publish"
-      title="Publish lineup"
+      title={t('dashboard.widgets.publish.name')}
       icon={CloudUploadSolidIcon}
       tint="sky"
       span={span}
@@ -90,8 +66,7 @@ export function PublishQueueWidget({ span, editing }: DashboardWidgetRendererPro
     >
       {isEmpty && (
         <p className={cn(styles.feedTime, styles.feedEmpty)}>
-          Nothing in the lineup yet — schedule, publish, or draft a row to
-          see it here.
+          {t('dashboard.publish.empty')}
         </p>
       )}
       {!isLoading && !isEmpty && (

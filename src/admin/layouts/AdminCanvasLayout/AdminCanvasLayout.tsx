@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * AdminCanvasLayout — the Site editor admin shell.
  *
@@ -115,6 +116,7 @@ const PreviewOverlay = lazy(() =>
  * through `AdminPageLayout`.
  */
 export function AdminCanvasLayout() {
+  const { t } = useI18n()
   const site = useEditorStore((s) => s.site)
   // Toolbar branding — pulled from the editor store here (we already have
   // it loaded) and forwarded to the prop-driven Toolbar below. Keeps the
@@ -194,7 +196,7 @@ export function AdminCanvasLayout() {
   const appearance = useEditorAppearancePreferences()
 
   const loadError = !site && persistence.saveStatus.state === 'error'
-    ? persistence.saveStatus.message ?? 'Reload the admin page and try again.'
+    ? persistence.saveStatus.message ?? t('shell.copy.reloadTheAdminPageAndTryAgain')
     : null
 
   const loadEditorBody = usePostPaintEditorBodyGate()
@@ -305,6 +307,7 @@ function scheduleAfterFirstPaint(callback: () => void): () => void {
 }
 
 function AdminCanvasEditorBodyLoading() {
+  const { t } = useI18n()
   return (
     <div className={styles.editorBody} aria-busy="true">
       <div className={styles.canvasStage} data-right-sidebar-expanded="false">
@@ -312,7 +315,7 @@ function AdminCanvasEditorBodyLoading() {
           <section
             className={styles.canvasBootstrapStatus}
             role="status"
-            aria-label="Loading editor"
+            aria-label={t('shell.copy.loadingEditor')}
           >
             <div className={styles.canvasBootstrapLayer} aria-hidden="true">
               {DEFAULT_CANVAS_FRAME_SKELETON_BREAKPOINTS.map((breakpoint) => (

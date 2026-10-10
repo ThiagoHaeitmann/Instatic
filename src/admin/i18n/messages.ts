@@ -1,11 +1,19 @@
+import { dashboardEnglishMessages, dashboardPortugueseMessages } from './dashboardMessages'
+import { shellEnglishMessages, shellPortugueseMessages } from './shellMessages'
+import { uiEnglishMessages, uiPortugueseMessages } from './uiMessages'
+
 export type MessageCatalog = Readonly<Record<string, string>>
 
 export const englishMessages = {
+  ...dashboardEnglishMessages,
+  ...shellEnglishMessages,
+  ...uiEnglishMessages,
   'common.language.label': 'Language',
   'common.language.description': 'Choose the language used by the admin interface on this device.',
   'common.language.english': 'English',
   'common.language.portugueseBrazil': 'Português (Brasil)',
   'common.errors.unhandledRender': 'Unhandled render error',
+  'auth.boot.unavailable': 'CMS is unavailable',
   'auth.setup.title': 'Set Up CMS',
   'auth.setup.submit': 'Create Admin',
   'auth.setup.pending': 'Setting up',
@@ -31,11 +39,15 @@ export const englishMessages = {
 } as const satisfies MessageCatalog
 
 export const portugueseBrazilMessages = {
+  ...dashboardPortugueseMessages,
+  ...shellPortugueseMessages,
+  ...uiPortugueseMessages,
   'common.language.label': 'Idioma',
   'common.language.description': 'Escolha o idioma usado pela interface administrativa neste dispositivo.',
   'common.language.english': 'English',
   'common.language.portugueseBrazil': 'Português (Brasil)',
   'common.errors.unhandledRender': 'Erro de renderização não tratado',
+  'auth.boot.unavailable': 'O CMS está indisponível',
   'auth.setup.title': 'Configurar o CMS',
   'auth.setup.submit': 'Criar administrador',
   'auth.setup.pending': 'Configurando',
@@ -58,7 +70,7 @@ export const portugueseBrazilMessages = {
   'auth.validation.passwordMinimum.one': 'A senha deve ter pelo menos {{count}} caractere',
   'auth.validation.passwordMinimum.other': 'A senha deve ter pelo menos {{count}} caracteres',
 
-} as const satisfies MessageCatalog
+} as const satisfies Record<keyof typeof englishMessages, string>
 
 type BaseMessageKey<TKey extends string> = TKey extends `${infer Base}.${Intl.LDMLPluralRule}` ? Base : TKey
 export type MessageKey = BaseMessageKey<keyof typeof englishMessages>

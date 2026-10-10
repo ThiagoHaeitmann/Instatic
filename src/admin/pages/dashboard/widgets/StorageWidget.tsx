@@ -20,35 +20,24 @@
  *   • Database   — for SQLite the file + WAL/SHM sidecars; for
  *                  Postgres `pg_database_size(current_database())`.
  */
+import { useI18n, formatBytes } from '@admin/i18n'
 import { DatabaseSolidIcon } from 'pixel-art-icons/icons/database-solid'
 import { StackedBar, StatValue } from '@ui/components/charts'
 import type { DashboardWidgetRendererProps } from '@core/dashboard'
 import { Widget } from '@ui/components/Widget'
 import { useStorageStats } from '../hooks/useDashboardStats'
 
-/**
- * Human-readable byte formatter — drops decimals for B/KB/MB and keeps
- * one significant decimal for GB/TB so values like "1.4 GB" read
- * naturally. Matches the formatter in `MediaWidget.tsx` so users see
- * the same units across both tiles.
- */
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
-}
-
 function dialectLabel(dialect: 'sqlite' | 'postgres'): string {
   return dialect === 'postgres' ? 'Postgres' : 'SQLite'
 }
 
 export function StorageWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const stats = useStorageStats()
   return (
     <Widget
       widgetId="storage"
-      title="Storage"
+      title={t('dashboard.widgets.storage.name')}
       icon={DatabaseSolidIcon}
       tint="sky"
       span={span}
@@ -58,8 +47,8 @@ export function StorageWidget({ span, editing }: DashboardWidgetRendererProps) {
       {stats && (
         <>
           <StatValue
-            value={formatSize(stats.totalBytes)}
-            sub={<span>used · {dialectLabel(stats.dialect)} · self-hosted</span>}
+            value={formatBytes(stats.totalBytes)}
+            sub={<span>{t('dashboard.storage.used', { database: dialectLabel(stats.dialect) })}</span>}
           />
           {/* The breakdown bar is given `total = totalBytes` so the
               segments stretch to fill the entire width — with no quota
@@ -72,33 +61,33 @@ export function StorageWidget({ span, editing }: DashboardWidgetRendererProps) {
           <StackedBar
             segments={[
               {
-                label: 'Images',
+                label: t('dashboard.storage.images'),
                 value: stats.imageBytes,
                 color: 'var(--accent-4)',
               },
               {
-                label: 'Videos',
+                label: t('dashboard.storage.videos'),
                 value: stats.videoBytes,
                 color: 'var(--accent-2)',
               },
               {
-                label: 'Documents',
+                label: t('dashboard.storage.documents'),
                 value: stats.documentBytes,
                 color: 'var(--accent-5)',
               },
               {
-                label: 'Plugins',
+                label: t('dashboard.storage.plugins'),
                 value: stats.pluginBytes,
                 color: 'var(--accent-1)',
               },
               {
-                label: 'Database',
+                label: t('dashboard.storage.database'),
                 value: stats.databaseBytes,
                 color: 'var(--accent-3)',
               },
             ]}
             total={stats.totalBytes > 0 ? stats.totalBytes : 1}
-            formatValue={(value) => formatSize(value)}
+            formatValue={(value) => formatBytes(value)}
           />
         </>
       )}

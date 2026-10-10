@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import {
   DndContext,
   PointerSensor,
@@ -146,13 +147,14 @@ export function AdminCanvasEditorBody({
 }
 
 function ImportHtmlModalLoading() {
+  const { t } = useI18n()
   const closeModal = useEditorStore((s) => s.closeImportHtmlModal)
 
   return (
     <Dialog
       open={true}
       onClose={closeModal}
-      title="Import HTML"
+      title={t('shell.copy.importHTML')}
       eyebrow="Instatic"
       size="lg"
       className={styles.importHtmlLoadingDialog}
@@ -160,18 +162,18 @@ function ImportHtmlModalLoading() {
       footer={
         <>
           <Button variant="secondary" type="button" onClick={closeModal}>
-            Cancel
+            {t('shell.copy.cancel')}
           </Button>
           <Button variant="primary" type="button" disabled>
-            Insert
+            {t('shell.copy.insert')}
           </Button>
         </>
       }
     >
       <div className={styles.importHtmlLoadingColumns}>
-        <section className={styles.importHtmlLoadingPreviewColumn} aria-label="Tree preview">
+        <section className={styles.importHtmlLoadingPreviewColumn} aria-label={t('shell.copy.treePreview')}>
           <div className={styles.importHtmlLoadingColumnHeader}>
-            <h3 className={styles.importHtmlLoadingColumnTitle}>Tree preview</h3>
+            <h3 className={styles.importHtmlLoadingColumnTitle}>{t('shell.copy.treePreview')}</h3>
           </div>
           <div className={styles.importHtmlPreviewSkeleton} aria-hidden="true">
             <span className={styles.importHtmlPreviewSkeletonSummary} />
@@ -181,7 +183,7 @@ function ImportHtmlModalLoading() {
           </div>
         </section>
 
-        <section className={styles.importHtmlLoadingEditorColumn} aria-label="HTML source">
+        <section className={styles.importHtmlLoadingEditorColumn} aria-label={t('shell.copy.hTMLSource')}>
           <div className={styles.importHtmlLoadingColumnHeader}>
             <h3 className={styles.importHtmlLoadingColumnTitle}>HTML</h3>
           </div>
@@ -195,9 +197,10 @@ function ImportHtmlModalLoading() {
 }
 
 function SiteEditorLoadError({ message }: { message: string }) {
+  const { t } = useI18n()
   return (
     <section className={styles.canvasBootstrapError} role="alert">
-      <h1>Could not load CMS site</h1>
+      <h1>{t('shell.copy.couldNotLoadCMSSite')}</h1>
       <p>{message}</p>
     </section>
   )

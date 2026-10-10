@@ -12,6 +12,7 @@
  * falls back to a "no permission" empty state — same pattern as the
  * existing widgets that gracefully no-op on missing capability.
  */
+import { useI18n, formatCurrency, translate, formatNumber } from '@admin/i18n'
 import { useAsyncResource } from '@admin/lib/useAsyncResource'
 import { ZapSolidIcon } from 'pixel-art-icons/icons/zap-solid'
 import type { DashboardWidgetRendererProps } from '@core/dashboard'
@@ -30,10 +31,7 @@ function startOfMonthIso(): string {
 }
 
 function formatCost(usd: number): string {
-  if (usd === 0) return '$0.00'
-  if (usd < 0.01) return '< $0.01'
-  if (usd < 1) return `$${usd.toFixed(2)}`
-  return `$${usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+  return usd > 0 && usd < 0.01 ? translate('dashboard.ai.lessThan', { cost: formatCurrency(0.01) }) : formatCurrency(usd)
 }
 
 function topScope(data: AiAuditResponse): string | null {
@@ -77,13 +75,14 @@ function useAiUsageThisMonth(): UsageState {
 }
 
 export function AiUsageWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const { data, forbidden } = useAiUsageThisMonth()
   const isLoading = data === null && !forbidden
 
   return (
     <Widget
       widgetId="ai-usage"
-      title="AI usage"
+      title={t('dashboard.widgets.ai-usage.name')}
       icon={ZapSolidIcon}
       tint="lilac"
       span={span}
@@ -92,7 +91,7 @@ export function AiUsageWidget({ span, editing }: DashboardWidgetRendererProps) {
     >
       {forbidden && (
         <p className={styles.feedTime}>
-          You don't have permission to see site-wide AI usage.
+          {t('dashboard.ai.forbidden')}
         </p>
       )}
       {data && (
@@ -101,8 +100,7 @@ export function AiUsageWidget({ span, editing }: DashboardWidgetRendererProps) {
             value={formatCost(data.totals.costUsd)}
             sub={
               <span>
-                {data.totals.chatCount} chats this month
-                {topScope(data) ? ` · top: ${topScope(data)}` : ''}
+                {t(topScope(data) ? 'dashboard.ai.chatsWithScope' : 'dashboard.ai.chats', { count: data.totals.chatCount, number: formatNumber(data.totals.chatCount), scope: topScope(data) ?? '' })}
               </span>
             }
           />
@@ -110,7 +108,7 @@ export function AiUsageWidget({ span, editing }: DashboardWidgetRendererProps) {
             <Sparkline
               data={data.byDay.map((d) => d.costUsd)}
               tint="var(--accent-2)"
-              ariaLabel="AI cost per day this month"
+              ariaLabel={t('dashboard.ai.chart')}
             />
           )}
         </>

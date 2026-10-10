@@ -16,6 +16,14 @@ Every interactive control in `src/admin/` goes through one of these. Bare `<butt
 
 ---
 
+## Localization
+
+Primitive-owned default text and accessible names use `useUiI18n` from `@ui/localization`. The UI context defaults to English and is independent of admin detection/storage. `src/admin/i18n/I18nProvider.tsx` supplies the admin's active locale and catalogs; standalone/module/public use does not inherit the admin locale implicitly.
+
+Caller-owned labels, options, dialog titles, and toast bodies are passed verbatim. Admin callers translate their own host copy through `@admin/i18n`; primitives translate only their defaults. `DateTimePicker` uses the context locale for calendar labels without changing date values. `ErrorBoundary` uses the context directly so captured-error recovery text updates on locale changes.
+
+English defaults live in `src/ui/localization/englishMessages.ts`; Portuguese defaults live in `src/admin/i18n/uiMessages.ts`. Add both entries and extend `src/__tests__/ui/primitiveI18n.test.tsx` when introducing default text. See [internationalization](../features/internationalization.md) for scope and catalog conventions.
+
 ## Primitive catalog
 
 ### Action / interactive

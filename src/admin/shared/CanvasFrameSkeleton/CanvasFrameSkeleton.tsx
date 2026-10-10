@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import type { CSSProperties } from 'react'
 import type { Breakpoint } from '@core/page-tree'
 import { Skeleton, SkeletonCircle } from '@ui/components/Skeleton'
@@ -41,13 +42,14 @@ export function CanvasFrameSkeletonFrame({
 }
 
 export function CanvasFrameSkeleton({ breakpointId }: CanvasFrameSkeletonProps) {
+  const { t } = useI18n()
   return (
     <div
       className={styles.skeleton}
       data-testid={`canvas-frame-skeleton-${breakpointId}`}
       role="status"
       aria-busy="true"
-      aria-label={`Loading ${breakpointId} canvas frame`}
+      aria-label={t('shell.canvas.loadingFrame', { breakpoint: breakpointId })}
     >
       <div className={styles.chrome} aria-hidden="true">
         <SkeletonCircle size={22} />

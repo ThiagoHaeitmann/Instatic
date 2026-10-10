@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import type { PanelResizeHandleProps } from './useResizablePanel'
 import styles from './PanelResizeHandle.module.css'
 
@@ -11,14 +12,15 @@ export function PanelResizeHandle({
   panelLabel,
   resizeHandleProps,
 }: ResizeHandleProps) {
+  const { t } = useI18n()
   return (
     <div
       {...resizeHandleProps}
       role="separator"
-      aria-label={`Resize ${panelLabel} panel`}
+      aria-label={t('shell.panel.resize', { label: panelLabel })}
       tabIndex={0}
       className={styles.handle}
-      title={`Resize ${panelLabel} panel`}
+      title={t('shell.panel.resize', { label: panelLabel })}
     />
   )
 }

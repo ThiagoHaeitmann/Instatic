@@ -1,3 +1,4 @@
+import { useUiI18n } from '@ui/localization'
 import { type InputHTMLAttributes, type Ref } from "react";
 import { Button } from "@ui/components/Button";
 import { Input } from "@ui/components/Input";
@@ -22,11 +23,12 @@ export function SearchBar({
   value,
   onValueChange,
   onClear,
-  clearLabel = "Clear search",
+  clearLabel,
   className,
   ref,
   ...inputProps
 }: SearchBarProps) {
+  const { t } = useUiI18n()
   function handleClear() {
     if (onClear) onClear();
     else onValueChange("");
@@ -53,7 +55,7 @@ export function SearchBar({
           size="xs"
           iconOnly
           onClick={handleClear}
-          aria-label={clearLabel}
+          aria-label={clearLabel ?? t('ui.clearSearch')}
         >
           <CloseIcon size={10} aria-hidden="true" />
         </Button>

@@ -1,3 +1,4 @@
+import { translate, useI18n } from '@admin/i18n'
 /**
  * FrameworkManagerDialog — set the Core Framework to one declarative state.
  *
@@ -44,42 +45,44 @@ interface StateOption {
   destructive?: boolean
 }
 
-const STATES: readonly StateOption[] = [
-  {
-    id: 'full',
-    title: 'Full framework',
-    desc: 'Utility classes + variables. The complete Core Framework, ready to use on the canvas.',
-    icon: CodeIcon,
-    bullets: [
-      'Color, text & spacing utility classes',
-      ':root variables for every token',
-      'Whole utility set shipped in framework.css',
-    ],
-  },
-  {
-    id: 'variables',
-    title: 'Variables only',
-    desc: 'Just the :root custom properties — bring your own classes and CSS.',
-    icon: SlidersHorizontalIcon,
-    bullets: [
-      ':root variables for every token',
-      'Shades, tints & transparent steps',
-      'No generated utility classes',
-    ],
-  },
-  {
-    id: 'none',
-    title: 'None',
-    desc: 'Remove the Core Framework entirely — every variable and generated class.',
-    icon: TrashSolidIcon,
-    destructive: true,
-    bullets: [
-      'No :root framework variables',
-      'No generated utility classes',
-      'Your own styles stay untouched',
-    ],
-  },
-]
+function frameworkStates(): readonly StateOption[] {
+  return [
+    {
+      id: 'full',
+      title: translate('shell.copy.fullFramework'),
+      desc: translate('shell.copy.utilityClassesVariablesTheCompleteCoreFrameworkReadyToUse'),
+      icon: CodeIcon,
+      bullets: [
+        translate('shell.copy.colorTextSpacingUtilityClasses'),
+        translate('shell.copy.rootVariablesForEveryToken'),
+        translate('shell.copy.wholeUtilitySetShippedInFrameworkCss'),
+      ],
+    },
+    {
+      id: 'variables',
+      title: translate('shell.copy.variablesOnly'),
+      desc: translate('shell.copy.justTheRootCustomPropertiesBringYourOwnClassesAnd'),
+      icon: SlidersHorizontalIcon,
+      bullets: [
+        translate('shell.copy.rootVariablesForEveryToken'),
+        translate('shell.copy.shadesTintsTransparentSteps'),
+        translate('shell.copy.noGeneratedUtilityClasses'),
+      ],
+    },
+    {
+      id: 'none',
+      title: translate('shell.copy.none'),
+      desc: translate('shell.copy.removeTheCoreFrameworkEntirelyEveryVariableAndGeneratedClass'),
+      icon: TrashSolidIcon,
+      destructive: true,
+      bullets: [
+        translate('shell.copy.noRootFrameworkVariables'),
+        translate('shell.copy.noGeneratedUtilityClasses'),
+        translate('shell.copy.yourOwnStylesStayUntouched'),
+      ],
+    },
+  ]
+}
 
 interface FrameworkManagerDialogProps {
   open: boolean
@@ -107,6 +110,7 @@ export function FrameworkManagerDialog({
   initialTarget = currentState,
   onApplied,
 }: FrameworkManagerDialogProps) {
+  const { t } = useI18n()
   // Preselect `initialTarget` (defaults to the current state, not a fixed value).
   const [target, setTarget] = useState<FrameworkPreset>(initialTarget)
   const [busy, setBusy] = useState(false)
@@ -139,8 +143,8 @@ export function FrameworkManagerDialog({
         console.error('[FrameworkManagerDialog] apply failed:', err)
         pushToast({
           kind: 'error',
-          title: 'Could not update the framework',
-          body: getErrorMessage(err, 'Unknown framework error'),
+          title: t('shell.copy.couldNotUpdateTheFramework'),
+          body: getErrorMessage(err, t('shell.copy.unknownFrameworkError')),
         })
       } finally {
         setBusy(false)
@@ -169,52 +173,49 @@ export function FrameworkManagerDialog({
   // (e.g. colors you never added), so it stays actionable.
   const nothingToDo = removing && currentState === 'none'
 
-  const visibleStates = STATES.filter(
+  const visibleStates = frameworkStates().filter(
     (option) => option.id !== 'none' || applier.capabilities.canRemove,
   )
 
   function confirmActionLabel(): string {
-    if (target === 'none') return 'Remove framework'
-    if (target === 'variables') return 'Switch to variables'
-    return 'Update framework'
+    if (target === 'none') return t('shell.copy.removeFramework')
+    if (target === 'variables') return t('shell.copy.switchToVariables')
+    return t('shell.copy.updateFramework')
   }
 
   function applyLabel(): string {
-    if (busy) return removing ? 'Removing…' : 'Applying…'
-    if (nothingToDo) return 'Up to date'
-    if (removing) return 'Remove framework'
-    if (currentState === 'none') return 'Import framework'
-    if (sameState) return 'Add missing tokens'
-    return 'Update framework'
+    if (busy) return removing ? t('shell.copy.removing') : t('shell.copy.applying')
+    if (nothingToDo) return t('shell.copy.upToDate')
+    if (removing) return t('shell.copy.removeFramework')
+    if (currentState === 'none') return t('shell.copy.importFramework')
+    if (sameState) return t('shell.copy.addMissingTokens')
+    return t('shell.copy.updateFramework')
   }
 
   return (
     <Dialog
       open={open}
       onClose={requestClose}
-      eyebrow="Core Framework"
-      title={hasFramework ? 'Manage the framework' : 'Import the framework'}
+      eyebrow={t('shell.copy.coreFramework')}
+      title={hasFramework ? t('shell.copy.manageTheFramework') : t('shell.copy.importTheFramework')}
       size="2xl"
       initialFocusRef={applyButtonRef}
       closeOnBackdrop={!busy}
       closeOnEscape={!busy}
       footer={
         <Button variant="ghost" onClick={requestClose} disabled={busy}>
-          Close
+          {t('shell.copy.close')}
         </Button>
       }
     >
       <p className={styles.lede}>
-        Seed your design tokens from the Core Framework defaults — colors, a
-        fluid type scale, a spacing scale, and their utility classes. Pick the
-        state you want; switching adds what's missing and strips what the new
-        state drops.
+        {t('shell.copy.seedYourDesignTokensFromTheCoreFrameworkDefaultsColors')}
       </p>
 
       <div
         className={styles.options}
         role="radiogroup"
-        aria-label="Framework state"
+        aria-label={t('shell.copy.frameworkState')}
         style={{ '--option-count': visibleStates.length } as CSSProperties}
       >
         {visibleStates.map((option) => {

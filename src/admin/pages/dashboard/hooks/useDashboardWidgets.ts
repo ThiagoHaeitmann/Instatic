@@ -8,11 +8,14 @@
  * can reason about it without dragging React along; only the React
  * subscription hook is admin-shell-local.
  */
+import { useI18n } from '@admin/i18n'
 import { useSyncExternalStore } from 'react'
 import { dashboardWidgetRegistry } from '@core/dashboard'
 import type { DashboardWidgetDefinition } from '@core/dashboard'
 
 export function useDashboardWidgets(): readonly DashboardWidgetDefinition[] {
+  // Locale changes must re-render consumers even when the registry is unchanged.
+  useI18n()
   return useSyncExternalStore(
     dashboardWidgetRegistry.subscribe.bind(dashboardWidgetRegistry),
     dashboardWidgetRegistry.list.bind(dashboardWidgetRegistry),

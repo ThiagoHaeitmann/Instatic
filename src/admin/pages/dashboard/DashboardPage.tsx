@@ -36,6 +36,7 @@
  * Routes into the editor through the existing soft-nav helpers so the
  * Site editor's heavy bundle doesn't load on the dashboard.
  */
+import { useI18n, formatNumber } from '@admin/i18n'
 import { useEffect, useRef, useState } from 'react'
 import {
   DndContext,
@@ -69,6 +70,7 @@ import {
   type DashboardItem,
 } from './hooks/useDashboardLayout'
 import { useDashboardWidgets } from './hooks/useDashboardWidgets'
+import { useDashboardDndAccessibility } from './hooks/useDashboardDndAccessibility'
 import { useOnboardingState } from './hooks/useOnboardingState'
 import { registerFirstPartyDashboardWidgets } from './widgets'
 import { OnboardingPanel } from './components/OnboardingPanel'
@@ -119,14 +121,9 @@ const PROXIMITY_MIN_SCALE = 0.32
  */
 const PILL_FOOTPRINT_PX = 72
 
-function greetingFor(displayName: string | null | undefined): string {
-  const hour = new Date().getHours()
-  const time = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
-  const name = displayName?.split(' ')[0] ?? 'there'
-  return `Good ${time}, ${name}.`
-}
 
 export function DashboardPage() {
+  const { t } = useI18n()
   const currentUser = useAuthenticatedAdminUser()
   const navigate = useAdminNavigate()
   const widgets = useDashboardWidgets()
@@ -288,6 +285,8 @@ export function DashboardPage() {
     const active = new Set(layout.items.map((i) => i.id))
     return widgets.filter((w) => !active.has(w.id))
   })()
+
+  const dndAccessibility = useDashboardDndAccessibility(definitionsById)
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id))
@@ -498,23 +497,23 @@ export function DashboardPage() {
   return (
     <AdminPageLayout
       workspace="dashboard"
-      title={greetingFor(currentUser.displayName)}
-      description="Your site at a glance — content, activity, storage and plugins. Configure the grid to surface exactly what you watch."
+      title={t(`dashboard.greeting.${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}${currentUser.displayName ? 'Named' : ''}`, { name: currentUser.displayName?.split(' ')[0] ?? '' })}
+      description={t('dashboard.description')}
       actions={(
         <>
           <Button variant="ghost" size="sm">
-            <ZapSolidIcon size={11} aria-hidden="true" /> Publish all
+            <ZapSolidIcon size={11} aria-hidden="true" /> {t('dashboard.publishAll')}
           </Button>
           <Button variant="primary" onClick={() => navigate('/admin/site')}>
-            <PlusIcon size={12} aria-hidden="true" /> New page
+            <PlusIcon size={12} aria-hidden="true" /> {t('dashboard.newPage')}
           </Button>
         </>
       )}
     >
       <div className={styles.crumbs}>
-        <span>Admin</span>
+        <span>{t('dashboard.admin')}</span>
         <ChevronRightIcon size={9} aria-hidden="true" />
-        <span className={styles.crumbsCurrent}>Dashboard</span>
+        <span className={styles.crumbsCurrent}>{t('dashboard.title')}</span>
       </div>
 
       {mounted && showOnboarding && (
@@ -523,22 +522,22 @@ export function DashboardPage() {
 
       <div className={styles.gridHeader}>
         <div className={styles.gridHeaderLeft}>
-          <h2>Overview</h2>
+          <h2>{t('dashboard.overview')}</h2>
           <span className={styles.gridCount}>
-            {String(visibleItems.length).padStart(2, '0')} blocks
+            {t('dashboard.blocks', { count: visibleItems.length, number: formatNumber(visibleItems.length, { minimumIntegerDigits: 2 }) })}
           </span>
         </div>
         <div className={styles.gridHeaderRight}>
           <RangeTabs<RangeKey>
             value={range}
             options={[
-              { value: 'today', label: 'Today' },
-              { value: '7d', label: '7d' },
-              { value: '30d', label: '30d' },
-              { value: 'all', label: 'All' },
+              { value: 'today', label: t('dashboard.today') },
+              { value: '7d', label: t('dashboard.sevenDays') },
+              { value: '30d', label: t('dashboard.thirtyDays') },
+              { value: 'all', label: t('dashboard.all') },
             ]}
             onChange={setRange}
-            ariaLabel="Time range"
+            ariaLabel={t('dashboard.timeRange')}
           />
           <Button
             variant="secondary"
@@ -547,16 +546,17 @@ export function DashboardPage() {
             pressed={editing}
           >
             <LayoutSolidIcon size={11} aria-hidden="true" />
-            {editing ? 'Done' : 'Customize'}
+            {editing ? t('dashboard.done') : t('dashboard.customize')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setLibraryOpen(true)}>
-            <PlusIcon size={11} aria-hidden="true" /> Add block
+            <PlusIcon size={11} aria-hidden="true" /> {t('dashboard.addBlock')}
           </Button>
         </div>
       </div>
 
       <DndContext
         sensors={sensors}
+        accessibility={dndAccessibility}
         onDragStart={handleDragStart}
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
@@ -636,8 +636,8 @@ export function DashboardPage() {
           reconciliation pass. */}
       {mounted && <FloatingActionBar
         open={editing && !libraryOpen && activeId === null}
-        ariaLabel="Customize dashboard"
-        label={<><strong>Customize mode</strong> — drag, resize, or add blocks.</>}
+        ariaLabel={t('dashboard.customizeDashboard')}
+        label={<>{t('dashboard.customizeHint')}</>}
       >
         <Button
           variant="ghost"
@@ -645,7 +645,7 @@ export function DashboardPage() {
           shape="pill"
           onClick={() => setLibraryOpen(true)}
         >
-          <PlusIcon size={11} aria-hidden="true" /> Add block
+          <PlusIcon size={11} aria-hidden="true" /> {t('dashboard.addBlock')}
         </Button>
         <Button
           variant="ghost"
@@ -653,7 +653,7 @@ export function DashboardPage() {
           shape="pill"
           onClick={() => setEditing(false)}
         >
-          Done
+          {t('dashboard.done')}
         </Button>
       </FloatingActionBar>}
     </AdminPageLayout>

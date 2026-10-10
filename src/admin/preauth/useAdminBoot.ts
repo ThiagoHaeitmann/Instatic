@@ -9,6 +9,7 @@ import {
   type CmsSetupStatus,
 } from '@core/persistence/auth'
 import { getErrorMessage } from '@core/utils/errorMessage'
+import { translate } from '@admin/i18n'
 
 /**
  * Pre-flighted boot probes (see server/static.ts `BOOT_API_KICKOFF`).
@@ -146,7 +147,7 @@ export function useAdminBoot(): AdminBootResult {
       } catch (err) {
         if (cancelled) return
         flushSync(() => {
-          setInitialError(getErrorMessage(err, 'CMS is unavailable'))
+          setInitialError(getErrorMessage(err, translate('auth.boot.unavailable')))
           setPhase('login')
           setStatus('ready')
         })

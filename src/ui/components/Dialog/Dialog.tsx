@@ -33,6 +33,7 @@
  *   • Focus is captured on mount; first focusable element inside is focused
  *   • Focus is restored to the previously-focused element on close
  */
+import { useUiI18n } from '@ui/localization'
 import {
   useEffect,
   useId,
@@ -131,6 +132,7 @@ export function Dialog({
   initialFocusRef,
   ref,
 }: DialogProps) {
+  const { t } = useUiI18n()
   const titleId = useId()
   const descId = useId()
   const dialogRef = useRef<HTMLDivElement | null>(null)
@@ -220,7 +222,7 @@ export function Dialog({
               iconOnly
               type="button"
               onClick={onClose}
-              aria-label="Close dialog"
+              aria-label={t('ui.closeDialog')}
             >
               <CloseIcon size={14} aria-hidden="true" />
             </Button>

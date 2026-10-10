@@ -1,3 +1,4 @@
+import { formatNumber, translate, useI18n } from '@admin/i18n'
 /**
  * FrameworkChangeConfirmDialog — confirmation prompt shown before a
  * destructive framework change (disable token, disable shades/tints,
@@ -40,6 +41,7 @@ export function FrameworkChangeConfirmDialog({
   onCancel,
   onConfirm,
 }: FrameworkChangeConfirmDialogProps) {
+  const { t } = useI18n()
   const confirmRef = useRef<HTMLButtonElement>(null)
 
   // Group usages by classId so the body lists "<class> — N place(s)"
@@ -60,7 +62,7 @@ export function FrameworkChangeConfirmDialog({
       footer={
         <>
           <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
-            Cancel
+            {t('shell.copy.cancel')}
           </Button>
           <Button
             ref={confirmRef}
@@ -75,18 +77,10 @@ export function FrameworkChangeConfirmDialog({
       }
     >
       <p className={styles.summary}>
-        <span className={styles.summaryStrong}>{removedInUseCount}</span>
-        {' '}
-        generated {removedInUseCount === 1 ? 'class is' : 'classes are'} still
-        assigned to{' '}
-        <span className={styles.summaryStrong}>{totalUsages}</span>
-        {' '}
-        {totalUsages === 1 ? 'element' : 'elements'}.
+        {t('shell.framework.summary', { count: removedInUseCount, classes: formatNumber(removedInUseCount), elements: t('shell.framework.elements', { count: totalUsages, countLabel: formatNumber(totalUsages) }) })}
       </p>
       <p className={styles.subline}>
-        Proceeding will remove the {removedInUseCount === 1 ? 'class' : 'classes'} from
-        every element below. The {removedInUseCount === 1 ? 'class itself' : 'classes themselves'} will
-        be deleted from the site.
+        {t('shell.framework.removal', { count: removedInUseCount })}
       </p>
 
       {grouped.map((group) => (
@@ -94,10 +88,10 @@ export function FrameworkChangeConfirmDialog({
           <div className={styles.classHeader}>
             <span className={styles.classSelector}>.{group.className}</span>
             <span className={styles.classCount}>
-              {group.usages.length === 1 ? '1 use' : `${group.usages.length} uses`}
+              {t('shell.framework.uses', { count: group.usages.length, countLabel: formatNumber(group.usages.length) })}
             </span>
           </div>
-          <ul className={styles.usageList} aria-label={`Uses of .${group.className}`}>
+          <ul className={styles.usageList} aria-label={t('shell.framework.usesOf', { name: group.className })}>
             {group.usages.map((usage) => (
               <li key={usageKey(usage)} className={styles.usageItem}>
                 <span className={styles.usageScope}>
@@ -143,7 +137,7 @@ function groupUsagesByClass(usages: FrameworkClassUsageRef[]): GroupedUsage[] {
 function usageScopeLabel(usage: FrameworkClassUsageRef): string {
   return usage.source.kind === 'page'
     ? usage.source.pageTitle
-    : `Component · ${usage.source.vcName}`
+    : translate('shell.framework.component', { name: usage.source.vcName })
 }
 
 function usageKey(usage: FrameworkClassUsageRef): string {

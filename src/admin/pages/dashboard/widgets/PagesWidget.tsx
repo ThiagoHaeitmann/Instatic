@@ -9,6 +9,7 @@
  * skeleton body until `stats` resolves; we gate the real children on
  * `stats &&` so they never see a null value.
  */
+import { useI18n, formatNumber } from '@admin/i18n'
 import { FileTextSolidIcon } from 'pixel-art-icons/icons/file-text-solid'
 import { StatValue, Delta } from '@ui/components/charts'
 import type { DashboardWidgetRendererProps } from '@core/dashboard'
@@ -17,11 +18,12 @@ import { usePagesStats } from '../hooks/useDashboardStats'
 import styles from './widgets.module.css'
 
 export function PagesWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const stats = usePagesStats()
   return (
     <Widget
       widgetId="pages"
-      title="Pages"
+      title={t('dashboard.widgets.pages.name')}
       icon={FileTextSolidIcon}
       tint="lilac"
       span={span}
@@ -31,19 +33,19 @@ export function PagesWidget({ span, editing }: DashboardWidgetRendererProps) {
       {stats && (
         <>
           <StatValue
-            value={stats.published.toLocaleString()}
+            value={formatNumber(stats.published)}
             sub={(
               <>
-                <span>Published</span>
+                <span>{t('dashboard.pages.published')}</span>
                 {stats.deltaPublishedThisWeek > 0 && (
-                  <Delta>+{stats.deltaPublishedThisWeek} this week</Delta>
+                  <Delta>{t('dashboard.pages.week', { number: formatNumber(stats.deltaPublishedThisWeek) })}</Delta>
                 )}
               </>
             )}
           />
           <div className={styles.subFootRow}>
-            <span>{stats.drafts} draft{stats.drafts === 1 ? '' : 's'}</span>
-            <span>{stats.scheduled} scheduled</span>
+            <span>{t('dashboard.pages.drafts', { count: stats.drafts, number: formatNumber(stats.drafts) })}</span>
+            <span>{t('dashboard.pages.scheduled', { number: formatNumber(stats.scheduled) })}</span>
           </div>
         </>
       )}

@@ -1,3 +1,4 @@
+import { translate } from '@admin/i18n'
 /**
  * Capability presentation metadata — the human-readable label + description
  * rendered next to each capability checkbox so admins don't have to decode raw
@@ -18,179 +19,179 @@ export interface CapabilityMeta {
 
 export const CAPABILITY_META: Record<CoreCapability, CapabilityMeta> = {
   'dashboard.read': {
-    label: 'View dashboard',
-    description: 'Open the Dashboard workspace and see activity widgets.',
+    get label() { return translate('shell.copy.viewDashboard') },
+    get description() { return translate('shell.copy.openTheDashboardWorkspaceAndSeeActivityWidgets') },
   },
   'site.read': {
-    label: 'View site',
-    description: 'Open the Site workspace; view pages, components, and classes.',
+    get label() { return translate('shell.copy.viewSite') },
+    get description() { return translate('shell.copy.openTheSiteWorkspaceViewPagesComponentsAndClasses') },
   },
   'site.structure.edit': {
-    label: 'Edit site structure',
-    description: 'Add, remove, move, and rename nodes; manage pages, components, and classes.',
+    get label() { return translate('shell.copy.editSiteStructure') },
+    get description() { return translate('shell.copy.addRemoveMoveAndRenameNodesManagePagesComponentsAnd') },
   },
   'site.content.edit': {
-    label: 'Edit site content',
-    description: 'Change text, images, and links on existing nodes — no structure or style changes.',
+    get label() { return translate('shell.copy.editSiteContent') },
+    get description() { return translate('shell.copy.changeTextImagesAndLinksOnExistingNodesNoStructure') },
   },
   'site.style.edit': {
-    label: 'Edit site styles',
-    description: 'Modify CSS classes, style overrides, breakpoints, and framework tokens.',
+    get label() { return translate('shell.copy.editSiteStyles') },
+    get description() { return translate('shell.copy.modifyCSSClassesStyleOverridesBreakpointsAndFrameworkTokens') },
   },
   'site.branches.create': {
-    label: 'Create branches',
-    description: 'Fork a branch, and rename, delete, update, or share a preview link for the branches you created.',
+    get label() { return translate('shell.copy.createBranches') },
+    get description() { return translate('shell.copy.forkABranchAndRenameDeleteUpdateOrShareA') },
   },
   'site.branches.manage': {
-    label: 'Manage branches',
-    description: 'Act on every branch, merge branches into main, and decline merge requests. Does not fork on its own.',
+    get label() { return translate('shell.copy.manageBranches') },
+    get description() { return translate('shell.copy.actOnEveryBranchMergeBranchesIntoMainAndDecline') },
   },
   'pages.edit': {
-    label: 'Edit pages',
-    description: 'Edit page metadata such as title, slug, and SEO fields.',
+    get label() { return translate('shell.copy.editPages') },
+    get description() { return translate('shell.copy.editPageMetadataSuchAsTitleSlugAndSEOFields') },
   },
   'pages.publish': {
-    label: 'Publish pages',
-    description: 'Publish or unpublish pages to the live site.',
+    get label() { return translate('shell.copy.publishPages') },
+    get description() { return translate('shell.copy.publishOrUnpublishPagesToTheLiveSite') },
   },
   'content.create': {
-    label: 'Create content',
-    description: 'Create new draft posts and content rows.',
+    get label() { return translate('shell.copy.createContent') },
+    get description() { return translate('shell.copy.createNewDraftPostsAndContentRows') },
   },
   'content.edit.own': {
-    label: 'Edit own content',
-    description: 'Edit posts and rows that you authored.',
+    get label() { return translate('shell.copy.editOwnContent') },
+    get description() { return translate('shell.copy.editPostsAndRowsThatYouAuthored') },
   },
   'content.edit.any': {
-    label: 'Edit any content',
-    description: 'Edit posts and rows authored by anyone.',
+    get label() { return translate('shell.copy.editAnyContent') },
+    get description() { return translate('shell.copy.editPostsAndRowsAuthoredByAnyone') },
   },
   'content.publish.own': {
-    label: 'Publish own content',
-    description: 'Publish posts and rows that you authored.',
+    get label() { return translate('shell.copy.publishOwnContent') },
+    get description() { return translate('shell.copy.publishPostsAndRowsThatYouAuthored') },
   },
   'content.publish.any': {
-    label: 'Publish any content',
-    description: 'Publish posts and rows authored by anyone.',
+    get label() { return translate('shell.copy.publishAnyContent') },
+    get description() { return translate('shell.copy.publishPostsAndRowsAuthoredByAnyone') },
   },
   'content.manage': {
-    label: 'Manage content',
-    description: 'Full admin: manage every content row regardless of author.',
+    get label() { return translate('shell.copy.manageContent') },
+    get description() { return translate('shell.copy.fullAdminManageEveryContentRowRegardlessOfAuthor') },
   },
   // ---------------------------------------------------------------------
   // Media — granular split (read/write/replace/delete)
   // ---------------------------------------------------------------------
   'media.read': {
-    label: 'Browse media library',
-    description: 'Open the Media workspace, browse assets and folders, see thumbnails in pickers.',
+    get label() { return translate('shell.copy.browseMediaLibrary') },
+    get description() { return translate('shell.copy.openTheMediaWorkspaceBrowseAssetsAndFoldersSeeThumbnails') },
   },
   'media.write': {
-    label: 'Upload and edit media',
-    description: 'Upload assets, edit metadata (alt text, caption, tags), manage folders, restore from trash.',
+    get label() { return translate('shell.copy.uploadAndEditMedia') },
+    get description() { return translate('shell.copy.uploadAssetsEditMetadataAltTextCaptionTagsManageFolders') },
   },
   'media.replace': {
-    label: 'Replace media bytes',
-    description: 'Overwrite the bytes of an existing asset (variants regenerate). Uniquely powerful — silently swaps the file every reference points at.',
+    get label() { return translate('shell.copy.replaceMediaBytes') },
+    get description() { return translate('shell.copy.overwriteTheBytesOfAnExistingAssetVariantsRegenerateUniquely') },
   },
   'media.delete': {
-    label: 'Delete media',
-    description: 'Soft-delete assets to trash; hard-purge (also requires step-up) removes the bytes from disk.',
+    get label() { return translate('shell.copy.deleteMedia') },
+    get description() { return translate('shell.copy.softDeleteAssetsToTrashHardPurgeAlsoRequiresStep') },
   },
   // ---------------------------------------------------------------------
   // Runtime + storage — split from the old monolithic `runtime.manage`
   // ---------------------------------------------------------------------
   'runtime.dependencies': {
-    label: 'Manage runtime dependencies',
-    description: 'Edit the site’s package.json dependencies and trigger resolve/install.',
+    get label() { return translate('shell.copy.manageRuntimeDependencies') },
+    get description() { return translate('shell.copy.editTheSiteSPackageJsonDependenciesAndTriggerResolve') },
   },
   'storage.elect': {
-    label: 'Elect storage backends',
-    description: 'Elect the media storage adapter per asset role (originals / variants / avatars / fonts) and the variant delegate.',
+    get label() { return translate('shell.copy.electStorageBackends') },
+    get description() { return translate('shell.copy.electTheMediaStorageAdapterPerAssetRoleOriginalsVariants') },
   },
   'storage.migrate': {
-    label: 'Migrate storage bytes',
-    description: 'Run the migration SSE that moves bytes between storage adapters after an election change.',
+    get label() { return translate('shell.copy.migrateStorageBytes') },
+    get description() { return translate('shell.copy.runTheMigrationSSEThatMovesBytesBetweenStorageAdapters') },
   },
   // ---------------------------------------------------------------------
   // Plugins — granular split (read/configure/install/lifecycle)
   // ---------------------------------------------------------------------
   'plugins.read': {
-    label: 'Browse installed plugins',
-    description: 'See the installed plugin list, masked settings, schedules, and event stream.',
+    get label() { return translate('shell.copy.browseInstalledPlugins') },
+    get description() { return translate('shell.copy.seeTheInstalledPluginListMaskedSettingsSchedulesAndEvent') },
   },
   'plugins.configure': {
-    label: 'Configure plugins',
-    description: 'Edit per-plugin settings and manage plugin-owned records.',
+    get label() { return translate('shell.copy.configurePlugins') },
+    get description() { return translate('shell.copy.editPerPluginSettingsAndManagePluginOwnedRecords') },
   },
   'plugins.install': {
-    label: 'Install or uninstall plugins',
-    description: 'Install, upgrade, and uninstall plugins. Runs third-party code on the host — RCE-class. Step-up gated.',
+    get label() { return translate('shell.copy.installOrUninstallPlugins') },
+    get description() { return translate('shell.copy.installUpgradeAndUninstallPluginsRunsThirdPartyCodeOn') },
   },
   'plugins.lifecycle': {
-    label: 'Plugin lifecycle control',
-    description: 'Enable, disable, restart plugins. Pause/resume/run-now their schedules. Step-up gated.',
+    get label() { return translate('shell.copy.pluginLifecycleControl') },
+    get description() { return translate('shell.copy.enableDisableRestartPluginsPauseResumeRunNowTheirSchedules') },
   },
   'users.manage': {
-    label: 'Manage users',
-    description: 'Create, edit, delete, and suspend users; assign roles.',
+    get label() { return translate('shell.copy.manageUsers') },
+    get description() { return translate('shell.copy.createEditDeleteAndSuspendUsersAssignRoles') },
   },
   'roles.manage': {
-    label: 'Manage roles',
-    description: 'Owner account only. Create, edit, and delete roles; assign capabilities to roles.',
+    get label() { return translate('shell.copy.manageRoles') },
+    get description() { return translate('shell.copy.ownerAccountOnlyCreateEditAndDeleteRolesAssignCapabilities') },
   },
   'audit.read': {
-    label: 'Read audit log',
-    description: 'View the audit log and the Dashboard activity widget.',
+    get label() { return translate('shell.copy.readAuditLog') },
+    get description() { return translate('shell.copy.viewTheAuditLogAndTheDashboardActivityWidget') },
   },
   // ---------------------------------------------------------------------
   // Data workspace — split from `content.manage`
   // ---------------------------------------------------------------------
   'data.custom.tables.read': {
-    label: 'Browse custom tables',
-    description: 'Open the Data workspace; browse user-created (custom) tables and their field schemas. Does not reveal the internal system tables.',
+    get label() { return translate('shell.copy.browseCustomTables') },
+    get description() { return translate('shell.copy.openTheDataWorkspaceBrowseUserCreatedCustomTablesAnd') },
   },
   'data.custom.tables.manage': {
-    label: 'Manage custom tables',
-    description: 'Create, rename, and delete custom tables; add/edit/remove their fields and route bases.',
+    get label() { return translate('shell.copy.manageCustomTables') },
+    get description() { return translate('shell.copy.createRenameAndDeleteCustomTablesAddEditRemoveTheir') },
   },
   'data.system.tables.read': {
-    label: 'Browse system tables',
-    description: 'See and open the four built-in system tables (Posts, Pages, Components, Layouts) in the Data workspace.',
+    get label() { return translate('shell.copy.browseSystemTables') },
+    get description() { return translate('shell.copy.seeAndOpenTheFourBuiltInSystemTablesPosts') },
   },
   'data.system.tables.manage': {
-    label: 'Manage system-table custom fields',
-    description: 'On system tables: add/edit/remove custom fields and choose the primary field. Built-in fields and the table identity (name, slug, route) stay locked.',
+    get label() { return translate('shell.copy.manageSystemTableCustomFields') },
+    get description() { return translate('shell.copy.onSystemTablesAddEditRemoveCustomFieldsAndChoose') },
   },
   'data.rows.move': {
-    label: 'Move rows between tables',
-    description: 'Move a row from one table to another (changes public URL because route base differs per table).',
+    get label() { return translate('shell.copy.moveRowsBetweenTables') },
+    get description() { return translate('shell.copy.moveARowFromOneTableToAnotherChangesPublic') },
   },
   'data.export': {
-    label: 'Export data bundles',
-    description: 'Download a JSON bundle of tables + rows (plus optional media bytes). Includes the import preview dry-run.',
+    get label() { return translate('shell.copy.exportDataBundles') },
+    get description() { return translate('shell.copy.downloadAJSONBundleOfTablesRowsPlusOptionalMedia') },
   },
   'data.import': {
-    label: 'Import data bundles',
-    description: 'Upload a JSON bundle to merge or replace local data. `replace` mode additionally requires Manage content and step-up.',
+    get label() { return translate('shell.copy.importDataBundles') },
+    get description() { return translate('shell.copy.uploadAJSONBundleToMergeOrReplaceLocalData') },
   },
   // ---------------------------------------------------------------------
   // AI runtime — split `ai.use` into chat vs write-tools
   // ---------------------------------------------------------------------
   'ai.chat': {
-    label: 'Use AI chat',
-    description: 'Open AI conversations and use read-only tools (snapshot, search). Cannot mutate state without `Allow AI write tools`.',
+    get label() { return translate('shell.copy.useAIChat') },
+    get description() { return translate('shell.copy.openAIConversationsAndUseReadOnlyToolsSnapshotSearch') },
   },
   'ai.tools.write': {
-    label: 'Allow AI write tools',
-    description: 'Lets AI conversations mutate the editor store (insert nodes, edit props, etc.) via the canvas bridge. Without this, the model has no write tools registered.',
+    get label() { return translate('shell.copy.allowAIWriteTools') },
+    get description() { return translate('shell.copy.letsAIConversationsMutateTheEditorStoreInsertNodesEdit') },
   },
   'ai.providers.manage': {
-    label: 'Manage AI providers',
-    description: 'Configure AI providers, credentials, and per-scope defaults.',
+    get label() { return translate('shell.copy.manageAIProviders') },
+    get description() { return translate('shell.copy.configureAIProvidersCredentialsAndPerScopeDefaults') },
   },
   'ai.audit.read': {
-    label: 'Read AI audit log',
-    description: 'View site-wide AI usage, cost, and error events across all users.',
+    get label() { return translate('shell.copy.readAIAuditLog') },
+    get description() { return translate('shell.copy.viewSiteWideAIUsageCostAndErrorEventsAcross') },
   },
 }
 

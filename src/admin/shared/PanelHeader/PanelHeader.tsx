@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * PanelHeader — shared header for all floating editor panels.
  *
@@ -58,13 +59,14 @@ interface PanelHeaderProps {
 }
 
 export function PanelHeader({ title, titleContent, panelId, onClose, dragHandleProps, children }: PanelHeaderProps) {
+  const { t } = useI18n()
   return (
     <div
       {...dragHandleProps}
       className={styles.header}
       data-draggable={dragHandleProps ? 'true' : 'false'}
       role="toolbar"
-      aria-label={`${title} panel header`}
+      aria-label={t('shell.panel.header', { label: title })}
     >
       <div className={styles.title}>{titleContent ?? title}</div>
 
@@ -81,8 +83,8 @@ export function PanelHeader({ title, titleContent, panelId, onClose, dragHandleP
         size="xs"
         iconOnly
         onClick={onClose}
-        aria-label={`Close ${title} panel`}
-        tooltip={`Close ${title} panel`}
+        aria-label={t('shell.panel.close', { label: title })}
+        tooltip={t('shell.panel.close', { label: title })}
         data-testid={`panel-close-${panelId}`}
       >
         <CloseIcon size={12} color="currentColor" aria-hidden="true" />

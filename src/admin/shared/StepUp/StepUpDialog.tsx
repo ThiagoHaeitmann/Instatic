@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * StepUpDialog — pure presentational dialog used by `StepUpProvider`.
  *
@@ -47,6 +48,7 @@ export function StepUpDialog({
   onSubmit,
   onCancel,
 }: StepUpDialogProps) {
+  const { t } = useI18n()
   const [password, setPassword] = useState('')
   const [mfaCode, setMfaCode] = useState('')
   const titleId = useId()
@@ -97,17 +99,17 @@ export function StepUpDialog({
         className={styles.dialog}
         data-testid="step-up-dialog"
       >
-        <h2 id={titleId} className={styles.title}>Confirm your password</h2>
+        <h2 id={titleId} className={styles.title}>{t('shell.copy.confirmYourPassword')}</h2>
         <p className={styles.body}>
           {reason ?? (
             mfaRequired
-              ? 'This action requires your password and a current authentication code.'
-              : 'This action requires a recent password re-entry. You\'ll stay signed in here.'
+              ? t('shell.copy.thisActionRequiresYourPasswordAndACurrentAuthenticationCode')
+              : t('shell.copy.thisActionRequiresARecentPasswordReEntryYouLl')
           )}
         </p>
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>
-            <label htmlFor={passwordId} className={styles.label}>Password</label>
+            <label htmlFor={passwordId} className={styles.label}>{t('shell.copy.password')}</label>
             <Input
               id={passwordId}
               type="password"
@@ -122,7 +124,7 @@ export function StepUpDialog({
           </div>
           {mfaRequired && (
             <div className={styles.field}>
-              <label htmlFor={mfaCodeId} className={styles.label}>Authentication or recovery code</label>
+              <label htmlFor={mfaCodeId} className={styles.label}>{t('shell.copy.authenticationOrRecoveryCode')}</label>
               <Input
                 id={mfaCodeId}
                 type="text"
@@ -145,7 +147,7 @@ export function StepUpDialog({
               onClick={onCancel}
               data-testid="step-up-cancel"
             >
-              <span>Cancel</span>
+              <span>{t('shell.copy.cancel')}</span>
             </Button>
             <Button
               type="submit"
@@ -154,7 +156,7 @@ export function StepUpDialog({
               disabled={confirmDisabled}
               data-testid="step-up-confirm"
             >
-              <span>{submitting ? 'Confirming…' : 'Confirm'}</span>
+              <span>{submitting ? t('shell.copy.confirming') : t('shell.copy.confirm')}</span>
             </Button>
           </div>
         </form>

@@ -15,7 +15,8 @@ Instatic internationalizes its administration interface independently from site 
 - The selection is validated and stored under `instatic-locale`; storage events synchronize open tabs.
 - Messages support named `{{value}}` interpolation and `Intl.PluralRules` plural categories.
 - Dates, numbers, currency, relative time, lists, and byte sizes use helpers from `@admin/i18n`.
-- This foundation does not localize published site content or every admin workspace; workspace migration is incremental.
+- Admin shell, shared admin controls, authentication, Dashboard, and primitive-owned defaults are localized; other workspace copy is not yet migrated.
+- Shared primitives consume `src/ui/localization/`, with English defaults outside the admin provider; they never initialize admin locale state.
 
 ## Architecture
 
@@ -62,7 +63,9 @@ The stored shape is validated with TypeBox:
 
 ## Messages
 
-English messages in `src/admin/i18n/messages.ts` are the source catalog. Brazilian Portuguese may omit a key while a feature is being migrated; lookup falls back to English.
+`src/admin/i18n/messages.ts` aggregates English and Brazilian Portuguese catalogs with exact key parity. Shell messages live in `shellMessages.ts`, Dashboard messages in `dashboardMessages.ts`, and primitive translations in `uiMessages.ts`; the primitive English source is `src/ui/localization/englishMessages.ts`. Catalogs are data-only and do not import workspace implementations. The runtime retains English fallback behavior for missing translations; parity and interpolation tests prevent missing keys in shipped resources.
+
+Translate host-owned metadata at render/read time, not once at module initialization. First-party Dashboard definitions expose translated name/description getters, and `useDashboardWidgets` subscribes to locale changes without replacing the registry snapshot. Plugin names and descriptions remain author-owned.
 
 Use named interpolation:
 
@@ -78,6 +81,12 @@ Plural messages use locale plural categories:
 ```
 
 Call the base key with a numeric `count`; `Intl.PluralRules` selects the suffix.
+
+## Shared primitive isolation
+
+`src/admin/i18n/I18nProvider.tsx` subscribes to the existing admin runtime and supplies its active catalog and locale through `UiI18nContext` from `src/ui/localization/`. Functional primitives use `useUiI18n`; the class-based `ErrorBoundary` consumes the same context so an already-visible recovery screen updates without retrying the failed child.
+
+Outside this provider, primitives use English defaults and do not read admin storage, attach admin listeners, or change document language. Caller-supplied labels, notification bodies, options, and user/plugin values are preserved. `DateTimePicker` formats its calendar using the context locale while retaining local wall-clock values and Monday-first ordering.
 
 ## Formatting
 
@@ -136,4 +145,8 @@ Do not translate:
   - `src/admin/i18n/I18nProvider.tsx`
   - `src/admin/i18n/LanguageSelector.tsx`
   - `src/admin/main.tsx`
-- Tests: `src/__tests__/admin/i18n.test.tsx`
+- Tests:
+  - `src/__tests__/admin/i18n.test.tsx` — runtime and aggregate catalog parity.
+  - `src/__tests__/admin/shellI18n.test.tsx` — shared shell/authentication controls and metadata.
+  - `src/__tests__/admin/dashboardI18n.test.tsx` — Dashboard widgets, metadata, pluralization, and plugin isolation.
+  - `src/__tests__/ui/primitiveI18n.test.tsx` — primitive defaults, live switching, and standalone isolation.

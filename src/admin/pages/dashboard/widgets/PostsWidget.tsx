@@ -7,6 +7,7 @@
  * Skeleton: `loading={stats === null}` and the Widget primitive
  * handles the rest.
  */
+import { useI18n, formatNumber } from '@admin/i18n'
 import { PenSquareSolidIcon } from 'pixel-art-icons/icons/pen-square-solid'
 import { Bars, StatValue } from '@ui/components/charts'
 import type { DashboardWidgetRendererProps } from '@core/dashboard'
@@ -17,11 +18,12 @@ import { usePostsStats } from '../hooks/useDashboardStats'
 const ACCENT_INDEXES = [22, 23, 24, 25, 26, 27]
 
 export function PostsWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const stats = usePostsStats()
   return (
     <Widget
       widgetId="posts"
-      title="Posts"
+      title={t('dashboard.widgets.posts.name')}
       icon={PenSquareSolidIcon}
       tint="peach"
       span={span}
@@ -31,11 +33,11 @@ export function PostsWidget({ span, editing }: DashboardWidgetRendererProps) {
       {stats && (
         <>
           <StatValue
-            value={stats.total.toLocaleString()}
+            value={formatNumber(stats.total)}
             sub={(
               stats.categories === 0
-                ? <span>Total · no categories yet</span>
-                : <span>Total · {stats.categories} categor{stats.categories === 1 ? 'y' : 'ies'}</span>
+                ? <span>{t('dashboard.posts.noCategories')}</span>
+                : <span>{t('dashboard.posts.categories', { count: stats.categories, number: formatNumber(stats.categories) })}</span>
             )}
           />
           <Bars data={stats.daily28} accentIndexes={ACCENT_INDEXES} />

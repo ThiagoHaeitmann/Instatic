@@ -1,3 +1,4 @@
+import { useUiI18n } from '@ui/localization'
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, type KeyboardEvent, type RefObject } from 'react'
 import { ContextMenu, ContextMenuItem, MenuSearchHeader } from '@ui/components/ContextMenu'
@@ -58,6 +59,7 @@ export function SelectMenu({
   onSelect,
   onClose,
 }: SelectMenuProps) {
+  const { t } = useUiI18n()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const menuElRef = useRef<HTMLDivElement>(null)
 
@@ -94,7 +96,7 @@ export function SelectMenu({
       minWidth={menuSizing.minWidth}
       maxHeight={maxHeight}
       zIndex={10000}
-      ariaLabel={ariaLabel ?? 'Select option'}
+      ariaLabel={ariaLabel ?? t('ui.selectOption')}
       aria-labelledby={ariaLabelledBy}
       role="listbox"
       onClose={onClose}
@@ -112,7 +114,7 @@ export function SelectMenu({
     >
       {options.length === 0 ? (
         <div className={styles.emptyOption} role="presentation">
-          No matches
+          {t('ui.noMatches')}
         </div>
       ) : (
         options.map((option, index) =>

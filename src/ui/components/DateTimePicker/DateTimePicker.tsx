@@ -27,6 +27,7 @@
  * Esc to cancel (consumer wires Esc via the dialog wrapper). The day
  * grid is a proper `role="grid"` with `gridcell` items.
  */
+import { useUiI18n } from '@ui/localization'
 import {
   useEffect,
   useRef,
@@ -45,12 +46,6 @@ import styles from './DateTimePicker.module.css'
 // ---------------------------------------------------------------------------
 // Date math (local time, no library — small surface, easy to maintain)
 // ---------------------------------------------------------------------------
-
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
-const DAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
 /** Days in a 0-indexed month, accounting for leap years on Feb. */
 function daysInMonth(year: number, month: number): number {
@@ -207,8 +202,9 @@ export function DateTimePicker({
   onConfirm,
   onCancel,
   minDate,
-  ariaLabel = 'Date and time picker',
+  ariaLabel,
 }: DateTimePickerProps) {
+  const { locale, t } = useUiI18n()
   const initial = value ?? defaultInitialDate()
 
   // Internal state — confirms commit via `onConfirm`; closing without
@@ -317,13 +313,19 @@ export function DateTimePicker({
     onConfirm(selected)
   }
 
-  const monthLabel = `${MONTH_NAMES[viewMonth]} ${viewYear}`
+  const monthLabel = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(new Date(viewYear, viewMonth, 1))
+  const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'short' })
+  const dayFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'full' })
+  // January 5, 2026 is a Monday; calendar columns remain Monday-first.
+  const dayLabels = Array.from({ length: 7 }, (_, index) =>
+    weekdayFormatter.format(new Date(2026, 0, 5 + index)),
+  )
 
   return (
     <div
       className={styles.root}
       role="dialog"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? t('ui.dateTimePicker.label')}
       // Pre-fill `--current-week-col` so the active week row gets a
       // subtle highlight in CSS. Computed from selected day below.
       style={
@@ -333,13 +335,13 @@ export function DateTimePicker({
       }
     >
       <div className={styles.split}>
-        <section className={styles.calendar} aria-label="Calendar">
+        <section className={styles.calendar} aria-label={t('ui.dateTimePicker.calendar')}>
           <header className={styles.monthHeader}>
             <Button
               variant="ghost"
               size="sm"
               iconOnly
-              aria-label="Previous month"
+              aria-label={t('ui.dateTimePicker.previousMonth')}
               onClick={goPrevMonth}
             >
               <ChevronLeftIcon size={12} aria-hidden="true" />
@@ -349,7 +351,7 @@ export function DateTimePicker({
               variant="ghost"
               size="sm"
               iconOnly
-              aria-label="Next month"
+              aria-label={t('ui.dateTimePicker.nextMonth')}
               onClick={goNextMonth}
             >
               <ChevronRightIcon size={12} aria-hidden="true" />
@@ -357,7 +359,7 @@ export function DateTimePicker({
           </header>
 
           <div className={styles.weekdayRow} aria-hidden="true">
-            {DAY_LABELS.map((label) => (
+            {dayLabels.map((label) => (
               <span key={label} className={styles.weekdayLabel}>{label}</span>
             ))}
           </div>
@@ -366,7 +368,7 @@ export function DateTimePicker({
             ref={gridRef}
             className={styles.dayGrid}
             role="grid"
-            aria-label={`${monthLabel} days`}
+            aria-label={t('ui.dateTimePicker.days', { month: monthLabel })}
             onKeyDown={handleGridKey}
           >
             {cells.map((cell, idx) => {
@@ -393,7 +395,7 @@ export function DateTimePicker({
                     isBeforeMin && styles.dayCellDisabled,
                   )}
                   disabled={isBeforeMin}
-                  aria-label={cell.date.toDateString()}
+                  aria-label={dayFormatter.format(cell.date)}
                   aria-selected={isSelected}
                   onClick={() => handlePickDay(cell)}
                 >
@@ -404,11 +406,13 @@ export function DateTimePicker({
           </div>
         </section>
 
-        <section className={styles.timeColumn} aria-label="Time">
-          <div className={styles.timeLabel}>Time</div>
+        <section className={styles.timeColumn} aria-label={t('ui.dateTimePicker.time')}>
+          <div className={styles.timeLabel}>{t('ui.dateTimePicker.time')}</div>
           <div className={styles.timeSpinners}>
             <TimeSpinner
-              label="Hours"
+              label={t('ui.dateTimePicker.hours')}
+              increaseLabel={t('ui.dateTimePicker.increaseHours')}
+              decreaseLabel={t('ui.dateTimePicker.decreaseHours')}
               value={selected.getHours()}
               onChange={handleHourChange}
               onBump={bumpHour}
@@ -416,35 +420,37 @@ export function DateTimePicker({
             />
             <span className={styles.timeColon} aria-hidden="true">:</span>
             <TimeSpinner
-              label="Minutes"
+              label={t('ui.dateTimePicker.minutes')}
+              increaseLabel={t('ui.dateTimePicker.increaseMinutes')}
+              decreaseLabel={t('ui.dateTimePicker.decreaseMinutes')}
               value={selected.getMinutes()}
               onChange={handleMinuteChange}
               onBump={bumpMinute}
               max={59}
             />
           </div>
-          <p className={styles.timeHelp}>24-hour · local time</p>
+          <p className={styles.timeHelp}>{t('ui.dateTimePicker.timeHelp')}</p>
         </section>
       </div>
 
       <footer className={styles.footer}>
         <span className={styles.summary} aria-live="polite">
-          {selected.toLocaleDateString(undefined, {
+          {selected.toLocaleDateString(locale, {
             weekday: 'short',
             month: 'short',
             day: 'numeric',
             year: 'numeric',
           })}
           {' · '}
-          {selected.toLocaleTimeString(undefined, {
+          {selected.toLocaleTimeString(locale, {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false,
           })}
         </span>
         <div className={styles.footerActions}>
-          <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
-          <Button variant="primary" size="sm" onClick={handleConfirm}>Confirm</Button>
+          <Button variant="ghost" size="sm" onClick={onCancel}>{t('ui.dateTimePicker.cancel')}</Button>
+          <Button variant="primary" size="sm" onClick={handleConfirm}>{t('ui.dateTimePicker.confirm')}</Button>
         </div>
       </footer>
     </div>
@@ -457,13 +463,15 @@ export function DateTimePicker({
 
 interface TimeSpinnerProps {
   label: string
+  increaseLabel: string
+  decreaseLabel: string
   value: number
   onChange: (raw: string) => void
   onBump: (delta: number) => void
   max: number
 }
 
-function TimeSpinner({ label, value, onChange, onBump, max: _max }: TimeSpinnerProps) {
+function TimeSpinner({ label, increaseLabel, decreaseLabel, value, onChange, onBump, max: _max }: TimeSpinnerProps) {
   // 2-digit display ("04", "59"). `value` is the source of truth; the
   // input is controlled so users can clear / type freely while the
   // displayed digits update on every render.
@@ -474,7 +482,7 @@ function TimeSpinner({ label, value, onChange, onBump, max: _max }: TimeSpinnerP
         variant="ghost"
         size="micro"
         iconOnly
-        aria-label={`Increase ${label.toLowerCase()}`}
+        aria-label={increaseLabel}
         onClick={() => onBump(1)}
       >
         <ChevronUpIcon size={10} aria-hidden="true" />
@@ -492,7 +500,7 @@ function TimeSpinner({ label, value, onChange, onBump, max: _max }: TimeSpinnerP
         variant="ghost"
         size="micro"
         iconOnly
-        aria-label={`Decrease ${label.toLowerCase()}`}
+        aria-label={decreaseLabel}
         onClick={() => onBump(-1)}
       >
         <ChevronDownIcon size={10} aria-hidden="true" />

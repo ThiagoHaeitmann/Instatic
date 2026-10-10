@@ -26,6 +26,7 @@
  * (the previous "Hide steps" toggle was removed — there's no in-between
  * collapsed state). Dismissal persists in localStorage per user.
  */
+import { useI18n, translate, formatNumber, type TranslationKey } from '@admin/i18n'
 import { useState } from 'react'
 import { CheckIcon } from 'pixel-art-icons/icons/check'
 import { ChevronRightIcon } from 'pixel-art-icons/icons/chevron-right'
@@ -52,9 +53,9 @@ import styles from './OnboardingPanel.module.css'
 
 interface StepDef {
   id: keyof Pick<OnboardingFacts, 'identity' | 'framework' | 'firstPage' | 'plugin' | 'team'>
-  title: string
-  desc: string
-  cta: string
+  title: TranslationKey
+  desc: TranslationKey
+  cta: TranslationKey
   icon: PixelArtIconComponent
   action:
     | { kind: 'navigate'; to: string }
@@ -65,46 +66,46 @@ interface StepDef {
 const STEPS: readonly StepDef[] = [
   {
     id: 'identity',
-    title: 'Set site identity',
+    title: 'dashboard.onboarding.steps.identity.title',
     desc:
-      'Pick a favicon, logo and site title. Used everywhere — admin chrome, OG tags, published pages.',
-    cta: 'Open settings',
+      'dashboard.onboarding.steps.identity.description',
+    cta: 'dashboard.onboarding.steps.identity.action',
     icon: ImageSolidIcon,
     action: { kind: 'settings-modal' },
   },
   {
     id: 'framework',
-    title: 'Choose Core Framework import',
+    title: 'dashboard.onboarding.steps.framework.title',
     desc:
-      'Variables only, the full utility framework, or skip it and bring your own CSS.',
-    cta: 'Import',
+      'dashboard.onboarding.steps.framework.description',
+    cta: 'dashboard.onboarding.steps.framework.action',
     icon: CodeIcon,
     action: { kind: 'framework-import' },
   },
   {
     id: 'firstPage',
-    title: 'Create your first page',
+    title: 'dashboard.onboarding.steps.firstPage.title',
     desc:
-      'Start from a blank canvas, a starter layout, or import HTML and we will scaffold a tree.',
-    cta: 'New page',
+      'dashboard.onboarding.steps.firstPage.description',
+    cta: 'dashboard.onboarding.steps.firstPage.action',
     icon: FileTextSolidIcon,
     action: { kind: 'navigate', to: '/admin/site' },
   },
   {
     id: 'plugin',
-    title: 'Install a plugin',
+    title: 'dashboard.onboarding.steps.plugin.title',
     desc:
-      'Add SEO, comments, image optimization or workflow extensions from the registry.',
-    cta: 'Browse plugins',
+      'dashboard.onboarding.steps.plugin.description',
+    cta: 'dashboard.onboarding.steps.plugin.action',
     icon: PackageSolidIcon,
     action: { kind: 'navigate', to: '/admin/plugins' },
   },
   {
     id: 'team',
-    title: 'Invite your team',
+    title: 'dashboard.onboarding.steps.team.title',
     desc:
-      'Editors, designers and developers — each role gets a tuned set of editor permissions.',
-    cta: 'Add members',
+      'dashboard.onboarding.steps.team.description',
+    cta: 'dashboard.onboarding.steps.team.action',
     icon: UsersSolidIcon,
     action: { kind: 'navigate', to: '/admin/users' },
   },
@@ -118,12 +119,13 @@ interface OnboardingPanelProps {
 }
 
 function stateLabel(state: OnboardingStepState): string {
-  if (state === 'done') return 'Completed'
-  if (state === 'active') return 'In progress'
-  return 'Not started'
+  if (state === 'done') return translate('dashboard.onboarding.state.done')
+  if (state === 'active') return translate('dashboard.onboarding.state.active')
+  return translate('dashboard.onboarding.state.pending')
 }
 
 export function OnboardingPanel({ facts, onDismiss, onFrameworkImported }: OnboardingPanelProps) {
+  const { t } = useI18n()
   const navigate = useAdminNavigate()
   const openSettings = useAdminUi((s) => s.openSettings)
   const [frameworkImportOpen, setFrameworkImportOpen] = useState(false)
@@ -136,7 +138,7 @@ export function OnboardingPanel({ facts, onDismiss, onFrameworkImported }: Onboa
     capabilities: { canRemove: true },
     apply: async (target) => {
       const loaded = await cmsAdapter.loadSite('default')
-      if (!loaded) throw new Error('Site is not ready yet — finish setup first.')
+      if (!loaded) throw new Error(t('dashboard.onboarding.notReady'))
       const { site, shellSeq } = loaded
       site.settings.framework = applyFrameworkPreset(site.settings.framework, target)
       // Regenerate / prune the generated `framework:` utility classes (and strip
@@ -193,15 +195,14 @@ export function OnboardingPanel({ facts, onDismiss, onFrameworkImported }: Onboa
       <header className={styles.head}>
         <div className={styles.headBlock}>
           <LiquidProgressRing value={done} total={total} />
-          <h2 className={styles.headTitle}>Finish setting up your site</h2>
+          <h2 className={styles.headTitle}>{t('dashboard.onboarding.title')}</h2>
           <p className={styles.headDesc}>
-            {done} of {total} steps complete. Hit each one in any order — your site is live the
-            moment you publish a page.
+            {t('dashboard.onboarding.description', { done: formatNumber(done), total: formatNumber(total) })}
           </p>
         </div>
         <div className={styles.headActions}>
           <Button variant="ghost" size="sm" onClick={onDismiss}>
-            Dismiss
+            {t('dashboard.onboarding.dismiss')}
           </Button>
         </div>
       </header>
@@ -216,7 +217,7 @@ export function OnboardingPanel({ facts, onDismiss, onFrameworkImported }: Onboa
                 {state === 'done' ? (
                   <CheckIcon size={11} />
                 ) : (
-                  String(i + 1).padStart(2, '0')
+                  formatNumber(i + 1, { minimumIntegerDigits: 2 })
                 )}
               </span>
               <span className={styles.stepIcon} aria-hidden="true">
@@ -224,10 +225,10 @@ export function OnboardingPanel({ facts, onDismiss, onFrameworkImported }: Onboa
               </span>
               <div className={styles.stepBody}>
                 <div className={styles.stepTitle}>
-                  <span className={styles.stepIndex}>STEP {String(i + 1).padStart(2, '0')}</span>
-                  <span>{step.title}</span>
+                  <span className={styles.stepIndex}>{t('dashboard.onboarding.stepIndex', { number: formatNumber(i + 1, { minimumIntegerDigits: 2 }) })}</span>
+                  <span>{t(step.title)}</span>
                 </div>
-                <div className={styles.stepDesc}>{step.desc}</div>
+                <div className={styles.stepDesc}>{t(step.desc)}</div>
               </div>
               <div className={styles.stepCta}>
                 <span className={styles.stepHint} data-state={state}>
@@ -238,7 +239,7 @@ export function OnboardingPanel({ facts, onDismiss, onFrameworkImported }: Onboa
                   size="sm"
                   onClick={() => runStep(step)}
                 >
-                  {step.cta}
+                  {t(step.cta)}
                   <ChevronRightIcon size={10} aria-hidden="true" />
                 </Button>
               </div>

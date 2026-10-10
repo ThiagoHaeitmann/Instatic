@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import {
   Fragment,
   Suspense,
@@ -30,6 +31,7 @@ export function LazyChunkBoundary({
   onReset,
   children,
 }: LazyChunkBoundaryProps) {
+  const { t } = useI18n()
   const [attempt, setAttempt] = useState(0)
   const boundaryResetKeys = [...resetKeys, attempt]
 
@@ -46,8 +48,8 @@ export function LazyChunkBoundary({
       fallback={({ chain, reset }) => (
         <LazyChunkFailure
           titleId={`lazy-chunk-boundary-${location}-title`}
-          title="Editor chunk failed to load"
-          message={chain[0]?.message ?? 'The editor chunk could not be loaded.'}
+          title={t('shell.copy.editorChunkFailedToLoad')}
+          message={chain[0]?.message ?? t('shell.copy.theEditorChunkCouldNotBeLoaded')}
           onRetry={() => retry(reset)}
         />
       )}
@@ -81,6 +83,7 @@ function LazyChunkPendingFallback({
   timeoutMs: number
   onRetry: () => void
 }) {
+  const { t } = useI18n()
   const [timedOut, setTimedOut] = useState(timeoutMs <= 0)
 
   useEffect(() => {
@@ -94,8 +97,8 @@ function LazyChunkPendingFallback({
   return (
     <LazyChunkFailure
       titleId="lazy-chunk-boundary-pending-title"
-      title="Editor is still loading"
-      message="The dev server has not delivered the editor chunk yet. Retry the import instead of waiting on the loading view."
+      title={t('shell.copy.editorIsStillLoading')}
+      message={t('shell.copy.theDevServerHasNotDeliveredTheEditorChunkYet')}
       onRetry={onRetry}
     />
   )
@@ -112,6 +115,7 @@ function LazyChunkFailure({
   message: string
   onRetry: () => void
 }) {
+  const { t } = useI18n()
   return (
     <section
       className={styles.chunkFailure}
@@ -124,7 +128,7 @@ function LazyChunkFailure({
         <div className={styles.actions}>
           <Button variant="secondary" size="sm" onClick={onRetry}>
             <ReloadIcon size={13} aria-hidden="true" />
-            <span>Retry</span>
+            <span>{t('shell.copy.retry')}</span>
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * AdminWorkspaceCanvasLayout — canvas shell for non-site workspaces.
  *
@@ -126,7 +127,8 @@ interface WorkspaceRightPanelNotchProps {
 }
 
 function WorkspaceRightPanelNotch({ workspace, onOpen }: WorkspaceRightPanelNotchProps) {
-  const label = workspace === 'content' ? 'settings' : 'inspector'
+  const { t } = useI18n()
+  const label = workspace === 'content' ? t('shell.panel.settings') : t('shell.panel.inspector')
   const testId = workspace === 'content' ? 'content-settings-notch' : `${workspace}-inspector-notch`
   const stopCanvasInteraction = (event: SyntheticEvent) => {
     event.stopPropagation()
@@ -138,7 +140,7 @@ function WorkspaceRightPanelNotch({ workspace, onOpen }: WorkspaceRightPanelNotc
       data-testid={testId}
       onClick={stopCanvasInteraction}
       onMouseDown={stopCanvasInteraction}
-      aria-label={`${label} panel`}
+      aria-label={t('shell.panel.label', { label })}
     >
       <div className={workspaceStyles.rightPanelNotch}>
         <Button
@@ -146,8 +148,8 @@ function WorkspaceRightPanelNotch({ workspace, onOpen }: WorkspaceRightPanelNotc
           size="micro"
           iconOnly
           className={workspaceStyles.rightPanelNotchButton}
-          aria-label={`Open ${label} panel`}
-          tooltip={`Open ${label} panel`}
+          aria-label={t('shell.panel.open', { label })}
+          tooltip={t('shell.panel.open', { label })}
           onClick={onOpen}
         >
           <Settings2SolidIcon size={13} aria-hidden="true" />
@@ -163,6 +165,7 @@ interface WorkspaceRightSidebarProps {
 }
 
 function WorkspaceRightSidebar({ hidden, contentPanel }: WorkspaceRightSidebarProps) {
+  const { t } = useI18n()
   const sidebarRef = useRef<HTMLElement | null>(null)
   const rightPanel = useWorkspaceLayout((s) => s.rightPanel)
   const setRightPanel = useWorkspaceLayout((s) => s.setRightPanel)
@@ -189,7 +192,7 @@ function WorkspaceRightSidebar({ hidden, contentPanel }: WorkspaceRightSidebarPr
           targetRef={sidebarRef}
           cssVariable="--right-sidebar-panel-width"
           layoutCssVariable="--right-sidebar-panel-layout-width"
-          ariaLabel="Resize right sidebar"
+          ariaLabel={t('shell.copy.resizeRightSidebar')}
           onResize={(width) => setRightPanel({ width })}
         />
       )}

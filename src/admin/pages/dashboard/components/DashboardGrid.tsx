@@ -29,6 +29,7 @@
  * `useDashboardLayout.ts` so the JS handlers and CSS grid track sizes
  * stay in lockstep.
  */
+import { useI18n } from '@admin/i18n'
 import { useRef, type PointerEvent as ReactPointerEvent } from 'react'
 import {
   useDraggable,
@@ -115,6 +116,7 @@ export function DashboardGrid({
   gridRef,
   dropTarget,
 }: DashboardGridProps) {
+  const { t } = useI18n()
   /**
    * The "Add block" tile sits in the next row below the lowest widget.
    * We compute it from the max (row + rows) of the items so dropping a
@@ -232,7 +234,7 @@ export function DashboardGrid({
             <span className={styles.addIcon}>
               <PlusIcon size={14} />
             </span>
-            <span className={styles.addLabel}>Add block</span>
+            <span className={styles.addLabel}>{t('dashboard.addBlock')}</span>
           </span>
         </Button>
       )}
@@ -345,6 +347,7 @@ interface DraggableCellProps {
 }
 
 function DraggableCell({ item, definition, onResize, onResizeRows }: DraggableCellProps) {
+  const { t } = useI18n()
   const draggable = useDraggable({ id: item.id })
   const Render = definition.render
 
@@ -441,6 +444,7 @@ function DraggableCell({ item, definition, onResize, onResizeRows }: DraggableCe
       }}
       {...draggable.listeners}
       {...draggable.attributes}
+      aria-roledescription={t('dashboard.drag.role')}
     >
       <Render span={item.size} editing />
 
@@ -449,35 +453,35 @@ function DraggableCell({ item, definition, onResize, onResizeRows }: DraggableCe
           resolves to two-axis resize. */}
       <ResizeHandle
         kind="left"
-        label={`Resize ${definition.name} from left`}
+        label={t('dashboard.resize.left', { name: definition.name })}
         onStart={startResize}
         onMove={moveResize}
         onEnd={endResize}
       />
       <ResizeHandle
         kind="right"
-        label={`Resize ${definition.name} from right`}
+        label={t('dashboard.resize.right', { name: definition.name })}
         onStart={startResize}
         onMove={moveResize}
         onEnd={endResize}
       />
       <ResizeHandle
         kind="top"
-        label={`Resize ${definition.name} from top`}
+        label={t('dashboard.resize.top', { name: definition.name })}
         onStart={startResize}
         onMove={moveResize}
         onEnd={endResize}
       />
       <ResizeHandle
         kind="bottom"
-        label={`Resize ${definition.name} from bottom`}
+        label={t('dashboard.resize.bottom', { name: definition.name })}
         onStart={startResize}
         onMove={moveResize}
         onEnd={endResize}
       />
       <ResizeHandle
         kind="corner"
-        label={`Resize ${definition.name} from corner`}
+        label={t('dashboard.resize.corner', { name: definition.name })}
         onStart={startResize}
         onMove={moveResize}
         onEnd={endResize}

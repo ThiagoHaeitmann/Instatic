@@ -10,6 +10,7 @@
  * Used by the editor's Publish control (PublishActionGroup) and the Typography
  * panel's add-font control (FontsSection).
  */
+import { useUiI18n } from '@ui/localization'
 import { useId, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '@ui/cn'
@@ -89,7 +90,7 @@ export function SplitButton({
   busy = false,
   primaryAriaLabel,
   primaryTooltip,
-  menuTriggerLabel = 'More actions',
+  menuTriggerLabel,
   menuLabel,
   menuWidth = DEFAULT_MENU_WIDTH,
   primaryState,
@@ -100,6 +101,7 @@ export function SplitButton({
   menuTriggerTestId,
   menuTestId,
 }: SplitButtonProps) {
+  const { t } = useUiI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuId = useId()
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -157,11 +159,11 @@ export function SplitButton({
         size={size}
         iconOnly
         className={cn(styles.trigger, triggerClassName)}
-        aria-label={menuTriggerLabel}
+        aria-label={menuTriggerLabel ?? t('ui.moreActions')}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         aria-controls={menuOpen ? menuId : undefined}
-        tooltip={menuTriggerLabel}
+        tooltip={menuTriggerLabel ?? t('ui.moreActions')}
         onClick={() => setMenuOpen((open) => !open)}
         disabled={menuItems.length === 0}
         data-testid={menuTriggerTestId}
@@ -179,7 +181,7 @@ export function SplitButton({
           width={menuWidth}
           minWidth={menuWidth}
           zIndex={10000}
-          ariaLabel={menuLabel ?? menuTriggerLabel}
+          ariaLabel={menuLabel ?? menuTriggerLabel ?? t('ui.moreActions')}
           onClose={closeMenu}
           data-testid={menuTestId}
         >

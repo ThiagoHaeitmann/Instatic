@@ -26,6 +26,7 @@
  * scrolling, bubbles disappear, and the liquid renders as a static
  * shape at the right level. The progress data is still legible.
  */
+import { useI18n, formatNumber } from '@admin/i18n'
 import { useId, type CSSProperties } from 'react'
 import styles from './LiquidProgressRing.module.css'
 
@@ -110,6 +111,7 @@ const BUBBLES: readonly BubbleSpec[] = [
 ]
 
 export function LiquidProgressRing({ value, total, size = 112 }: LiquidProgressRingProps) {
+  const { t } = useI18n()
   const pct = total === 0 ? 0 : Math.max(0, Math.min(1, value / total))
   // Wave surface Y in user units. At pct=0 the surface is at the bottom
   // (y=100), at pct=1 it's at the top (y=0). Bubbles rise from y≈96
@@ -144,7 +146,7 @@ export function LiquidProgressRing({ value, total, size = 112 }: LiquidProgressR
   }
 
   return (
-    <div className={styles.ring} style={containerStyle} role="img" aria-label={`${value} of ${total} steps complete`}>
+    <div className={styles.ring} style={containerStyle} role="img" aria-label={t('dashboard.onboarding.progress', { done: formatNumber(value), total: formatNumber(total) })}>
       <svg
         width={size}
         height={size}

@@ -1,3 +1,4 @@
+import { formatNumber, translate, useI18n } from '@admin/i18n'
 /**
  * DataBindingPicker — shared single-pane picker for inserting tokens or
  * creating structured data bindings.
@@ -149,7 +150,7 @@ export function DataBindingPicker({
   sourceLabel,
   scopedTableId,
   scopedTableSlug,
-  scopeLabel = 'Current row',
+  scopeLabel,
   previewFields,
   loadPublishedPreview = false,
   systemPreviewValues,
@@ -160,6 +161,7 @@ export function DataBindingPicker({
   onClose,
   onPick,
 }: DataBindingPickerProps) {
+  const { t } = useI18n()
   // ─── Meta fetching ─────────────────────────────────────────────────────
   // Lazy initializer picks up the cached value so already-loaded meta is
   // immediately available without a synchronous setState in the effect.
@@ -178,7 +180,7 @@ export function DataBindingPicker({
       })
       .catch((err) => {
         if (cancelled) return
-        setMetaError(getErrorMessage(err, 'Failed to load data meta'))
+        setMetaError(getErrorMessage(err, translate('shell.copy.failedToLoadDataMeta')))
         setMetaLoading(false)
       })
     return () => {
@@ -291,7 +293,7 @@ export function DataBindingPicker({
         kind: 'meta' as const,
         field: f,
       }))
-      result.push({ label: `${scopedTable.name} fields`, entries: tableEntries })
+      result.push({ label: t('shell.binding.fields', { name: scopedTable.name }), entries: tableEntries })
 
       // Loop synthetics not already present in the table.
       if (availableFields && availableFields.length > 0) {
@@ -304,7 +306,7 @@ export function DataBindingPicker({
           )
           .map((f) => ({ kind: 'loop' as const, field: f }))
         if (loopEntries.length > 0) {
-          result.push({ label: 'Loop metadata', entries: loopEntries })
+          result.push({ label: t('shell.copy.loopMetadata'), entries: loopEntries })
         }
       }
     } else if (hasLoopOnlyScope) {
@@ -314,7 +316,7 @@ export function DataBindingPicker({
         field: f,
       }))
       result.push({
-        label: sourceLabel ? `${sourceLabel} fields` : 'Loop metadata',
+        label: sourceLabel ? t('shell.binding.fields', { name: sourceLabel }) : t('shell.copy.loopMetadata'),
         entries: loopEntries,
       })
     }
@@ -389,7 +391,7 @@ export function DataBindingPicker({
   // ─── Auto-scope chip ───────────────────────────────────────────────────
   const isAutoScoped = scopedTable !== null
   const autoScopeChipLabel = scopedTable
-    ? `${scopeLabel} — ${scopedTable.name}`
+    ? `${scopeLabel ?? t('shell.copy.currentRow')} — ${scopedTable.name}`
     : ''
 
   // ─── Render: single field row ──────────────────────────────────────────
@@ -400,7 +402,7 @@ export function DataBindingPicker({
       const bindable =
         fieldSelectionMode === 'token' || isFieldBindable(controlKind, field)
       const tooltip = !bindable
-        ? `Cannot bind a ${field.type} field to a ${control.label} control`
+        ? t('shell.binding.cannotBindType', { type: field.type, control: control.label })
         : undefined
       const rawValue = getFieldPreviewValue(entry)
       const previewText = formatMetaFieldPreview(field, rawValue)
@@ -441,7 +443,7 @@ export function DataBindingPicker({
       const bindable =
         fieldSelectionMode === 'token' || loopFieldMatchesControl(field, controlKind)
       const tooltip = !bindable
-        ? `Cannot bind this ${source} field to a ${control.label} control`
+        ? t('shell.binding.cannotBindSource', { source, control: control.label })
         : undefined
       const rawValue = getFieldPreviewValue(entry)
       const previewText = formatPreviewValue(rawValue)
@@ -478,7 +480,7 @@ export function DataBindingPicker({
     const bindable =
       fieldSelectionMode === 'token' || loopFieldMatchesControl(field, controlKind)
     const tooltip = !bindable
-      ? `Cannot bind this loop field to a ${control.label} control`
+      ? t('shell.binding.cannotBindLoop', { control: control.label })
       : undefined
     const rawValue = getFieldPreviewValue(entry)
     const previewText = formatPreviewValue(rawValue)
@@ -513,14 +515,14 @@ export function DataBindingPicker({
   // ─── Render: the body inside the popover ──────────────────────────────
   function renderBody() {
     if (metaLoading) {
-      return <SkeletonBlock minHeight={200} ariaLabel="Loading data tables" />
+      return <SkeletonBlock minHeight={200} ariaLabel={t('shell.copy.loadingDataTables')} />
     }
     if (metaError) {
       return (
         <div className={styles.pickerEmptyWrapper}>
           <EmptyState
             variant="centered"
-            title="Could not load tables"
+            title={t('shell.copy.couldNotLoadTables')}
             description={metaError}
           />
         </div>
@@ -533,7 +535,7 @@ export function DataBindingPicker({
         {isAutoScoped && scopedTable && (
           <div
             className={styles.scopeChip}
-            aria-label={`Scoped to ${scopedTable.name}`}
+            aria-label={t('shell.binding.scopedTo', { name: scopedTable.name })}
           >
             <span className={styles.scopeChipDot} aria-hidden="true" />
             {autoScopeChipLabel}
@@ -543,7 +545,7 @@ export function DataBindingPicker({
         <div className={styles.fieldList}>
           {hasNoUsableFields && (
             <p className={styles.incompatibleHint}>
-              No fields in the available sources are compatible with this control.
+              {t('shell.copy.noFieldsInTheAvailableSourcesAreCompatibleWithThis')}
             </p>
           )}
           {groups.map((group) => (
@@ -551,7 +553,7 @@ export function DataBindingPicker({
               <div className={styles.fieldGroupHeader}>
                 <span className={styles.fieldGroupHeaderText}>{group.label}</span>
                 <span className={styles.fieldGroupHeaderCount}>
-                  {group.entries.length}
+                  {formatNumber(group.entries.length)}
                 </span>
               </div>
               {group.entries.map(renderFieldRow)}
@@ -565,7 +567,7 @@ export function DataBindingPicker({
             compete with the field rows above. */}
         {showWorkflowHint && (
           <p className={styles.subtleHint}>
-            Wrap in a Loop or open a postType template to bind to row fields.
+            {t('shell.copy.wrapInALoopOrOpenAPostTypeTemplateTo')}
           </p>
         )}
       </>
@@ -573,8 +575,8 @@ export function DataBindingPicker({
   }
 
   const popoverLabel = insertMode
-    ? `Insert binding for ${label}`
-    : `Bind ${label}`
+    ? t('shell.binding.insert', { label })
+    : t('shell.binding.bind', { label })
 
   // ContextMenu owns the body portal and positions the picker below the
   // supplied anchor. `triggerRef` keeps clicks on the braces affordance from

@@ -1,3 +1,4 @@
+import { useUiI18n } from '@ui/localization'
 import {
   useRef,
   type InputHTMLAttributes,
@@ -77,6 +78,7 @@ export function Input({
   ref,
   ...props
 }: InputProps) {
+  const { t } = useUiI18n()
   const isNumber = type === 'number'
   // Only number inputs get the spinner. Default on for number, off otherwise.
   const showSpinner = isNumber && (numberSpinner ?? true)
@@ -148,7 +150,7 @@ export function Input({
             type="button"
             className={styles.spinnerButton}
             tabIndex={-1}
-            aria-label="Increase"
+            aria-label={t('ui.increase')}
             disabled={props.disabled}
             onClick={() => nudge(1)}
           >
@@ -158,7 +160,7 @@ export function Input({
             type="button"
             className={styles.spinnerButton}
             tabIndex={-1}
-            aria-label="Decrease"
+            aria-label={t('ui.decrease')}
             disabled={props.disabled}
             onClick={() => nudge(-1)}
           >

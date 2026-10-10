@@ -6,6 +6,7 @@
  * (or `label`) via `pillAccent`. Interactive forms use the shared `Button`
  * primitive for both the main action and the optional remove action.
  */
+import { useUiI18n } from '@ui/localization'
 import type {
   CSSProperties,
   KeyboardEventHandler,
@@ -70,6 +71,7 @@ export function TagPill({
   removeTestId,
   'aria-hidden': ariaHidden,
 }: TagPillProps) {
+  const { t } = useUiI18n()
   const resolvedAccent = accent ?? pillAccent(colorKey ?? label)
   const removable = Boolean(onRemove)
   const style = {
@@ -133,7 +135,7 @@ export function TagPill({
           variant="ghost"
           size="micro"
           iconOnly
-          aria-label={removeAriaLabel ?? `Remove ${label}`}
+          aria-label={removeAriaLabel ?? t('ui.removeTag', { label })}
           tooltip={removeTooltip}
           dangerHover
           className={styles.removeButton}

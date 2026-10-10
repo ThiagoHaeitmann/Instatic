@@ -23,6 +23,7 @@
  * `tint` tokens are the same four `--accent-*` accents declared in
  * `src/styles/globals.css`.
  */
+import { useUiI18n } from '@ui/localization'
 import { type CSSProperties, type ReactNode } from 'react'
 import type { IconComponent } from 'pixel-art-icons/types'
 import { DragAndDropSolidIcon } from 'pixel-art-icons/icons/drag-and-drop-solid'
@@ -110,13 +111,14 @@ interface WidgetSkeletonProps {
 }
 
 export function WidgetSkeleton({ widgetId, span }: WidgetSkeletonProps) {
+  const { t } = useUiI18n()
   return (
     <section
       className={styles.widget}
       data-widget={widgetId}
       data-span={span}
       aria-busy="true"
-      aria-label="Loading widget"
+      aria-label={t('ui.loadingWidget')}
     >
       <header className={styles.head}>
         <div className={styles.title}>
@@ -152,6 +154,7 @@ export function Widget({
   loading = false,
   children,
 }: WidgetProps) {
+  const { t } = useUiI18n()
   const style: CSSProperties = {
     ['--tint' as string]: TINT_TOKEN[tint],
   }
@@ -183,7 +186,7 @@ export function Widget({
               size="micro"
               iconOnly
               className={styles.menu}
-              aria-label={`${title} options`}
+              aria-label={t('ui.widgetOptions', { title })}
               onClick={onMenuClick}
             >
               <MoreHorizontalSolidIcon size={12} />

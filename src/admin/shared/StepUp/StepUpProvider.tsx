@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * StepUpProvider — wraps the authenticated admin shell, exposes
  * `useStepUp().runStepUp(action)`, and renders the modal that prompts for a
@@ -31,6 +32,10 @@ import { StepUpDialog } from './StepUpDialog'
 import { StepUpCancelledMessage, StepUpContext, type StepUpContextValue } from './StepUpContext'
 import { getErrorMessage } from '@core/utils/errorMessage'
 
+type StepUpError =
+  | { kind: 'message'; message: string }
+  | { kind: 'fallback'; key: 'shell.copy.couldNotConfirmPassword' | 'shell.copy.actionFailed' }
+
 interface PendingState<T = unknown> {
   action: () => Promise<T>
   resolve: (value: T) => void
@@ -38,6 +43,7 @@ interface PendingState<T = unknown> {
 }
 
 export function StepUpProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n()
   const currentUser = useCurrentAdminUser()
   const setSessionUser = useAdminSessionSetter()
   // The pending action is held in a ref because the dialog handlers
@@ -51,7 +57,7 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
   // equality, so a fresh identity each render is harmless.
   const pendingRef = useRef<PendingState | null>(null)
   const [open, setOpen] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StepUpError | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [mfaRequiredOverride, setMfaRequiredOverride] = useState(false)
   const mfaRequired = currentUser?.mfaEnabled === true || mfaRequiredOverride
@@ -110,9 +116,11 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
       if (result.user) setSessionUser(result.user)
     } catch (err) {
       setSubmitting(false)
-      const message = getErrorMessage(err, 'Could not confirm password.')
+      const message = getErrorMessage(err, '')
       if (message === 'Authentication code required') setMfaRequiredOverride(true)
-      setError(message)
+      setError(message
+        ? { kind: 'message', message }
+        : { kind: 'fallback', key: 'shell.copy.couldNotConfirmPassword' })
       return
     }
 
@@ -129,7 +137,10 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
       // already deleted, or a permission changed). Surface the message
       // and let the user dismiss.
       setSubmitting(false)
-      setError(getErrorMessage(err, 'Action failed.'))
+      const message = getErrorMessage(err, '')
+      setError(message
+        ? { kind: 'message', message }
+        : { kind: 'fallback', key: 'shell.copy.actionFailed' })
     }
   }
 
@@ -142,7 +153,7 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
         <StepUpDialog
           mfaRequired={mfaRequired}
           submitting={submitting}
-          error={error}
+          error={error === null ? null : error.kind === 'message' ? error.message : t(error.key)}
           onSubmit={(input) => void handleSubmit(input)}
           onCancel={handleCancel}
         />

@@ -31,7 +31,8 @@
  *   - the toast `data-toast-location` attribute and rendered location chip
  *   - the architecture coverage gate (each seam asserts a unique location)
  */
-import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { UiI18nContext, translateUiMessage, useUiI18n } from '@ui/localization'
+import { Component, type ContextType, type ErrorInfo, type ReactNode } from 'react'
 import { Button } from '@ui/components/Button'
 import { ReloadIcon } from 'pixel-art-icons/icons/reload'
 import { CircleAlertSolidIcon } from 'pixel-art-icons/icons/circle-alert-solid'
@@ -101,6 +102,9 @@ function shallowEqualKeys(
 const EMPTY_KEYS: ReadonlyArray<unknown> = []
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  static contextType = UiI18nContext
+  declare context: ContextType<typeof UiI18nContext>
+
   state: ErrorBoundaryState = {
     chain: null,
     componentStack: null,
@@ -138,11 +142,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       const head = chain[0]
       pushToast({
         kind: 'error',
-        title: `Render failed in ${this.props.location}`,
+        title: translateUiMessage(this.context, 'ui.errorBoundary.renderFailed', { location: this.props.location }),
         body: `${head.name}: ${head.message}`,
         location: prefix,
         action: {
-          label: 'Copy details',
+          label: translateUiMessage(this.context, 'ui.errorBoundary.copyDetails'),
           onSelect: () => {
             const text = formatErrorReport(this.props.location, chain, componentStack)
             void copyToClipboard(text)
@@ -179,6 +183,7 @@ function DefaultErrorFallback({
   componentStack,
   reset,
 }: ErrorBoundaryFallbackInfo) {
+  const { t } = useUiI18n()
   const isDev = import.meta.env?.DEV ?? false
   const head = chain[0]
 
@@ -199,7 +204,7 @@ function DefaultErrorFallback({
         </span>
         <div className={styles.headText}>
           <h2 id={`error-boundary-${location}-title`} className={styles.title}>
-            {isDev ? `Render failed in ${location}` : 'This part of the page failed to load.'}
+            {isDev ? t('ui.errorBoundary.renderFailed', { location }) : t('ui.errorBoundary.title')}
           </h2>
           {isDev ? (
             <p className={styles.message}>
@@ -207,7 +212,7 @@ function DefaultErrorFallback({
             </p>
           ) : (
             <p className={styles.message}>
-              We&apos;ve logged the error. You can try again, or refresh the page.
+              {t('ui.errorBoundary.description')}
             </p>
           )}
         </div>
@@ -225,7 +230,7 @@ function DefaultErrorFallback({
 
       {isDev && componentStack && (
         <details className={styles.details}>
-          <summary>Component stack</summary>
+          <summary>{t('ui.errorBoundary.componentStack')}</summary>
           <pre className={styles.stack}>{componentStack.trim()}</pre>
         </details>
       )}
@@ -233,12 +238,12 @@ function DefaultErrorFallback({
       <div className={styles.actions}>
         <Button variant="secondary" size="sm" onClick={reset}>
           <ReloadIcon size={13} aria-hidden="true" />
-          <span>Reset</span>
+          <span>{t('ui.errorBoundary.reset')}</span>
         </Button>
         {isDev && (
           <Button variant="ghost" size="sm" onClick={() => void handleCopy()}>
             <CopySolidIcon size={13} aria-hidden="true" />
-            <span>Copy details</span>
+            <span>{t('ui.errorBoundary.copyDetails')}</span>
           </Button>
         )}
       </div>

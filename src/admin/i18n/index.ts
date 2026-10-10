@@ -20,6 +20,7 @@ export {
   translate,
   type MessageValues,
   type TranslationKey,
+  type MessageKey,
 } from './runtime'
 export {
   formatBytes,

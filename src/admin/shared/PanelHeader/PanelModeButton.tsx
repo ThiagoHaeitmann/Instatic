@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import { LayoutSolidIcon } from 'pixel-art-icons/icons/layout-solid'
 import { OpenSolidIcon } from 'pixel-art-icons/icons/open-solid'
 import { Button } from '@ui/components/Button'
@@ -20,9 +21,10 @@ export function PanelModeButton({
   dockSide = 'left',
   onToggle,
 }: PanelModeButtonProps) {
+  const { t } = useI18n()
   const floating = mode === 'floating'
-  const action = floating ? `Dock ${panelLabel} panel` : `Undock ${panelLabel} panel`
-  const tooltip = floating ? `Dock in ${dockLocation}` : 'Undock to canvas'
+  const action = floating ? t('shell.panel.dock', { label: panelLabel }) : t('shell.panel.undock', { label: panelLabel })
+  const tooltip = floating ? t('shell.panel.dockIn', { location: dockLocation }) : t('shell.copy.undockToCanvas')
 
   return (
     <Button

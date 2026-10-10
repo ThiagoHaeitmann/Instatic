@@ -1,3 +1,4 @@
+import { formatNumber, useI18n } from '@admin/i18n'
 /**
  * CapabilityPicker — the shared capability checklist used by the role-edit
  * dialog and the MCP connector dialog.
@@ -43,8 +44,10 @@ export function CapabilityPicker({
   onChange,
   readonly = false,
   disabledCapabilities = new Set(),
-  title = 'Capabilities',
+  title,
 }: CapabilityPickerProps) {
+  const { t } = useI18n()
+  const heading = title ?? t('shell.copy.capabilities')
   // De-duplicate across groups for the master count/toggle (groups are normally
   // disjoint, but don't assume it).
   const renderedCaps = [...new Set(groups.flatMap((g) => g.capabilities))]
@@ -66,12 +69,12 @@ export function CapabilityPicker({
   }
 
   return (
-    <section className={styles.capabilityPicker} aria-label={title}>
+    <section className={styles.capabilityPicker} aria-label={heading}>
       <header className={styles.capabilityPickerHeader}>
         <div className={styles.capabilityPickerSummary}>
-          <h3 className={styles.capabilityPickerTitle}>{title}</h3>
+          <h3 className={styles.capabilityPickerTitle}>{heading}</h3>
           <p className={styles.capabilityPickerCount}>
-            <strong>{selectedCount}</strong> of {totalCount} selected
+            {t('shell.capabilities.selected', { selected: formatNumber(selectedCount), total: formatNumber(totalCount) })}
           </p>
         </div>
         {!readonly && (
@@ -79,10 +82,10 @@ export function CapabilityPicker({
             type="button"
             variant="ghost"
             size="xs"
-            aria-label={allSelected ? 'Clear all capabilities' : 'Select all capabilities'}
+            aria-label={allSelected ? t('shell.copy.clearAllCapabilities') : t('shell.copy.selectAllCapabilities')}
             onClick={() => setMany(selectableCaps, !allSelected)}
           >
-            <span>{allSelected ? 'Clear all' : 'Select all'}</span>
+            <span>{allSelected ? t('shell.copy.clearAll') : t('shell.copy.selectAll')}</span>
           </Button>
         )}
       </header>
@@ -104,7 +107,7 @@ export function CapabilityPicker({
                     className={styles.capabilityGroupCount}
                     data-state={groupAllSelected ? 'full' : groupSelected > 0 ? 'partial' : 'empty'}
                   >
-                    {groupSelected}/{groupTotal}
+                    {formatNumber(groupSelected)}/{formatNumber(groupTotal)}
                   </span>
                 </div>
                 {!readonly && (
@@ -114,12 +117,12 @@ export function CapabilityPicker({
                     size="xs"
                     aria-label={
                       groupAllSelected
-                        ? `Clear ${group.title} capabilities`
-                        : `Select all ${group.title} capabilities`
+                        ? t('shell.capabilities.clearGroup', { group: group.title })
+                        : t('shell.capabilities.selectGroup', { group: group.title })
                     }
                     onClick={() => setMany(selectableGroupCapabilities, !groupAllSelected)}
                   >
-                    <span>{groupAllSelected ? 'Clear' : 'Select all'}</span>
+                    <span>{groupAllSelected ? t('shell.copy.clear') : t('shell.copy.selectAll')}</span>
                   </Button>
                 )}
               </header>

@@ -1,3 +1,4 @@
+import { useUiI18n } from '@ui/localization'
 import {
   useId,
   useRef,
@@ -123,7 +124,7 @@ export function Select({
   menuMinWidth,
   menuMaxHeight = DEFAULT_MENU_MAX_HEIGHT,
   searchable,
-  searchPlaceholder = 'Search…',
+  searchPlaceholder,
   menuPlacement = 'bottom-start',
   menuAnchorRef,
   'aria-label': ariaLabel,
@@ -132,6 +133,7 @@ export function Select({
   ref,
   ...props
 }: SelectProps) {
+  const { t } = useUiI18n()
   const generatedId = useId()
   const triggerId = id ?? `select-${generatedId}`
   const menuId = `${triggerId}-menu`
@@ -400,7 +402,7 @@ export function Select({
           selectedValue={selectedValue}
           searchable={searchEnabled}
           query={query}
-          searchPlaceholder={searchPlaceholder}
+          searchPlaceholder={searchPlaceholder ?? t('ui.search')}
           onQueryChange={handleQueryChange}
           onSearchKeyDown={handleSearchKeyDown}
           onHover={setActiveIndex}

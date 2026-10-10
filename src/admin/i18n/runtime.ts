@@ -1,8 +1,9 @@
 import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, detectBrowserLocale, parsePersistedLocale, persistLocale, resolveInitialLocale, type SupportedLocale } from './locale'
-import { englishMessages, portugueseBrazilMessages, type MessageCatalog, type MessageKey } from './messages'
+import { englishMessages, portugueseBrazilMessages, type MessageCatalog } from './messages'
+export type { MessageKey } from './messages'
 
 export type MessageValues = Readonly<Record<string, string | number>>
-export type TranslationKey = MessageKey
+export type TranslationKey = string
 
 const catalogs: Readonly<Record<SupportedLocale, MessageCatalog>> = {
   en: englishMessages,

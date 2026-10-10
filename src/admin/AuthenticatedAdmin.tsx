@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * AuthenticatedAdmin — the heavy admin shell.
  *
@@ -210,6 +211,7 @@ function pageForSection(section: AdminWorkspace) {
 }
 
 export default function AuthenticatedAdmin({ section, currentUser }: AuthenticatedAdminProps) {
+  const { t } = useI18n()
   const inRouter = useInRouterContext()
   const fallbackWorkspace = firstAccessibleWorkspace(currentUser)
   const siteImportOpen = useAdminUi((s) => s.siteImportOpen)
@@ -291,8 +293,8 @@ export default function AuthenticatedAdmin({ section, currentUser }: Authenticat
     return (
       <main className={styles.page}>
         <section className={styles.panel} role="alert">
-          <h1 className={styles.title}>Access unavailable</h1>
-          <p className={styles.error}>Your role does not include access to this admin section.</p>
+          <h1 className={styles.title}>{t('shell.copy.accessUnavailable')}</h1>
+          <p className={styles.error}>{t('shell.copy.yourRoleDoesNotIncludeAccessToThisAdminSection')}</p>
         </section>
       </main>
     )

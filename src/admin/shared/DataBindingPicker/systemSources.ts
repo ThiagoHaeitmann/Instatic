@@ -1,3 +1,4 @@
+import { translate } from '@admin/i18n'
 /**
  * Shared system binding sources — `page`, `site`, `route`.
  *
@@ -31,13 +32,13 @@ interface SystemSource {
 
 const PAGE_SOURCE: SystemSource = {
   id: 'page',
-  label: 'Page',
-  description: 'Fields of the page currently being rendered.',
+  get label() { return translate('shell.copy.page') },
+  get description() { return translate('shell.copy.fieldsOfThePageCurrentlyBeingRendered') },
   fields: [
-    { id: 'title', label: 'Page title' },
-    { id: 'slug', label: 'Slug' },
-    { id: 'permalink', label: 'Permalink', format: 'url' },
-    { id: 'parentSlug', label: 'Parent slug' },
+    { id: 'title', get label() { return translate('shell.copy.pageTitle') } },
+    { id: 'slug', get label() { return translate('shell.copy.slug') } },
+    { id: 'permalink', get label() { return translate('shell.copy.permalink') }, format: 'url' },
+    { id: 'parentSlug', get label() { return translate('shell.copy.parentSlug') } },
   ],
 }
 
@@ -47,10 +48,10 @@ const PAGE_SOURCE: SystemSource = {
 
 const SITE_SOURCE: SystemSource = {
   id: 'site',
-  label: 'Site',
-  description: 'Site-wide author-facing fields.',
+  get label() { return translate('shell.copy.site') },
+  get description() { return translate('shell.copy.siteWideAuthorFacingFields') },
   fields: [
-    { id: 'name', label: 'Site name' },
+    { id: 'name', get label() { return translate('shell.copy.siteName') } },
   ],
 }
 
@@ -60,11 +61,11 @@ const SITE_SOURCE: SystemSource = {
 
 const ROUTE_SOURCE: SystemSource = {
   id: 'route',
-  label: 'Route',
-  description: 'Current URL path and slug. Useful for SEO and breadcrumbs.',
+  get label() { return translate('shell.copy.route') },
+  get description() { return translate('shell.copy.currentURLPathAndSlugUsefulForSEOAndBreadcrumbs') },
   fields: [
-    { id: 'path', label: 'Path', format: 'url' },
-    { id: 'slug', label: 'URL slug' },
+    { id: 'path', get label() { return translate('shell.copy.path') }, format: 'url' },
+    { id: 'slug', get label() { return translate('shell.copy.uRLSlug') } },
   ],
 }
 

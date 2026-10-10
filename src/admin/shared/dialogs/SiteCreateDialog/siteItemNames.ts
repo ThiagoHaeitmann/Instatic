@@ -1,3 +1,6 @@
+import { translate } from '@admin/i18n'
+import { pageSlugError, pageSlugDuplicateError, type Page } from '@core/page-tree'
+
 export type SiteCreateKind = 'page' | 'component' | 'style' | 'script'
 
 export function slugifySiteItemName(value: string, fallback = 'page') {
@@ -30,4 +33,20 @@ export function buildScriptPath(value: string) {
     ? requestedName
     : ensureExtension(requestedName, '.ts')
   return `src/scripts/${name}`
+}
+
+/** Present engine validation in the admin locale without localizing stored slugs. */
+export function localizedPageSlugError(slug: string, pages: Page[], currentPageId?: string): string | null {
+  const error = pageSlugError(slug)
+  if (error) {
+    if (!slug) return translate('shell.validation.slugRequired')
+    if (error === 'Page slug must use lowercase letters, numbers, single hyphens, and optional single slashes.') {
+      return translate('shell.validation.slugFormat')
+    }
+    const segment = slug.split('/')[0] ?? slug
+    return translate(segment === slug ? 'shell.validation.slugReserved' : 'shell.validation.slugPrefix', { slug: segment })
+  }
+  return pageSlugDuplicateError(slug, pages, currentPageId)
+    ? translate('shell.validation.slugDuplicate', { slug })
+    : null
 }

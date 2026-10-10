@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { WarningDiamondSolidIcon } from 'pixel-art-icons/icons/warning-diamond-solid'
 import styles from './AdminContextMenuGuard.module.css'
@@ -14,6 +15,7 @@ function targetIsInsideAppMenu(target: EventTarget | null): boolean {
 }
 
 export function AdminContextMenuGuard() {
+  const { t } = useI18n()
   const [flash, setFlash] = useState<FlashState | null>(null)
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export function AdminContextMenuGuard() {
     <span
       key={flash.id}
       role="status"
-      aria-label="No context menu available"
+      aria-label={t('shell.copy.noContextMenuAvailable')}
       className={styles.flash}
       style={style}
       onAnimationEnd={() => setFlash(null)}

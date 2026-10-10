@@ -17,7 +17,7 @@ import styles from './AdminPreAuthForm.module.css'
 import { getErrorMessage } from '@core/utils/errorMessage'
 import { isValidEmail } from '@core/utils/email'
 import { MIN_PASSWORD_LENGTH } from '@core/utils/passwordPolicy'
-import { LanguageSelector, useI18n } from '@admin/i18n'
+import { LanguageSelector, useI18n, type MessageValues, type TranslationKey } from '@admin/i18n'
 
 // Phase the unauthenticated form can be in. 'mfa' is a sub-state reached
 // only after a login submit returns `mfaRequired: true` — never set by the
@@ -33,18 +33,23 @@ interface AdminPreAuthFormProps {
 }
 
 
+type AuthError =
+  | { kind: 'message'; message: string }
+  | { kind: 'translation'; key: TranslationKey; values?: MessageValues }
+
 async function runAuthAction(
   action: () => Promise<void>,
-  fallbackMessage: string,
+  fallbackKey: TranslationKey,
   setSubmitting: (v: boolean) => void,
-  setError: (v: string | null) => void,
+  setError: (v: AuthError | null) => void,
 ): Promise<void> {
   setSubmitting(true)
   setError(null)
   try {
     await action()
   } catch (err) {
-    setError(getErrorMessage(err, fallbackMessage))
+    const message = getErrorMessage(err, '')
+    setError(message ? { kind: 'message', message } : { kind: 'translation', key: fallbackKey })
   } finally {
     setSubmitting(false)
   }
@@ -64,7 +69,9 @@ export function AdminPreAuthForm({
   const [password, setPassword] = useState('')
   const [mfaCode, setMfaCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(initialError)
+  const [error, setError] = useState<AuthError | null>(
+    initialError ? { kind: 'message', message: initialError } : null,
+  )
 
   const siteNameId = useId()
   const displayNameId = useId()
@@ -78,18 +85,18 @@ export function AdminPreAuthForm({
     // server rejects those, so catch them here first. Login stays unchecked —
     // an existing account must always be able to sign in.
     if (!isValidEmail(email.trim())) {
-      setError(t('auth.validation.email'))
+      setError({ kind: 'translation', key: 'auth.validation.email' })
       return
     }
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(t('auth.validation.passwordMinimum', { count: MIN_PASSWORD_LENGTH }))
+      setError({ kind: 'translation', key: 'auth.validation.passwordMinimum', values: { count: MIN_PASSWORD_LENGTH } })
       return
     }
     await runAuthAction(async () => {
       await setupCms({ siteName, email, password, displayName })
       await loginCms({ email, password })
       onAuthenticated(await getCurrentCmsUser())
-    }, t('auth.setup.failed'), setSubmitting, setError)
+    }, 'auth.setup.failed', setSubmitting, setError)
   }
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -103,7 +110,7 @@ export function AdminPreAuthForm({
         return
       }
       onAuthenticated(await getCurrentCmsUser())
-    }, t('auth.login.failed'), setSubmitting, setError)
+    }, 'auth.login.failed', setSubmitting, setError)
   }
 
   async function handleMfaVerify(event: FormEvent<HTMLFormElement>) {
@@ -113,7 +120,7 @@ export function AdminPreAuthForm({
       const user = await getCurrentCmsUser()
       setMfaCode('')
       onAuthenticated(user)
-    }, t('auth.mfa.failed'), setSubmitting, setError)
+    }, 'auth.mfa.failed', setSubmitting, setError)
   }
 
   const copy = {
@@ -242,7 +249,7 @@ export function AdminPreAuthForm({
 
           {error && (
             <p role="alert" className={panelStyles.error}>
-              {error}
+              {error.kind === 'message' ? error.message : t(error.key, error.values)}
             </p>
           )}
 

@@ -9,6 +9,7 @@
  * the universal skeleton body while loading; we gate the real rows
  * on `stats &&` so they never see a null value.
  */
+import { useI18n, translate } from '@admin/i18n'
 import { PlugSolidIcon } from 'pixel-art-icons/icons/plug-solid'
 import type { DashboardWidgetRendererProps } from '@core/dashboard'
 import { Widget } from '@ui/components/Widget'
@@ -23,12 +24,13 @@ function dotClass(state: DashboardPluginRow['state']): string {
 }
 
 function stateLabel(state: DashboardPluginRow['state']): string {
-  if (state === 'active') return 'active'
-  if (state === 'error') return 'error'
-  return 'off'
+  if (state === 'active') return translate('dashboard.plugins.active')
+  if (state === 'error') return translate('dashboard.plugins.error')
+  return translate('dashboard.plugins.off')
 }
 
 export function PluginsWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const stats = usePluginsStats()
   const isLoading = stats === null
   const plugins = stats?.rows ?? []
@@ -37,7 +39,7 @@ export function PluginsWidget({ span, editing }: DashboardWidgetRendererProps) {
   return (
     <Widget
       widgetId="plugins"
-      title="Plugins"
+      title={t('dashboard.widgets.plugins.name')}
       icon={PlugSolidIcon}
       tint="mint"
       span={span}

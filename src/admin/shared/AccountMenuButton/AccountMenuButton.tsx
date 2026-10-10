@@ -1,3 +1,4 @@
+import { formatNumber, useI18n } from '@admin/i18n'
 /**
  * AccountMenuButton — toolbar avatar trigger + account dropdown.
  *
@@ -46,6 +47,7 @@ import { getErrorMessage } from '@core/utils/errorMessage'
 const ACCOUNT_ROUTE = '/admin/account'
 
 export function AccountMenuButton(): ReactNode {
+  const { t } = useI18n()
   const user = useAuthenticatedAdminUser()
   const navigate = useAdminNavigate()
   const { runStepUp } = useStepUp()
@@ -77,7 +79,7 @@ export function AccountMenuButton(): ReactNode {
       setBusy(null)
       setStatus({
         tone: 'error',
-        message: getErrorMessage(err, 'Could not sign out.'),
+        message: getErrorMessage(err, t('shell.copy.couldNotSignOut')),
       })
     }
   }
@@ -89,12 +91,11 @@ export function AccountMenuButton(): ReactNode {
     try {
       const revokedCount = await runStepUp(() => logoutAllOtherCmsSessions())
       setBusy(null)
-      const noun = revokedCount === 1 ? 'device' : 'devices'
       setStatus({
         tone: 'info',
         message: revokedCount === 0
-          ? 'No other devices were signed in.'
-          : `Signed out ${revokedCount} ${noun}.`,
+          ? t('shell.copy.noOtherDevicesWereSignedIn')
+          : t('shell.account.signedOut', { count: revokedCount, countLabel: formatNumber(revokedCount) }),
       })
     } catch (err) {
       setBusy(null)
@@ -103,7 +104,7 @@ export function AccountMenuButton(): ReactNode {
       console.error('[account-menu] sign out all devices failed:', err)
       setStatus({
         tone: 'error',
-        message: getErrorMessage(err, 'Could not sign out other devices.'),
+        message: getErrorMessage(err, t('shell.copy.couldNotSignOutOtherDevices')),
       })
     }
   }
@@ -116,7 +117,7 @@ export function AccountMenuButton(): ReactNode {
         size="xs"
         type="button"
         active={open}
-        aria-label={`Account menu for ${displayName}`}
+        aria-label={t('shell.account.menuFor', { name: displayName })}
         aria-haspopup="menu"
         aria-expanded={open}
         className={styles.trigger}
@@ -128,7 +129,7 @@ export function AccountMenuButton(): ReactNode {
       </Button>
       {open && typeof document !== 'undefined' && createPortal(
         <ContextMenu
-          ariaLabel="Account menu"
+          ariaLabel={t('shell.copy.accountMenu')}
           onClose={close}
           anchorRef={triggerRef}
           side="bottom"
@@ -152,7 +153,7 @@ export function AccountMenuButton(): ReactNode {
             data-testid="account-menu-go-to-account"
           >
             <SettingsCogSolidIcon size={12} aria-hidden="true" />
-            <span>Account &amp; security</span>
+            <span>{t('shell.copy.accountSecurity')}</span>
           </ContextMenuItem>
           <ContextMenuItem
             onClick={() => void handleSignOut()}
@@ -160,7 +161,7 @@ export function AccountMenuButton(): ReactNode {
             data-testid="account-menu-sign-out"
           >
             <PowerOffIcon size={12} aria-hidden="true" />
-            <span>{busy === 'logout' ? 'Signing out…' : 'Sign out'}</span>
+            <span>{busy === 'logout' ? t('shell.copy.signingOut') : t('shell.copy.signOut')}</span>
           </ContextMenuItem>
           <ContextMenuItem
             onClick={() => void handleSignOutAllDevices()}
@@ -168,7 +169,7 @@ export function AccountMenuButton(): ReactNode {
             data-testid="account-menu-sign-out-all"
           >
             <MonitorSolidIcon size={12} aria-hidden="true" />
-            <span>{busy === 'logout-all' ? 'Signing out other devices…' : 'Sign out all devices'}</span>
+            <span>{busy === 'logout-all' ? t('shell.copy.signingOutOtherDevices') : t('shell.copy.signOutAllDevices')}</span>
           </ContextMenuItem>
           {status && (
             <p

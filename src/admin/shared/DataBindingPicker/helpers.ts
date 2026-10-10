@@ -1,3 +1,4 @@
+import { formatNumber, formatList, translate } from '@admin/i18n'
 /**
  * Pure helpers, types and constants for the shared data-binding picker.
  *
@@ -64,20 +65,21 @@ export function loopFieldMatchesControl(
 export function formatPreviewValue(value: unknown): string {
   if (value === null || value === undefined) return '—'
   if (typeof value === 'string') {
-    if (!value) return '(empty)'
+    if (!value) return translate('shell.copy.empty')
     return value.length > 80 ? `${value.slice(0, 80)}…` : value
   }
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (typeof value === 'number') return formatNumber(value)
+  if (typeof value === 'boolean') return String(value)
   if (Array.isArray(value)) {
-    if (value.length === 0) return '(empty)'
-    return value.map((v) => formatPreviewValue(v)).join(', ')
+    if (value.length === 0) return translate('shell.copy.empty')
+    return formatList(value.map((v) => formatPreviewValue(v)))
   }
   if (typeof value === 'object') {
     try {
       const json = JSON.stringify(value)
       return json.length > 80 ? `${json.slice(0, 80)}…` : json
     } catch {
-      return '[object]'
+      return translate('shell.copy.object')
     }
   }
   return String(value)
@@ -93,8 +95,8 @@ export function formatMetaFieldPreview(
   value: unknown,
 ): string {
   if (field.type === 'repeater') {
-    if (!Array.isArray(value) || value.length === 0) return '(empty)'
-    return `${value.length} ${value.length === 1 ? 'item' : 'items'}`
+    if (!Array.isArray(value) || value.length === 0) return translate('shell.copy.empty')
+    return translate('shell.binding.items', { count: value.length, countLabel: formatNumber(value.length) })
   }
 
   if (field.type === 'media') {
@@ -103,13 +105,13 @@ export function formatMetaFieldPreview(
       : typeof value === 'string' && value.length > 0
         ? [value]
         : []
-    if (values.length === 0) return '(empty)'
-    const noun = field.mediaKind === 'image'
-      ? 'image'
+    if (values.length === 0) return translate('shell.copy.empty')
+    const key = field.mediaKind === 'image'
+      ? 'shell.binding.images'
       : field.mediaKind === 'video'
-        ? 'video'
-        : 'asset'
-    return `${values.length} ${values.length === 1 ? noun : `${noun}s`}`
+        ? 'shell.binding.videos'
+        : 'shell.binding.assets'
+    return translate(key, { count: values.length, countLabel: formatNumber(values.length) })
   }
 
   return formatPreviewValue(value)
@@ -192,5 +194,5 @@ export function resolveBindingLabel(
     }
   }
   // Fallback: humanise the field id
-  return `Current entry → ${binding.field}`
+  return translate('shell.binding.currentEntry', { field: binding.field })
 }

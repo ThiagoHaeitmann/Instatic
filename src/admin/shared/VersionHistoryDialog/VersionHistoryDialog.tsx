@@ -1,3 +1,4 @@
+import { formatNumber, formatDate, formatRelativeTime, translate, useI18n } from '@admin/i18n'
 /**
  * VersionHistoryDialog — every published version of a row, newest first,
  * with "Restore" copying a version's content back into the draft on the
@@ -10,7 +11,6 @@ import type { DataRow, DataRowVersionSummary } from '@core/data/schemas'
 import { isAbortError } from '@core/http'
 import { listCmsDataRowVersions, restoreCmsDataRowVersion } from '@core/persistence'
 import { getErrorMessage } from '@core/utils/errorMessage'
-import { formatRelativeTimeAgo } from '@core/utils/relativeTime'
 import { Button } from '@ui/components/Button'
 import { Dialog } from '@ui/components/Dialog'
 import { Skeleton } from '@ui/components/Skeleton'
@@ -32,12 +32,23 @@ interface VersionHistoryDialogProps {
 
 function publishedLabel(version: DataRowVersionSummary): string {
   const when = new Date(version.publishedAt)
-  const absolute = Number.isNaN(when.getTime()) ? '' : when.toLocaleString()
-  const by = version.publishedByName ? ` by ${version.publishedByName}` : ''
-  return `Published ${formatRelativeTimeAgo(when.getTime())}${by}${absolute ? ` · ${absolute}` : ''}`
+  if (Number.isNaN(when.getTime())) return translate('shell.versions.unknownDate')
+  const seconds = (when.getTime() - Date.now()) / 1000
+  const units = [
+    ['year', 365 * 86400], ['month', 30 * 86400], ['day', 86400],
+    ['hour', 3600], ['minute', 60], ['second', 1],
+  ] as const
+  const [unit, divisor] = units.find(([, duration]) => Math.abs(seconds) >= duration) ?? units[units.length - 1]!
+  const values = {
+    relative: formatRelativeTime(Math.round(seconds / divisor), unit, { numeric: 'auto' }),
+    absolute: formatDate(when, { dateStyle: 'medium', timeStyle: 'short' }),
+    name: version.publishedByName ?? '',
+  }
+  return translate(version.publishedByName ? 'shell.versions.publishedBy' : 'shell.versions.published', values)
 }
 
 export function VersionHistoryDialog({ rowId, entityLabel, title, onClose, onRestored }: VersionHistoryDialogProps) {
+  const { t } = useI18n()
   const [versions, setVersions] = useState<DataRowVersionSummary[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState<string | null>(null)
@@ -52,7 +63,7 @@ export function VersionHistoryDialog({ rowId, entityLabel, title, onClose, onRes
       .catch((err: unknown) => {
         if (isAbortError(err) || controller.signal.aborted) return
         console.error('[versions] failed to load version history:', err)
-        setLoadError(getErrorMessage(err, 'Could not load version history'))
+        setLoadError(getErrorMessage(err, translate('shell.copy.couldNotLoadVersionHistory')))
       })
     return () => controller.abort()
   }, [rowId])
@@ -66,12 +77,12 @@ export function VersionHistoryDialog({ rowId, entityLabel, title, onClose, onRes
       onClose()
       pushToast({
         kind: 'success',
-        title: `Restored version ${version.versionNumber}`,
-        body: `The ${entityLabel} draft now matches version ${version.versionNumber}. Publish or merge when you're ready.`,
+        title: t('shell.versions.restored', { version: formatNumber(version.versionNumber) }),
+        body: t('shell.versions.restoredBody', { entity: entityLabel, version: formatNumber(version.versionNumber) }),
       })
     } catch (err) {
       console.error('[versions] restore failed:', err)
-      pushToast({ kind: 'error', title: 'Could not restore the version', body: getErrorMessage(err, 'Unknown version error') })
+      pushToast({ kind: 'error', title: t('shell.copy.couldNotRestoreTheVersion'), body: getErrorMessage(err, t('shell.copy.unknownVersionError')) })
     } finally {
       setRestoring(null)
       setConfirming(null)
@@ -82,28 +93,28 @@ export function VersionHistoryDialog({ rowId, entityLabel, title, onClose, onRes
     <Dialog
       open
       onClose={onClose}
-      title="Version history"
+      title={t('shell.copy.versionHistory')}
       eyebrow={title ?? undefined}
       size="md"
       footer={(
         <Button variant="primary" size="sm" type="button" onClick={onClose}>
-          Done
+          {t('shell.copy.done')}
         </Button>
       )}
     >
       {loadError ? (
         <p className={styles.error} role="alert">{loadError}</p>
       ) : !versions ? (
-        <div className={styles.loading} aria-busy="true" aria-label="Loading versions">
+        <div className={styles.loading} aria-busy="true" aria-label={t('shell.copy.loadingVersions')}>
           <Skeleton width="70%" height={14} radius={999} />
           <Skeleton width="55%" height={14} radius={999} />
         </div>
       ) : versions.length === 0 ? (
         <p className={styles.empty} data-testid="version-history-empty">
-          This {entityLabel} has not been published yet, so there is nothing to restore.
+          {t('shell.versions.empty', { entity: entityLabel })}
         </p>
       ) : (
-        <ul className={styles.list} aria-label="Published versions" data-testid="version-history-list">
+        <ul className={styles.list} aria-label={t('shell.copy.publishedVersions')} data-testid="version-history-list">
           {versions.map((version, index) => {
             const isLatest = index === 0
             const isConfirming = confirming === version.id
@@ -112,19 +123,19 @@ export function VersionHistoryDialog({ rowId, entityLabel, title, onClose, onRes
                 <span className={styles.icon} aria-hidden="true"><ArchiveRestoreSolidIcon size={12} /></span>
                 <span className={styles.main}>
                   <span className={styles.label}>
-                    Version {version.versionNumber}
-                    {isLatest && <TagPill label="Latest" size="xs" className={styles.pill} />}
+                    {t('shell.versions.version', { version: formatNumber(version.versionNumber) })}
+                    {isLatest && <TagPill label={t('shell.copy.latest')} size="xs" className={styles.pill} />}
                   </span>
                   <span className={styles.meta}>
                     {isConfirming
-                      ? `Replace the current draft with version ${version.versionNumber}? Unpublished edits on the draft are lost.`
+                      ? t('shell.versions.confirm', { version: formatNumber(version.versionNumber) })
                       : publishedLabel(version)}
                   </span>
                 </span>
                 {isConfirming ? (
                   <span className={styles.actions}>
                     <Button variant="ghost" size="xs" type="button" onClick={() => setConfirming(null)} disabled={restoring !== null}>
-                      Cancel
+                      {t('shell.copy.cancel')}
                     </Button>
                     <Button
                       variant="primary"
@@ -134,7 +145,7 @@ export function VersionHistoryDialog({ rowId, entityLabel, title, onClose, onRes
                       data-testid={`version-restore-confirm-${version.versionNumber}`}
                       onClick={() => { void restore(version) }}
                     >
-                      Restore
+                      {t('shell.copy.restore')}
                     </Button>
                   </span>
                 ) : (
@@ -145,7 +156,7 @@ export function VersionHistoryDialog({ rowId, entityLabel, title, onClose, onRes
                     data-testid={`version-restore-${version.versionNumber}`}
                     onClick={() => setConfirming(version.id)}
                   >
-                    Restore
+                    {t('shell.copy.restore')}
                   </Button>
                 )}
               </li>

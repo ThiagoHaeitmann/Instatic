@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * VCDeletionConfirmProvider — single-instance dialog host for Visual Component
  * deletion with impact confirmation.
@@ -35,6 +36,7 @@ import {
 } from './vcDeletionConfirmHook'
 
 export function VCDeletionConfirmProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n()
   const site = useEditorStore((s) => s.site)
   const confirmDelete = useConfirmDelete()
 
@@ -52,8 +54,8 @@ export function VCDeletionConfirmProvider({ children }: { children: ReactNode })
         // No usages — fall through to the generic confirm-delete flow which
         // respects the confirmBeforeDelete editor preference.
         confirmDelete({
-          title: 'Delete component?',
-          confirmLabel: 'Delete component',
+          title: t('shell.copy.deleteComponentQuestion'),
+          confirmLabel: t('shell.copy.deleteComponent'),
           commit: request.commit,
         })
         return { status: 'handled' }

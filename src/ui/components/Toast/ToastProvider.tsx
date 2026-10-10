@@ -19,6 +19,7 @@
  *   - Close affordance + optional action use the Button primitive
  *   - Pixel-art icons only (close, circle-alert, warning-diamond)
  */
+import { useUiI18n } from '@ui/localization'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@ui/components/Button'
@@ -69,6 +70,7 @@ function ToastIcon({ kind }: { kind: ToastKind }) {
 }
 
 export function ToastProvider() {
+  const { t } = useUiI18n()
   const [items, setItems] = useState<ReadonlyArray<Toast>>([])
   const [paused, setPaused] = useState(false)
   const portalRoot = typeof document !== 'undefined' ? getToastRoot() : null
@@ -111,7 +113,7 @@ export function ToastProvider() {
     <div
       className={styles.stack}
       data-testid="toast-stack"
-      aria-label="Notifications"
+      aria-label={t('ui.notifications')}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -138,6 +140,7 @@ async function runToastAction(
 }
 
 function ToastItem({ toast }: { toast: Toast }) {
+  const { t } = useUiI18n()
   const [actionPending, setActionPending] = useState(false)
 
   async function handleAction() {
@@ -178,7 +181,7 @@ function ToastItem({ toast }: { toast: Toast }) {
           variant="ghost"
           size="micro"
           iconOnly
-          aria-label="Dismiss notification"
+          aria-label={t('ui.dismissNotification')}
           onClick={() => dismissToast(toast.id)}
         >
           <CloseIcon size={12} aria-hidden="true" />

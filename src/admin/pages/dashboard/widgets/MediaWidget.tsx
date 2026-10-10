@@ -14,6 +14,7 @@
  * the full `CmsMediaAsset` the viewer needs) and reuses it for every
  * subsequent click.
  */
+import { useI18n, formatBytes, formatNumber } from '@admin/i18n'
 import { useEffect, useState } from 'react'
 import { ImageSolidIcon } from 'pixel-art-icons/icons/image-solid'
 import { StatValue } from '@ui/components/charts'
@@ -32,16 +33,9 @@ import styles from './widgets.module.css'
 const ACCENT_INDEXES = new Set([0, 5, 10, 15])
 const EMPTY_INDEXES = new Set([4, 8, 12])
 
-function formatSize(bytes: number): string {
-  // Human-readable size — drops decimals for KB/MB but keeps one
-  // significant decimal for GB/TB so "1.4 GB" reads naturally.
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
-}
 
 export function MediaWidget({ span, editing }: DashboardWidgetRendererProps) {
+  const { t } = useI18n()
   const stats = useMediaStats()
   const isLoading = stats === null
   const count = stats?.count
@@ -113,7 +107,7 @@ export function MediaWidget({ span, editing }: DashboardWidgetRendererProps) {
     <>
       <Widget
         widgetId="media"
-        title="Media"
+        title={t('dashboard.widgets.media.name')}
         icon={ImageSolidIcon}
         tint="peach"
         span={span}
@@ -122,8 +116,8 @@ export function MediaWidget({ span, editing }: DashboardWidgetRendererProps) {
       >
         {!isLoading && (<>
         <StatValue
-          value={(count ?? 0).toLocaleString()}
-          sub={<span>files · {formatSize(totalBytes ?? 0)}</span>}
+          value={formatNumber((count ?? 0))}
+          sub={<span>{t('dashboard.media.files', { count: count ?? 0, size: formatBytes(totalBytes ?? 0) })}</span>}
         />
         {thumbs.length > 0 ? (
           <div className={styles.mediaGrid}>
@@ -151,8 +145,8 @@ export function MediaWidget({ span, editing }: DashboardWidgetRendererProps) {
                   size="sm"
                   className={styles.mediaCellThumb}
                   onClick={() => openViewer(thumb.id)}
-                  aria-label={`Open ${thumb.altText || 'media asset'} in viewer`}
-                  tooltip="Open in viewer"
+                  aria-label={t('dashboard.media.open', { name: thumb.altText || t('dashboard.media.asset') })}
+                  tooltip={t('dashboard.media.viewer')}
                 >
                   <Image
                     src={thumb.publicPath}

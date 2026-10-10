@@ -1,3 +1,4 @@
+import { translate } from '@admin/i18n'
 /**
  * First-party dashboard widget bootstrap.
  *
@@ -52,8 +53,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'pages',
     ownerId: 'core',
-    name: 'Pages',
-    description: 'Published + drafts',
+    get name() { return translate('dashboard.widgets.pages.name') },
+    get description() { return translate('dashboard.widgets.pages.description') },
     icon: FileTextSolidIcon,
     defaultSize: 3,
     tint: 'lilac',
@@ -63,8 +64,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'posts',
     ownerId: 'core',
-    name: 'Posts',
-    description: 'Posts by category',
+    get name() { return translate('dashboard.widgets.posts.name') },
+    get description() { return translate('dashboard.widgets.posts.description') },
     icon: PenSquareSolidIcon,
     defaultSize: 3,
     tint: 'peach',
@@ -74,8 +75,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'storage',
     ownerId: 'core',
-    name: 'Storage',
-    description: 'Disk usage breakdown',
+    get name() { return translate('dashboard.widgets.storage.name') },
+    get description() { return translate('dashboard.widgets.storage.description') },
     icon: DatabaseSolidIcon,
     defaultSize: 6,
     tint: 'sky',
@@ -89,8 +90,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'activity',
     ownerId: 'core',
-    name: 'Activity',
-    description: 'Recent edits & publishes',
+    get name() { return translate('dashboard.widgets.activity.name') },
+    get description() { return translate('dashboard.widgets.activity.description') },
     icon: DashboardSolidIcon,
     defaultSize: 4,
     tint: 'peach',
@@ -104,8 +105,8 @@ export function registerFirstPartyDashboardWidgets(): void {
     // both read this `name`, so users see the new label everywhere.
     id: 'publish',
     ownerId: 'core',
-    name: 'Publish lineup',
-    description: 'Scheduled, recently published, and drafts',
+    get name() { return translate('dashboard.widgets.publish.name') },
+    get description() { return translate('dashboard.widgets.publish.description') },
     icon: CloudUploadSolidIcon,
     defaultSize: 4,
     tint: 'sky',
@@ -115,8 +116,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'plugins',
     ownerId: 'core',
-    name: 'Plugins',
-    description: 'Installed & updates',
+    get name() { return translate('dashboard.widgets.plugins.name') },
+    get description() { return translate('dashboard.widgets.plugins.description') },
     icon: PlugSolidIcon,
     defaultSize: 4,
     tint: 'mint',
@@ -126,8 +127,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'media',
     ownerId: 'core',
-    name: 'Media',
-    description: 'Files & thumbnails',
+    get name() { return translate('dashboard.widgets.media.name') },
+    get description() { return translate('dashboard.widgets.media.description') },
     icon: ImageSolidIcon,
     defaultSize: 3,
     tint: 'peach',
@@ -137,8 +138,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'status',
     ownerId: 'core',
-    name: 'Site status',
-    description: 'Uptime, builds, backups',
+    get name() { return translate('dashboard.widgets.status.name') },
+    get description() { return translate('dashboard.widgets.status.description') },
     icon: ZapSolidIcon,
     defaultSize: 3,
     tint: 'mint',
@@ -148,8 +149,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'domain',
     ownerId: 'core',
-    name: 'Domain',
-    description: 'DNS + SSL status',
+    get name() { return translate('dashboard.widgets.domain.name') },
+    get description() { return translate('dashboard.widgets.domain.description') },
     icon: GlobeSolidIcon,
     defaultSize: 3,
     tint: 'sky',
@@ -159,8 +160,8 @@ export function registerFirstPartyDashboardWidgets(): void {
   dashboardWidgetRegistry.register({
     id: 'ai-usage',
     ownerId: 'core',
-    name: 'AI usage',
-    description: 'Spend + chats this month',
+    get name() { return translate('dashboard.widgets.ai-usage.name') },
+    get description() { return translate('dashboard.widgets.ai-usage.description') },
     icon: ZapSolidIcon,
     defaultSize: 3,
     tint: 'lilac',

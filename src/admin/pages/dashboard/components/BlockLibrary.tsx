@@ -34,6 +34,7 @@
  * Lives outside `DashboardGrid` as a sibling under the page-level
  * `DndContext` so dragged previews can travel between the two surfaces.
  */
+import { useI18n, translate, formatNumber } from '@admin/i18n'
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { CloseIcon } from 'pixel-art-icons/icons/close'
@@ -157,10 +158,10 @@ function groupWidgetsByOwner(widgets: readonly DashboardWidgetDefinition[]): Cat
     let group = groups.get(w.ownerId)
     if (!group) {
       group = {
-        label: w.ownerId === 'core' ? 'System' : w.ownerId,
+        label: w.ownerId,
         ownerId: w.ownerId,
         description:
-          w.ownerId === 'core' ? 'Built-in blocks' : 'Plugin-provided blocks',
+          w.ownerId === 'core' ? translate('dashboard.library.builtIn') : translate('dashboard.library.pluginBlocks'),
         widgets: [],
       }
       groups.set(w.ownerId, group)
@@ -247,6 +248,7 @@ function ExpandedPanel({
   hiddenDuringDrag,
   exiting,
 }: ExpandedPanelProps) {
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
   const q = query.toLowerCase().trim()
 
@@ -269,7 +271,7 @@ function ExpandedPanel({
         hiddenDuringDrag && styles.panelHiddenDuringDrag,
       )}
       role="dialog"
-      aria-label="Block library"
+      aria-label={t('dashboard.library.title')}
       style={{
         ['--lib-height' as string]: `${height}px`,
         ['--lib-row-h' as string]: `${GRID_ROW_HEIGHT}px`,
@@ -280,8 +282,8 @@ function ExpandedPanel({
 
       <header className={styles.head}>
         <div className={styles.title}>
-          <h3>Block library</h3>
-          <p>Drag a block onto the grid, or click to append it to the bottom.</p>
+          <h3>{t('dashboard.library.title')}</h3>
+          <p>{t('dashboard.library.instructions')}</p>
         </div>
         <div className={styles.headEnd}>
           <div className={styles.search}>
@@ -289,15 +291,15 @@ function ExpandedPanel({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search blocks…"
-              aria-label="Search blocks"
+              placeholder={t('dashboard.library.searchPlaceholder')}
+              aria-label={t('dashboard.library.search')}
             />
           </div>
           <Button
             variant="ghost"
             size="sm"
             iconOnly
-            aria-label="Close block library"
+            aria-label={t('dashboard.library.close')}
             onClick={onClose}
           >
             <CloseIcon size={12} aria-hidden="true" />
@@ -317,22 +319,22 @@ function ExpandedPanel({
               <span className={styles.everythingPlacedIcon}>
                 <ArrowDownIcon size={14} aria-hidden="true" />
               </span>
-              <strong>Every block is on your dashboard.</strong>
-              <span>Drag a block from the grid down here to put it back in the library.</span>
+              <strong>{t('dashboard.library.allPlaced')}</strong>
+              <span>{t('dashboard.library.returnHint')}</span>
             </div>
           )}
           {!everythingPlaced && filteredGroups.length === 0 && (
-            <p className={styles.empty}>No blocks match “{query}”.</p>
+            <p className={styles.empty}>{t('dashboard.library.noMatches', { query })}</p>
           )}
           {filteredGroups.map((group) => (
             <section className={styles.group} key={group.ownerId}>
               <header className={styles.groupHead}>
                 <span className={styles.groupLabel}>
-                  {group.ownerId === 'core' ? 'System' : `Plugin · ${group.label}`}
+                  {group.ownerId === 'core' ? t('dashboard.library.system') : t('dashboard.library.plugin', { name: group.label })}
                 </span>
                 <span className={styles.groupDescription}>{group.description}</span>
                 <span className={styles.groupCount}>
-                  {group.widgets.length} block{group.widgets.length === 1 ? '' : 's'}
+                  {t('dashboard.blocks', { count: group.widgets.length, number: formatNumber(group.widgets.length) })}
                 </span>
               </header>
               <div className={styles.strip}>
@@ -375,6 +377,7 @@ interface MinimizedPillProps {
  * call `removeWidget(...)`.
  */
 function MinimizedPill({ draggingFromGrid }: MinimizedPillProps) {
+  const { t } = useI18n()
   const { setNodeRef, isOver } = useDroppable({ id: LIBRARY_DROP_ID })
   return (
     <aside
@@ -385,15 +388,15 @@ function MinimizedPill({ draggingFromGrid }: MinimizedPillProps) {
         draggingFromGrid && styles.pillRemove,
       )}
       role="dialog"
-      aria-label="Block library — drop zone"
+      aria-label={t('dashboard.library.dropZone')}
     >
       <span className={styles.pillIcon}>
         <Grid2x22SolidIcon size={14} aria-hidden="true" />
       </span>
       <span className={styles.pillLabel}>
         {draggingFromGrid
-          ? (isOver ? 'Drop to put back in library' : 'Library — drop here to remove')
-          : 'Drop on grid to add'}
+          ? (isOver ? t('dashboard.library.putBack') : t('dashboard.library.remove'))
+          : t('dashboard.library.addToGrid')}
       </span>
     </aside>
   )
@@ -409,6 +412,7 @@ interface LibraryItemProps {
 }
 
 function LibraryItem({ widget, onAdd }: LibraryItemProps) {
+  const { t } = useI18n()
   // Destructure `useDraggable` so the React Compiler's refs gate doesn't
   // see property accesses on the same object that carries `setNodeRef`.
   // (Reading `.listeners` / `.isDragging` off the umbrella object trips
@@ -448,7 +452,7 @@ function LibraryItem({ widget, onAdd }: LibraryItemProps) {
       className={cn(styles.item, isDragging && styles.itemDragging)}
       style={{ ['--span' as string]: String(widget.defaultSize) }}
       role="group"
-      aria-label={`${widget.name} block preview`}
+      aria-label={t('dashboard.library.preview', { name: widget.name })}
     >
       {/* The clickable preview surface. dnd-kit listeners + click-to-add
           both live here. dnd-kit's `activationConstraint: { distance: 6 }`
@@ -480,9 +484,10 @@ function LibraryItem({ widget, onAdd }: LibraryItemProps) {
         className={styles.itemSurface}
         style={{ height: `${previewHeightPx}px` }}
         onClick={handleClick}
-        aria-label={`Add ${widget.name} to dashboard`}
+        aria-label={t('dashboard.library.addWidget', { name: widget.name })}
         {...listeners}
         {...attributes}
+        aria-roledescription={t('dashboard.drag.role')}
       >
         <div className={styles.itemPreview} aria-hidden="true">
           {/* Render with edit-mode chrome so Widget previews do not
@@ -496,7 +501,7 @@ function LibraryItem({ widget, onAdd }: LibraryItemProps) {
           <span className={styles.itemDescription}>{widget.description}</span>
         </div>
         <span className={styles.addHint}>
-          <PlusIcon size={10} aria-hidden="true" /> Add
+          <PlusIcon size={10} aria-hidden="true" /> {t('dashboard.library.add')}
         </span>
       </footer>
     </div>
@@ -513,6 +518,7 @@ interface ResizeHandleProps {
 }
 
 function ResizeHandle({ height, onHeightChange }: ResizeHandleProps) {
+  const { t } = useI18n()
   // Local state for the live drag — keeps the handle smooth without
   // round-tripping through the layout hook on every pointer-move (which
   // would also schedule a debounced server save 60 times per second).
@@ -562,7 +568,7 @@ function ResizeHandle({ height, onHeightChange }: ResizeHandleProps) {
       className={cn(styles.resize, dragging && styles.resizeActive)}
       role="separator"
       aria-orientation="horizontal"
-      aria-label="Resize block library"
+      aria-label={t('dashboard.library.resize')}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
