@@ -1,4 +1,4 @@
-import { translate } from '@admin/i18n'
+import { translate, type MessageKey, type SupportedLocale } from '@admin/i18n'
 /**
  * Shared system binding sources — `page`, `site`, `route`.
  *
@@ -21,9 +21,11 @@ export type SystemSourceId = 'page' | 'site' | 'route'
 
 interface SystemSource {
   id: SystemSourceId
+  labelKey: MessageKey
   label: string
+  descriptionKey: MessageKey
   description: string
-  fields: LoopSourceField[]
+  fields: Array<LoopSourceField & { labelKey: MessageKey }>
 }
 
 // ---------------------------------------------------------------------------
@@ -32,13 +34,13 @@ interface SystemSource {
 
 const PAGE_SOURCE: SystemSource = {
   id: 'page',
-  get label() { return translate('shell.copy.page') },
-  get description() { return translate('shell.copy.fieldsOfThePageCurrentlyBeingRendered') },
+  labelKey: 'shell.copy.page', get label() { return translate(this.labelKey) },
+  descriptionKey: 'shell.copy.fieldsOfThePageCurrentlyBeingRendered', get description() { return translate(this.descriptionKey) },
   fields: [
-    { id: 'title', get label() { return translate('shell.copy.pageTitle') } },
-    { id: 'slug', get label() { return translate('shell.copy.slug') } },
-    { id: 'permalink', get label() { return translate('shell.copy.permalink') }, format: 'url' },
-    { id: 'parentSlug', get label() { return translate('shell.copy.parentSlug') } },
+    { id: 'title', labelKey: 'shell.copy.pageTitle', get label() { return translate(this.labelKey) } },
+    { id: 'slug', labelKey: 'shell.copy.slug', get label() { return translate(this.labelKey) } },
+    { id: 'permalink', labelKey: 'shell.copy.permalink', get label() { return translate(this.labelKey) }, format: 'url' },
+    { id: 'parentSlug', labelKey: 'shell.copy.parentSlug', get label() { return translate(this.labelKey) } },
   ],
 }
 
@@ -48,10 +50,10 @@ const PAGE_SOURCE: SystemSource = {
 
 const SITE_SOURCE: SystemSource = {
   id: 'site',
-  get label() { return translate('shell.copy.site') },
-  get description() { return translate('shell.copy.siteWideAuthorFacingFields') },
+  labelKey: 'shell.copy.site', get label() { return translate(this.labelKey) },
+  descriptionKey: 'shell.copy.siteWideAuthorFacingFields', get description() { return translate(this.descriptionKey) },
   fields: [
-    { id: 'name', get label() { return translate('shell.copy.siteName') } },
+    { id: 'name', labelKey: 'shell.copy.siteName', get label() { return translate(this.labelKey) } },
   ],
 }
 
@@ -61,11 +63,11 @@ const SITE_SOURCE: SystemSource = {
 
 const ROUTE_SOURCE: SystemSource = {
   id: 'route',
-  get label() { return translate('shell.copy.route') },
-  get description() { return translate('shell.copy.currentURLPathAndSlugUsefulForSEOAndBreadcrumbs') },
+  labelKey: 'shell.copy.route', get label() { return translate(this.labelKey) },
+  descriptionKey: 'shell.copy.currentURLPathAndSlugUsefulForSEOAndBreadcrumbs', get description() { return translate(this.descriptionKey) },
   fields: [
-    { id: 'path', get label() { return translate('shell.copy.path') }, format: 'url' },
-    { id: 'slug', get label() { return translate('shell.copy.uRLSlug') } },
+    { id: 'path', labelKey: 'shell.copy.path', get label() { return translate(this.labelKey) }, format: 'url' },
+    { id: 'slug', labelKey: 'shell.copy.uRLSlug', get label() { return translate(this.labelKey) } },
   ],
 }
 
@@ -78,3 +80,13 @@ export const SYSTEM_SOURCES: readonly SystemSource[] = [
   SITE_SOURCE,
   ROUTE_SOURCE,
 ]
+
+/** Snapshot only host-owned source labels, retaining stable binding IDs/formats. */
+export function localizedSystemSources(locale: SupportedLocale): SystemSource[] {
+  return SYSTEM_SOURCES.map((source) => ({
+    ...source,
+    label: translate(source.labelKey, {}, locale),
+    description: translate(source.descriptionKey, {}, locale),
+    fields: source.fields.map((field) => ({ ...field, label: translate(field.labelKey, {}, locale) })),
+  }))
+}

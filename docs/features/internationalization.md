@@ -15,7 +15,7 @@ Instatic internationalizes its administration interface independently from site 
 - The selection is validated and stored under `instatic-locale`; storage events synchronize open tabs.
 - Messages support named `{{value}}` interpolation and `Intl.PluralRules` plural categories.
 - Dates, numbers, currency, relative time, lists, and byte sizes use helpers from `@admin/i18n`.
-- Admin shell, shared admin controls, authentication, Dashboard, Preferences, Account, Users, primitive-owned defaults, and host-owned structured metadata are localized; other workspace copy is not yet migrated.
+- Admin shell, shared admin controls, authentication, Dashboard, Preferences, Account, Users, Content-owned UI, primitive-owned defaults, and host-owned structured metadata are localized; other workspace copy is not yet migrated.
 - Shared primitives consume `src/ui/localization/`, with English defaults outside the admin provider; they never initialize admin locale state.
 
 ## Architecture
@@ -63,7 +63,7 @@ The stored shape is validated with TypeBox:
 
 ## Messages
 
-`src/admin/i18n/messages.ts` aggregates English and Brazilian Portuguese catalogs with exact key parity. Shell messages live in `shellMessages.ts`, Dashboard messages in `dashboardMessages.ts`, Account/Users messages in `accountUsersMessages.ts`, structured metadata in `metadataMessages.ts`, and primitive translations in `uiMessages.ts`; the primitive English source is `src/ui/localization/englishMessages.ts`. Catalogs are data-only and do not import workspace implementations. The runtime retains English fallback behavior for missing translations; parity and interpolation tests prevent missing keys in shipped resources.
+`src/admin/i18n/messages.ts` aggregates English and Brazilian Portuguese catalogs with exact key parity. Shell messages live in `shellMessages.ts`, Dashboard messages in `dashboardMessages.ts`, Account/Users messages in `accountUsersMessages.ts`, structured metadata in `metadataMessages.ts`, Content presentation in `contentMessages.ts`, and primitive translations in `uiMessages.ts`; the primitive English source is `src/ui/localization/englishMessages.ts`. Catalogs are data-only and do not import workspace implementations. The runtime retains English fallback behavior for missing translations; parity and interpolation tests prevent missing keys in shipped resources.
 
 Translate host-owned metadata at render/read time, not once at module initialization. First-party Dashboard definitions expose translated name/description getters, and `useDashboardWidgets` subscribes to locale changes without replacing the registry snapshot. Plugin names and descriptions remain author-owned.
 
@@ -112,6 +112,19 @@ A locale subscription alone does not invalidate cached calls to an ambient gette
 
 `src/__tests__/admin/accountUsersI18n.test.tsx` uses `metadataCompilerHarness.ts` with the production React Compiler preset for both consumers **and the locale hook**. Mounted `en → pt-BR → en` regressions cover page shells, typed forms, open menus/dialogs, persisted validation/success/load feedback, MFA secrets/recovery codes, capability metadata/checkbox identity, unchanged user/role/audit data, session formatting, counts, ARIA, and loading/empty states. Each compiler invocation has distinct consumer, hook, and bridge paths, including repeated or differing extra-export/locale-hook configurations, so imported fixtures cannot collide in the module cache. Regressions verify both exported values and actual hook identity. Compiling only the consumer would miss a locale-independent cached translator in the hook. Password/MFA asynchronous operation handling stays outside component compiler scopes so `finally` cleanup remains intact without a compiler bailout; the capability picker's empty default set is module-owned for the same reason.
 
+## Content presentation
+
+`contentMessages.ts` contains 202 keys per locale for Content-owned collection/entry lists and action menus, document/empty/loading chrome, settings, write/live mode, publish/save status and actions, rich-text bubble/floating/slash menus, link and alt-text forms, inline media uploads, rename/collection-settings dialogs, and shared scheduling presentation. Shared binding and version-history surfaces reuse the shell catalog.
+
+- Collection names and singular/plural labels, entry titles/body/SEO values, authors and role names, filenames, alt text, URLs, routes, slugs, schema field IDs/labels, command IDs, and stored statuses remain verbatim. Host fallback titles are translated only for empty presentation; stored `Untitled` and inserted heading text are not rewritten by changing locale.
+- `src/admin/shared/contentFeedback.ts` distinguishes live host message descriptors from raw server/diagnostic strings. Persistent load fallbacks resolve at render time; operation failures use translated toast titles and raw details. Schedule-time validation is field-local and remains live while the dialog is open. Caller-owned toasts capture their emission locale.
+- Rich-text catalogs store message keys, not translated snapshots. Slash search resolves current host labels/descriptions while retaining command IDs and existing keyword aliases. The installed Suggestion plugin owns a locale subscription that refilters an active query and updates its renderer even when query/range are unchanged; no document or selection transaction is needed. Its command catalog is created once per installed plugin. Awaited item callbacks resolve the latest locale only while the plugin view is alive and the current suggestion is active with the same query/range; callbacks settling after exit or destruction cannot restore the menu. Destruction invalidates the view before removing the subscription and closing the renderer.
+- `ContentInsertNotch` is Content-owned: it renders document actions without importing the Site module-insertion registry or page-tree history. Its action IDs and anchors remain stable. The Content rail's color identity uses stable panel IDs, not translated labels.
+- Long-lived Write and Live Tiptap instances refresh accessible names and placeholder decorations on locale changes through `utils/editorI18n.ts`; the editor, document, selection, and markdown remain intact. Write-mode `useEditor` attributes also use the subscribed translator so subsequent same-locale edits/rerenders cannot reapply a compiler-cached English label. Locale is an explicit input to compiled binding-preview snapshots, counts, publication dates, relative time, and list formatting.
+- The shared `SchedulePublishDialog`, `DataBindingPicker`, and `VersionHistoryDialog` are localized without migrating their callers' workspaces. Data-owned collection creation/schema composition, custom cell editors/relation pickers, and the embedded Media library/picker/viewer remain owned by Phases 6/7; AI and Site surfaces remain owned by their phases. Content has no independent list search/sort/filter or bulk toolbar to migrate; those embedded surfaces belong to the owning workspace.
+
+`src/__tests__/admin/contentI18n.test.tsx` uses `metadataCompilerHarness.ts` to compile actual consumers **and `useI18n`** with the production preset. Mounted `en → pt-BR → en` regressions cover document/notch and preview chrome, modes, explorer counts/status/loading/empty states, open context/publish/slash menus, settings options, rename/collection forms and unchanged mutation payloads, link/alt forms, the real Tiptap editor, scheduling, binding source snapshots, and version dates/confirmation. Catalog parity/interpolation, plural counts, feedback isolation/toasts, and document/selection preservation have focused checks. Lifecycle regressions exercise same-locale edits/parent rerenders after switching the compiled editor, an installed Suggestion with an unchanged `/tít` query, locale changes before awaited items settle, menu exit, and subscription cleanup on destruction. Real installed-plugin regressions cover both start and update callbacks with exit or destruction occurring before items settle; rejected callbacks leave the document/selection unchanged and later valid sessions still open.
+
 ## Shared primitive isolation
 
 `src/admin/i18n/I18nProvider.tsx` subscribes to the existing admin runtime and supplies its active catalog and locale through `UiI18nContext` from `src/ui/localization/`. Functional primitives use `useUiI18n`; the class-based `ErrorBoundary` consumes the same context so an already-visible recovery screen updates without retrying the failed child.
@@ -150,7 +163,7 @@ Do not translate:
 2. **Shell / shared / Dashboard — complete.** Admin shell, shared controls, primitive defaults, capability presentation, Dashboard UI and first-party widget metadata; plugin isolation.
 3. **Structured metadata — complete.** Remaining Preferences catalogs; Spotlight core commands/groups/arguments/scopes/provider labels; AI provider/scope host metadata; admin field/status/filter/sort/storage-role/review presentation catalogs. Read-time lookup, live rendering, stable protocol values, and focused regression tests.
 4. **Account / Users — complete.** Profile/avatar/password/step-up/MFA/recovery forms and dialogs; sessions and sign-in history; user/role management and audit UI; validation, operation feedback, counts, locale-aware formatting, accessible/loading/empty states, capability metadata reuse, and mounted production-compiler locale-switch regressions.
-5. **Content — pending.** Collections, entries, body editor, content settings, validation and operation feedback beyond shared metadata.
+5. **Content — complete.** Content-owned collection/entry presentation and actions; document and preview chrome; body-editor menus, media toolbar and inline uploads; settings; rename/collection-settings/scheduling dialogs; validation and operation feedback; counts, dates and ARIA; mounted production-compiler locale-switch regressions. Embedded Data/Media/AI-owned surfaces remain in their respective phases.
 6. **Data / import / export — pending.** Table and field management UI, import/export flows, validation and operation feedback beyond shared metadata.
 7. **Media — pending.** Library, picker, uploads, bulk editing, storage UI and operation feedback beyond shared metadata.
 8. **Plugins — pending.** Host-owned plugin workspace/install/settings UI and feedback; plugin-authored content remains outside admin translation.
@@ -191,6 +204,10 @@ Do not translate:
   - `src/admin/i18n/metadataMessages.ts`
   - `src/admin/i18n/accountUsersMessages.ts`
   - `src/admin/shared/accountUsersFeedback.ts`
+  - `src/admin/i18n/contentMessages.ts`
+  - `src/admin/shared/contentFeedback.ts`
+  - `src/admin/pages/content/components/ContentInsertNotch.tsx`
+  - `src/admin/pages/content/utils/editorI18n.ts`
   - `src/admin/shared/CapabilityPicker/capabilityMeta.ts`
   - `src/admin/pages/users/utils/audit.ts`
   - `src/admin/i18n/useI18n.ts`
@@ -203,6 +220,7 @@ Do not translate:
 - Tests:
   - `src/__tests__/admin/i18n.test.tsx` — runtime and aggregate catalog parity.
   - `src/__tests__/admin/accountUsersI18n.test.tsx` — Account/Users catalog parity, formatting/plurals, raw-value isolation, and mounted compiler-backed locale changes (including the compiled locale hook).
+  - `src/__tests__/admin/contentI18n.test.tsx` — Content catalog parity, interpolation/plurals, feedback/raw-data boundaries, and mounted compiler-backed locale changes (including the compiled locale hook).
   - `src/__tests__/admin/metadataCompilerHarness.ts` — production-preset compiler fixtures with an optional compiled locale-hook bridge and process-lifetime cleanup across test files.
   - `src/__tests__/admin/metadataI18n.test.tsx` — structured catalog parity/isolation, cached identity, translated search, live Preferences/Spotlight rendering, stable values, and plugin metadata preservation.
   - `src/__tests__/admin/shellI18n.test.tsx` — shared shell/authentication controls and metadata.

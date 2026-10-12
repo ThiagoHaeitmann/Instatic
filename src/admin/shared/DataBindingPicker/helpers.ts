@@ -1,4 +1,4 @@
-import { formatNumber, formatList, translate } from '@admin/i18n'
+import { formatNumber, formatList, translate, getLocale, type SupportedLocale } from '@admin/i18n'
 /**
  * Pure helpers, types and constants for the shared data-binding picker.
  *
@@ -62,24 +62,24 @@ export function loopFieldMatchesControl(
 // still tell what the binding would resolve to.
 // ---------------------------------------------------------------------------
 
-export function formatPreviewValue(value: unknown): string {
+export function formatPreviewValue(value: unknown, locale: SupportedLocale = getLocale()): string {
   if (value === null || value === undefined) return '—'
   if (typeof value === 'string') {
-    if (!value) return translate('shell.copy.empty')
+    if (!value) return translate('shell.copy.empty', {}, locale)
     return value.length > 80 ? `${value.slice(0, 80)}…` : value
   }
-  if (typeof value === 'number') return formatNumber(value)
+  if (typeof value === 'number') return formatNumber(value, undefined, locale)
   if (typeof value === 'boolean') return String(value)
   if (Array.isArray(value)) {
-    if (value.length === 0) return translate('shell.copy.empty')
-    return formatList(value.map((v) => formatPreviewValue(v)))
+    if (value.length === 0) return translate('shell.copy.empty', {}, locale)
+    return formatList(value.map((v) => formatPreviewValue(v, locale)), undefined, locale)
   }
   if (typeof value === 'object') {
     try {
       const json = JSON.stringify(value)
       return json.length > 80 ? `${json.slice(0, 80)}…` : json
     } catch {
-      return translate('shell.copy.object')
+      return translate('shell.copy.object', {}, locale)
     }
   }
   return String(value)
@@ -93,10 +93,11 @@ export function formatPreviewValue(value: unknown): string {
 export function formatMetaFieldPreview(
   field: DataMetaField,
   value: unknown,
+  locale: SupportedLocale = getLocale(),
 ): string {
   if (field.type === 'repeater') {
-    if (!Array.isArray(value) || value.length === 0) return translate('shell.copy.empty')
-    return translate('shell.binding.items', { count: value.length, countLabel: formatNumber(value.length) })
+    if (!Array.isArray(value) || value.length === 0) return translate('shell.copy.empty', {}, locale)
+    return translate('shell.binding.items', { count: value.length, countLabel: formatNumber(value.length, undefined, locale) }, locale)
   }
 
   if (field.type === 'media') {
@@ -105,16 +106,16 @@ export function formatMetaFieldPreview(
       : typeof value === 'string' && value.length > 0
         ? [value]
         : []
-    if (values.length === 0) return translate('shell.copy.empty')
+    if (values.length === 0) return translate('shell.copy.empty', {}, locale)
     const key = field.mediaKind === 'image'
       ? 'shell.binding.images'
       : field.mediaKind === 'video'
         ? 'shell.binding.videos'
         : 'shell.binding.assets'
-    return translate(key, { count: values.length, countLabel: formatNumber(values.length) })
+    return translate(key, { count: values.length, countLabel: formatNumber(values.length, undefined, locale) }, locale)
   }
 
-  return formatPreviewValue(value)
+  return formatPreviewValue(value, locale)
 }
 
 // ---------------------------------------------------------------------------

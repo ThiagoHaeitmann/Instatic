@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * Write / Live segmented switch for the content editor.
  *
@@ -31,6 +32,7 @@ interface ContentModeToggleProps {
 }
 
 export function ContentModeToggle({ mode, onChange }: ContentModeToggleProps) {
+  const { t } = useI18n()
   // The toggle lives on the canvas surface, which has its own click /
   // keyboard handlers (deselect, shortcuts). Stop propagation so the
   // tab buttons feel like chrome, not "clicks on empty canvas".
@@ -42,16 +44,16 @@ export function ContentModeToggle({ mode, onChange }: ContentModeToggleProps) {
     <div
       className={styles.shell}
       role="tablist"
-      aria-label="Content editor mode"
+      aria-label={t('content.copy.contentEditorMode')}
       data-testid="content-mode-toggle"
       onClick={stopCanvasInteraction}
     >
-      <Tooltip content="Write mode (plain editor surface)">
+      <Tooltip content={t('content.copy.writeModePlainEditorSurface')}>
         <button
           type="button"
           role="tab"
           aria-selected={mode === 'write'}
-          aria-label="Write"
+          aria-label={t('content.copy.write')}
           data-testid="content-mode-toggle-write"
           className={cn(styles.tab, mode === 'write' && styles.tabActive)}
           onClick={() => onChange('write')}
@@ -59,12 +61,12 @@ export function ContentModeToggle({ mode, onChange }: ContentModeToggleProps) {
           <TextStartTIcon size={14} aria-hidden="true" />
         </button>
       </Tooltip>
-      <Tooltip content="Live mode (edit inside the rendered template)">
+      <Tooltip content={t('content.copy.liveModeEditInsideTheRenderedTemplate')}>
         <button
           type="button"
           role="tab"
           aria-selected={mode === 'live'}
-          aria-label="Live"
+          aria-label={t('content.copy.live')}
           data-testid="content-mode-toggle-live"
           className={cn(styles.tab, mode === 'live' && styles.tabActive)}
           onClick={() => onChange('live')}

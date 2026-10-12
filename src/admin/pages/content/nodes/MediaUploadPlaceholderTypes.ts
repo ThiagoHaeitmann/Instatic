@@ -1,3 +1,5 @@
+import type { ContentFeedback } from '@admin/shared/contentFeedback'
+
 export type MediaUploadKind = 'image' | 'video'
 export type MediaUploadStatus = 'uploading' | 'failed'
 
@@ -10,7 +12,7 @@ export interface MediaUploadPlaceholderAttributes {
   progress: number
   status: MediaUploadStatus
   /** Optional error message when `status === 'failed'`. */
-  error: string | null
+  error: ContentFeedback | null
   /** Object URL of the source File so we can show a thumbnail. Caller revokes on swap. */
   previewUrl: string | null
 }

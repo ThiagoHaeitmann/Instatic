@@ -1,3 +1,4 @@
+import { useI18n, type MessageKey } from '@admin/i18n'
 /**
  * Floating bubble menu surfaced over text selections in the body editor.
  *
@@ -65,18 +66,19 @@ type BlockKind =
   | 'blockquote'
   | 'code-block'
 
-const BLOCK_OPTIONS: Array<{ kind: BlockKind; label: string }> = [
-  { kind: 'paragraph', label: 'Paragraph' },
-  { kind: 'heading-2', label: 'Heading 2' },
-  { kind: 'heading-3', label: 'Heading 3' },
-  { kind: 'heading-4', label: 'Heading 4' },
-  { kind: 'bullet-list', label: 'Bullet list' },
-  { kind: 'ordered-list', label: 'Numbered list' },
-  { kind: 'blockquote', label: 'Quote' },
-  { kind: 'code-block', label: 'Code block' },
+const BLOCK_OPTIONS: Array<{ kind: BlockKind; labelKey: MessageKey }> = [
+  { kind: 'paragraph', labelKey: 'content.copy.paragraph' },
+  { kind: 'heading-2', labelKey: 'content.copy.heading2' },
+  { kind: 'heading-3', labelKey: 'content.copy.heading3' },
+  { kind: 'heading-4', labelKey: 'content.copy.heading4' },
+  { kind: 'bullet-list', labelKey: 'content.copy.bulletList' },
+  { kind: 'ordered-list', labelKey: 'content.copy.numberedList' },
+  { kind: 'blockquote', labelKey: 'content.copy.quote' },
+  { kind: 'code-block', labelKey: 'content.copy.codeBlock' },
 ]
 
 export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
+  const { t } = useI18n()
   const [linkDraft, setLinkDraft] = useState<string | null>(null)
   const [typeMenuRect, setTypeMenuRect] = useState<DOMRect | null>(null)
   const [insertMenuRect, setInsertMenuRect] = useState<DOMRect | null>(null)
@@ -152,7 +154,7 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
           isCode: false,
           isLink: false,
           linkHref: '',
-          activeBlockLabel: 'Paragraph',
+
           activeBlockKind: 'paragraph' as BlockKind,
           textAlign: 'left' as TextAlignKind,
         }
@@ -166,7 +168,7 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
         isCode: ed.isActive('code'),
         isLink: ed.isActive('link'),
         linkHref: typeof linkAttrs.href === 'string' ? linkAttrs.href : '',
-        activeBlockLabel: readActiveBlockLabel(ed),
+
         activeBlockKind: readActiveBlockKind(ed),
         textAlign: readActiveTextAlign(ed),
       }
@@ -203,7 +205,7 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
     }
   }
 
-  const currentBlockLabel = state.activeBlockLabel
+  const currentBlockLabel = t(readActiveBlockKindLabel(state.activeBlockKind))
 
   return (
     <BubbleMenu
@@ -232,7 +234,7 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
             <Button
               variant="ghost"
               size="xs"
-              tooltip="Turn into…"
+              tooltip={t('content.copy.turnInto')}
               className={styles.blockTypeButton}
               onMouseDown={(event) => event.preventDefault()}
               onClick={(event) => {
@@ -244,38 +246,38 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
             </Button>
             <span className={styles.divider} aria-hidden="true" />
             <MarkButton
-              label="Bold (Cmd-B)"
+              label={t('content.copy.boldCmdB')}
               icon={BoldIcon}
               active={state.isBold}
               onClick={() => editor.chain().focus().toggleBold().run()}
             />
             <MarkButton
-              label="Italic (Cmd-I)"
+              label={t('content.copy.italicCmdI')}
               icon={ItalicIcon}
               active={state.isItalic}
               onClick={() => editor.chain().focus().toggleItalic().run()}
             />
             <MarkButton
-              label="Underline (Cmd-U)"
+              label={t('content.copy.underlineCmdU')}
               icon={UnderlineIcon}
               active={state.isUnderline}
               onClick={() => editor.chain().focus().toggleUnderline().run()}
             />
             <MarkButton
-              label="Strikethrough"
+              label={t('content.copy.strikethrough')}
               icon={StrikeIcon}
               active={state.isStrike}
               onClick={() => editor.chain().focus().toggleStrike().run()}
             />
             <MarkButton
-              label="Inline code"
+              label={t('content.copy.inlineCode')}
               icon={CodeIcon}
               active={state.isCode}
               onClick={() => editor.chain().focus().toggleCode().run()}
             />
             <span className={styles.divider} aria-hidden="true" />
             <MarkButton
-              label="Link (Cmd-K)"
+              label={t('content.copy.linkCmdK')}
               icon={LinkIcon}
               active={state.isLink}
               onClick={() => {
@@ -284,25 +286,25 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
             />
             <span className={styles.divider} aria-hidden="true" />
             <MarkButton
-              label="Align left"
+              label={t('content.copy.alignLeft')}
               icon={TextAlignLeftIcon}
               active={state.textAlign === 'left'}
               onClick={() => editor.chain().focus().setTextAlign('left').run()}
             />
             <MarkButton
-              label="Align center"
+              label={t('content.copy.alignCenter')}
               icon={TextAlignCenterIcon}
               active={state.textAlign === 'center'}
               onClick={() => editor.chain().focus().setTextAlign('center').run()}
             />
             <MarkButton
-              label="Align right"
+              label={t('content.copy.alignRight')}
               icon={TextAlignRightIcon}
               active={state.textAlign === 'right'}
               onClick={() => editor.chain().focus().setTextAlign('right').run()}
             />
             <MarkButton
-              label="Justify"
+              label={t('content.copy.justify')}
               icon={TextAlignJustifyIcon}
               active={state.textAlign === 'justify'}
               onClick={() => editor.chain().focus().setTextAlign('justify').run()}
@@ -312,8 +314,8 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
               variant="ghost"
               size="xs"
               iconOnly
-              tooltip="Insert block below"
-              aria-label="Insert block below"
+              tooltip={t('content.copy.insertBlockBelow')}
+              aria-label={t('content.copy.insertBlockBelow')}
               className={styles.markButton}
               onMouseDown={(event) => event.preventDefault()}
               onClick={(event) => {
@@ -350,7 +352,7 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
           width={160}
           minWidth={160}
           zIndex={10001}
-          ariaLabel="Turn into"
+          ariaLabel={t('content.copy.turnIntoLabel')}
           onClose={() => setTypeMenuRect(null)}
         >
           {BLOCK_OPTIONS.map((option) => (
@@ -362,7 +364,7 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
                 setTypeMenuRect(null)
               }}
             >
-              <span>{option.label}</span>
+              <span>{t(option.labelKey)}</span>
             </ContextMenuItem>
           ))}
         </ContextMenu>
@@ -374,19 +376,19 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
           width={220}
           minWidth={220}
           zIndex={10001}
-          ariaLabel="Insert block below"
+          ariaLabel={t('content.copy.insertBlockBelow')}
           onClose={() => setInsertMenuRect(null)}
         >
           {INSERT_BELOW_OPTIONS.map((option) => (
             <ContextMenuItem
-              key={option.label}
+              key={option.labelKey}
               onClick={() => {
                 insertBlockBelow(editor, option.apply)
                 setInsertMenuRect(null)
               }}
             >
               {option.icon}
-              <span>{option.label}</span>
+              <span>{t(option.labelKey)}</span>
             </ContextMenuItem>
           ))}
         </ContextMenu>
@@ -400,7 +402,7 @@ export function BodyBubbleMenu({ editor, iframeEl }: BodyBubbleMenuProps) {
 // ---------------------------------------------------------------------------
 
 interface InsertBelowOption {
-  label: string
+  labelKey: MessageKey
   icon: ReactNode
   apply: (chain: ChainedCommands) => boolean
 }
@@ -411,27 +413,27 @@ interface InsertBelowOption {
 // to `apply`, so the new block always lands after the selection.
 const INSERT_BELOW_OPTIONS: InsertBelowOption[] = [
   {
-    label: 'Paragraph',
+    labelKey: 'content.copy.paragraph',
     icon: <TextStartTIcon size={14} aria-hidden="true" />,
     apply: (chain) => chain.insertContent({ type: 'paragraph' }).run(),
   },
   {
-    label: 'Heading 2',
+    labelKey: 'content.copy.heading2',
     icon: <HeadingIcon size={14} aria-hidden="true" />,
     apply: (chain) => chain.insertContent({ type: 'heading', attrs: { level: 2 } }).run(),
   },
   {
-    label: 'Heading 3',
+    labelKey: 'content.copy.heading3',
     icon: <HeadingIcon size={14} aria-hidden="true" />,
     apply: (chain) => chain.insertContent({ type: 'heading', attrs: { level: 3 } }).run(),
   },
   {
-    label: 'Heading 4',
+    labelKey: 'content.copy.heading4',
     icon: <HeadingIcon size={14} aria-hidden="true" />,
     apply: (chain) => chain.insertContent({ type: 'heading', attrs: { level: 4 } }).run(),
   },
   {
-    label: 'Bullet list',
+    labelKey: 'content.copy.bulletList',
     icon: <BulletlistSolidIcon size={14} aria-hidden="true" />,
     apply: (chain) =>
       chain
@@ -439,13 +441,13 @@ const INSERT_BELOW_OPTIONS: InsertBelowOption[] = [
         .run(),
   },
   {
-    label: 'Quote',
+    labelKey: 'content.copy.quote',
     icon: <TextPlusIcon size={14} aria-hidden="true" />,
     apply: (chain) =>
       chain.insertContent({ type: 'blockquote', content: [{ type: 'paragraph' }] }).run(),
   },
   {
-    label: 'Divider',
+    labelKey: 'content.copy.divider',
     icon: <MinusIcon size={14} aria-hidden="true" />,
     apply: (chain) => chain.setHorizontalRule().run(),
   },
@@ -502,6 +504,7 @@ interface LinkEditorProps {
 }
 
 function LinkEditor({ initial, onCancel, onClear, onSubmit }: LinkEditorProps) {
+  const { t } = useI18n()
   const [value, setValue] = useState(initial)
   return (
     <form
@@ -515,7 +518,7 @@ function LinkEditor({ initial, onCancel, onClear, onSubmit }: LinkEditorProps) {
         autoFocus
         value={value}
         placeholder="https://"
-        aria-label="Link URL"
+        aria-label={t('content.copy.linkUrl')}
         fieldSize="sm"
         emphasis="strong"
         onChange={(event) => setValue(event.target.value)}
@@ -527,11 +530,11 @@ function LinkEditor({ initial, onCancel, onClear, onSubmit }: LinkEditorProps) {
         }}
       />
       <Button type="submit" variant="primary" size="xs">
-        Apply
+        {t('content.copy.apply')}
       </Button>
       {initial.length > 0 && (
         <Button type="button" variant="ghost" size="xs" onClick={onClear}>
-          Remove
+          {t('content.copy.remove')}
         </Button>
       )}
     </form>
@@ -548,20 +551,16 @@ function sliceContainsNonTextAtom(content: {
   return found
 }
 
-function readActiveBlockLabel(editor: Editor): string {
-  return readActiveBlockKindLabel(readActiveBlockKind(editor))
-}
-
-function readActiveBlockKindLabel(kind: BlockKind): string {
+function readActiveBlockKindLabel(kind: BlockKind): MessageKey {
   switch (kind) {
-    case 'paragraph': return 'Paragraph'
-    case 'heading-2': return 'Heading 2'
-    case 'heading-3': return 'Heading 3'
-    case 'heading-4': return 'Heading 4'
-    case 'bullet-list': return 'Bullet list'
-    case 'ordered-list': return 'Numbered list'
-    case 'blockquote': return 'Quote'
-    case 'code-block': return 'Code block'
+    case 'paragraph': return 'content.copy.paragraph'
+    case 'heading-2': return 'content.copy.heading2'
+    case 'heading-3': return 'content.copy.heading3'
+    case 'heading-4': return 'content.copy.heading4'
+    case 'bullet-list': return 'content.copy.bulletList'
+    case 'ordered-list': return 'content.copy.numberedList'
+    case 'blockquote': return 'content.copy.quote'
+    case 'code-block': return 'content.copy.codeBlock'
   }
 }
 

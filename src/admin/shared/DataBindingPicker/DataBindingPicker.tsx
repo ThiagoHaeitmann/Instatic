@@ -1,4 +1,4 @@
-import { formatNumber, translate, useI18n } from '@admin/i18n'
+import { formatNumber, useI18n } from '@admin/i18n'
 /**
  * DataBindingPicker — shared single-pane picker for inserting tokens or
  * creating structured data bindings.
@@ -36,7 +36,7 @@ import { VideoSolidIcon } from 'pixel-art-icons/icons/video-solid'
 import { getFieldIcon } from '@admin/pages/data/utils/fieldIcons'
 import { isFieldBindable, type PropertyControlKind } from './bindingCompatibility'
 import { _cachedMeta, loadDataMeta } from './cache'
-import { SYSTEM_SOURCES, type SystemSourceId } from './systemSources'
+import { localizedSystemSources, type SystemSourceId } from './systemSources'
 import { getCmsDataTable, previewCmsDataLoopItems } from '@core/persistence/cmsData'
 import { dataTablePreviewToLoopItem } from '@core/templates/templatePreviewData'
 import {
@@ -49,7 +49,7 @@ import {
   type FieldGroup,
 } from './helpers'
 import styles from './DataBindingPicker.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
+import { contentFeedback, contentFeedbackError, renderContentFeedback, type ContentFeedback } from '@admin/shared/contentFeedback'
 
 // ---------------------------------------------------------------------------
 // Icons for loop / system source field formats
@@ -161,13 +161,13 @@ export function DataBindingPicker({
   onClose,
   onPick,
 }: DataBindingPickerProps) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   // ─── Meta fetching ─────────────────────────────────────────────────────
   // Lazy initializer picks up the cached value so already-loaded meta is
   // immediately available without a synchronous setState in the effect.
   const [meta, setMeta] = useState<DataMeta | null>(() => _cachedMeta)
   const [metaLoading, setMetaLoading] = useState(() => _cachedMeta === null)
-  const [metaError, setMetaError] = useState<string | null>(null)
+  const [metaError, setMetaError] = useState<ContentFeedback | null>(null)
 
   useEffect(() => {
     if (_cachedMeta) return // already in state via lazy initializer
@@ -180,7 +180,7 @@ export function DataBindingPicker({
       })
       .catch((err) => {
         if (cancelled) return
-        setMetaError(getErrorMessage(err, translate('shell.copy.failedToLoadDataMeta')))
+        setMetaError(contentFeedbackError(err, contentFeedback('shell.copy.failedToLoadDataMeta')))
         setMetaLoading(false)
       })
     return () => {
@@ -323,7 +323,7 @@ export function DataBindingPicker({
 
     // 3. System sources — Page / Site / Route. Always visible (and always
     // reachable) since the publisher seeds these frames on every render.
-    for (const source of SYSTEM_SOURCES) {
+    for (const source of localizedSystemSources(locale)) {
       const entries: FieldEntry[] = source.fields.map((f) => ({
         kind: 'system' as const,
         source: source.id,
@@ -405,7 +405,7 @@ export function DataBindingPicker({
         ? t('shell.binding.cannotBindType', { type: field.type, control: control.label })
         : undefined
       const rawValue = getFieldPreviewValue(entry)
-      const previewText = formatMetaFieldPreview(field, rawValue)
+      const previewText = formatMetaFieldPreview(field, rawValue, locale)
 
       return (
         <Button
@@ -446,7 +446,7 @@ export function DataBindingPicker({
         ? t('shell.binding.cannotBindSource', { source, control: control.label })
         : undefined
       const rawValue = getFieldPreviewValue(entry)
-      const previewText = formatPreviewValue(rawValue)
+      const previewText = formatPreviewValue(rawValue, locale)
 
       return (
         <Button
@@ -483,7 +483,7 @@ export function DataBindingPicker({
       ? t('shell.binding.cannotBindLoop', { control: control.label })
       : undefined
     const rawValue = getFieldPreviewValue(entry)
-    const previewText = formatPreviewValue(rawValue)
+    const previewText = formatPreviewValue(rawValue, locale)
 
     return (
       <Button
@@ -523,7 +523,7 @@ export function DataBindingPicker({
           <EmptyState
             variant="centered"
             title={t('shell.copy.couldNotLoadTables')}
-            description={metaError}
+            description={renderContentFeedback(metaError, locale)}
           />
         </div>
       )
@@ -553,7 +553,7 @@ export function DataBindingPicker({
               <div className={styles.fieldGroupHeader}>
                 <span className={styles.fieldGroupHeaderText}>{group.label}</span>
                 <span className={styles.fieldGroupHeaderCount}>
-                  {formatNumber(group.entries.length)}
+                  {formatNumber(group.entries.length, undefined, locale)}
                 </span>
               </div>
               {group.entries.map(renderFieldRow)}

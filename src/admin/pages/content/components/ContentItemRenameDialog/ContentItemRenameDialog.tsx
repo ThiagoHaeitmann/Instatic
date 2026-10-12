@@ -1,10 +1,11 @@
+import { useI18n } from '@admin/i18n'
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Button } from '@ui/components/Button'
 import { Dialog } from '@ui/components/Dialog'
 import { Input } from '@ui/components/Input'
 import dialogStyles from '../../../../shared/dialogs/SiteCreateDialog/SiteCreateDialog.module.css'
 import { slugFromTitle } from '@core/utils/slug'
-import { getErrorMessage } from '@core/utils/errorMessage'
+import { contentFeedback, reportContentError } from '@admin/shared/contentFeedback'
 
 export interface ContentItemRenamePayload {
   title: string
@@ -20,9 +21,6 @@ interface ContentItemRenameDialogProps {
   onRename: (payload: ContentItemRenamePayload) => void | Promise<void>
 }
 
-function errorMessage(err: unknown) {
-  return getErrorMessage(err, 'Unable to rename item').replace(/^\[[^\]]+\]\s*/, '')
-}
 
 const FORM_ID = 'content-item-rename-form'
 
@@ -34,9 +32,9 @@ export function ContentItemRenameDialog({
   onCancel,
   onRename,
 }: ContentItemRenameDialogProps) {
+  const { t } = useI18n()
   const [value, setValue] = useState(initialTitle)
   const [slug, setSlug] = useState(initialSlug)
-  const [submitError, setSubmitError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const titleInputId = useId()
   const slugInputId = useId()
@@ -54,7 +52,7 @@ export function ContentItemRenameDialog({
     try {
       await onRename({ title: trimmedValue, slug: normalizedSlug })
     } catch (err) {
-      setSubmitError(errorMessage(err))
+      reportContentError(err, contentFeedback('content.copy.unableToRenameItem'))
     }
   }
 
@@ -68,7 +66,7 @@ export function ContentItemRenameDialog({
       footer={
         <>
           <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
-            Cancel
+            {t('content.copy.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -77,7 +75,7 @@ export function ContentItemRenameDialog({
             form={FORM_ID}
             disabled={!trimmedValue}
           >
-            Save
+            {t('content.copy.save')}
           </Button>
         </>
       }
@@ -92,7 +90,6 @@ export function ContentItemRenameDialog({
             value={value}
             onChange={(event) => {
               setValue(event.target.value)
-              setSubmitError(null)
             }}
             autoComplete="off"
             spellCheck={false}
@@ -100,25 +97,19 @@ export function ContentItemRenameDialog({
         </div>
 
         <div className={dialogStyles.field}>
-          <label htmlFor={slugInputId} className={dialogStyles.label}>Slug</label>
+          <label htmlFor={slugInputId} className={dialogStyles.label}>{t('content.copy.slug')}</label>
           <Input
             id={slugInputId}
             fieldSize="sm"
             value={slug}
             onChange={(event) => {
               setSlug(slugFromTitle(event.target.value))
-              setSubmitError(null)
             }}
             autoComplete="off"
             spellCheck={false}
           />
         </div>
 
-        {submitError && (
-          <p role="alert" className={dialogStyles.errorText}>
-            {submitError}
-          </p>
-        )}
       </form>
     </Dialog>
   )

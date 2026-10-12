@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * SchedulePublishDialog — picks a future datetime and POSTs it to the
  * data-row `/schedule` endpoint.
@@ -23,7 +24,7 @@ import type { DataRow } from '@core/data/schemas'
 import { Dialog } from '@ui/components/Dialog'
 import { Button } from '@ui/components/Button'
 import { DateTimePicker } from '@ui/components/DateTimePicker'
-import { getErrorMessage } from '@core/utils/errorMessage'
+import { contentFeedback, renderContentFeedback, reportContentError, type ContentFeedback } from '@admin/shared/contentFeedback'
 import styles from './SchedulePublishDialog.module.css'
 
 interface SchedulePublishDialogProps {
@@ -52,7 +53,7 @@ async function schedulePublish(
   rowId: string,
   next: Date,
   setBusy: (v: boolean) => void,
-  setError: (msg: string | null) => void,
+  setError: (msg: ContentFeedback | null) => void,
   onScheduled: (row: DataRow) => void,
   onClose: () => void,
 ): Promise<void> {
@@ -64,8 +65,7 @@ async function schedulePublish(
     onClose()
   } catch (err) {
     console.error('[schedule-dialog] Schedule failed:', err)
-    const message = getErrorMessage(err, 'Failed to schedule publish')
-    setError(message)
+    reportContentError(err, contentFeedback('content.copy.failedToSchedulePublish'))
   } finally {
     setBusy(false)
   }
@@ -74,7 +74,7 @@ async function schedulePublish(
 async function cancelSchedule(
   rowId: string,
   setBusy: (v: boolean) => void,
-  setError: (msg: string | null) => void,
+  setError: (msg: ContentFeedback | null) => void,
   onScheduled: (row: DataRow) => void,
   onClose: () => void,
 ): Promise<void> {
@@ -86,8 +86,7 @@ async function cancelSchedule(
     onClose()
   } catch (err) {
     console.error('[schedule-dialog] Cancel schedule failed:', err)
-    const message = getErrorMessage(err, 'Failed to cancel schedule')
-    setError(message)
+    reportContentError(err, contentFeedback('content.copy.failedToCancelSchedule'))
   } finally {
     setBusy(false)
   }
@@ -101,16 +100,17 @@ export function SchedulePublishDialog({
   entityLabel,
   onScheduled,
 }: SchedulePublishDialogProps) {
+  const { t, locale } = useI18n()
   const initialValue = currentScheduledAt ? new Date(currentScheduledAt) : null
 
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ContentFeedback | null>(null)
   const [busy, setBusy] = useState(false)
 
   const isAlreadyScheduled = currentScheduledAt !== null
 
   async function handleConfirm(next: Date) {
     if (next.getTime() <= Date.now()) {
-      setError('Scheduled time must be in the future.')
+      setError(contentFeedback('content.copy.scheduledTimeMustBeInTheFuture'))
       return
     }
     await schedulePublish(rowId, next, setBusy, setError, onScheduled, onClose)
@@ -124,8 +124,8 @@ export function SchedulePublishDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={isAlreadyScheduled ? `Reschedule this ${entityLabel}` : `Schedule this ${entityLabel}`}
-      eyebrow="Publish later"
+      title={isAlreadyScheduled ? t('content.schedule.reschedule', { entity: entityLabel }) : t('content.schedule.title', { entity: entityLabel })}
+      eyebrow={t('content.copy.publishLater')}
       size="lg"
       // The picker has its own internal Cancel / Confirm buttons + an
       // optional "Cancel schedule" action for already-scheduled rows.
@@ -137,7 +137,7 @@ export function SchedulePublishDialog({
         onCancel={onClose}
         onConfirm={handleConfirm}
         minDate={new Date()}
-        ariaLabel={`Schedule when to publish this ${entityLabel}`}
+        ariaLabel={t('content.schedule.aria', { entity: entityLabel })}
       />
       {isAlreadyScheduled && (
         <div className={styles.cancelRow}>
@@ -147,7 +147,7 @@ export function SchedulePublishDialog({
             disabled={busy}
             onClick={handleCancelSchedule}
           >
-            Cancel current schedule
+            {t('content.copy.cancelCurrentSchedule')}
           </Button>
         </div>
       )}
@@ -156,7 +156,7 @@ export function SchedulePublishDialog({
           role="alert"
           className={styles.error}
         >
-          {error}
+          {renderContentFeedback(error, locale)}
         </p>
       )}
     </Dialog>

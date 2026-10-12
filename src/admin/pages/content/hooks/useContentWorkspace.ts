@@ -1,3 +1,4 @@
+import { contentFeedback, contentFeedbackError, type ContentFeedback } from '@admin/shared/contentFeedback'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   createCmsDataRow,
@@ -31,7 +32,6 @@ import {
 import { buildDuplicateRowCells } from '@core/data/duplicateRow'
 import { updateRowList } from '@content/utils/contentEntryUtils'
 import { useInitialQueryParams, useUrlQuerySync } from '@admin/lib/urlState'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 interface UseContentWorkspaceOptions {
   loadAuthors?: boolean
@@ -52,7 +52,7 @@ export function useContentWorkspace({
   const [selectedEntry, setSelectedEntry] = useState<DataRow | null>(null)
   const [loading, setLoading] = useState(true)
   const [entriesLoading, setEntriesLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ContentFeedback | null>(null)
   // Mirrors the collection state synchronously so two imperative bridge calls
   // in one React turn never make routing decisions from the previous render.
   const selectedCollectionIdRef = useRef<string | null>(null)
@@ -188,7 +188,7 @@ export function useContentWorkspace({
       } catch (err) {
         if (!cancelled) {
           setEntriesLoading(false)
-          setError(getErrorMessage(err, 'Could not load content'))
+          setError(contentFeedbackError(err, contentFeedback('content.copy.couldNotLoadContent')))
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -243,7 +243,7 @@ export function useContentWorkspace({
         setSelectedEntry(nextSelected)
       } catch (err) {
         if (!cancelled && loadEpoch === entriesLoadEpochRef.current) {
-          setError(getErrorMessage(err, 'Could not load entries'))
+          setError(contentFeedbackError(err, contentFeedback('content.copy.couldNotLoadEntries')))
         }
       } finally {
         if (!cancelled && loadEpoch === entriesLoadEpochRef.current) {

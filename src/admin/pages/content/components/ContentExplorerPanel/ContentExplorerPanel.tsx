@@ -1,3 +1,5 @@
+import { renderContentFeedback, reportContentError, contentFeedback, type ContentFeedback } from '@admin/shared/contentFeedback'
+import { useI18n, formatNumber } from '@admin/i18n'
 import { useState, type KeyboardEvent, type MouseEvent } from 'react'
 import { Button } from '@ui/components/Button'
 import { EmptyState } from '@ui/components/EmptyState'
@@ -13,7 +15,7 @@ import { FileTextSolidIcon } from 'pixel-art-icons/icons/file-text-solid'
 import { MoveIcon } from 'pixel-art-icons/icons/move'
 import { Settings2SolidIcon } from 'pixel-art-icons/icons/settings-2-solid'
 import { UploadIcon } from 'pixel-art-icons/icons/upload'
-import { readDisplayTitle, readTitleCell } from '@core/data/cells'
+import { readTitleCell } from '@core/data/cells'
 import type { CmsMediaAsset } from '@core/persistence'
 import type { DataTable, DataRow, UpdateDataTableInput } from '@core/data/schemas'
 import { ExplorerItemContextMenu, type ExplorerContextMenuItem } from '@site/explorer-actions'
@@ -26,6 +28,7 @@ import {
   type ContentItemRenamePayload,
 } from '@content/components/ContentItemRenameDialog/ContentItemRenameDialog'
 import styles from '../../ContentPage.module.css'
+import { StepUpCancelledMessage } from '@admin/shared/StepUp'
 import { publicContentPath } from '@content/utils/contentEntryUtils'
 
 type ContentExplorerContextTarget =
@@ -40,7 +43,7 @@ interface ContextMenuState {
 
 interface ContentExplorerPanelProps {
   loading: boolean
-  error: string | null
+  error: ContentFeedback | null
   collections: DataTable[]
   entries: DataRow[]
   selectedCollection: DataTable | null
@@ -84,6 +87,15 @@ interface ContentEntryActions {
   moveEntryToCollection: (entry: DataRow, tableId: string) => void | Promise<void>
 }
 
+async function runContentMenuAction(action: () => void | Promise<void>, fallback: ContentFeedback): Promise<void> {
+  try {
+    await action()
+  } catch (error) {
+    if (error instanceof Error && error.message === StepUpCancelledMessage) return
+    reportContentError(error, fallback)
+  }
+}
+
 function keyboardMenuPosition(element: HTMLElement) {
   const rect = element.getBoundingClientRect()
   return {
@@ -95,7 +107,7 @@ function keyboardMenuPosition(element: HTMLElement) {
 function entryAuthorLabel(entry: DataRow): string {
   if (entry.author?.displayName) return entry.author.displayName
   if (entry.author?.email) return entry.author.email
-  return 'Unknown author'
+  return ''
 }
 
 export function ContentExplorerPanel({
@@ -118,6 +130,7 @@ export function ContentExplorerPanel({
   entryActions,
   onClose,
 }: ContentExplorerPanelProps) {
+  const { t, locale } = useI18n()
   const {
     createCollection,
     updateCollection,
@@ -133,9 +146,9 @@ export function ContentExplorerPanel({
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const [renameTarget, setRenameTarget] = useState<ContentExplorerContextTarget | null>(null)
   const [settingsTarget, setSettingsTarget] = useState<DataTable | null>(null)
-  const entryListLabel = selectedCollection?.pluralLabel || 'Entries'
-  const singularLabel = selectedCollection?.singularLabel || 'entry'
-  const newEntryLabel = `New ${singularLabel.toLowerCase()}`
+  const entryListLabel = selectedCollection?.pluralLabel || t('content.copy.entries')
+  const singularLabel = selectedCollection?.singularLabel || t('content.copy.entry')
+  const newEntryLabel = t('content.newEntry', { entity: singularLabel })
 
   function collectionForEntry(entry: DataRow): DataTable | null {
     return collections.find((collection) => collection.id === entry.tableId) ?? selectedCollection
@@ -161,7 +174,7 @@ export function ContentExplorerPanel({
     try {
       await navigator.clipboard.writeText(url)
     } catch (err) {
-      console.error('[ContentExplorerPanel] copy entry URL error:', err)
+      reportContentError(err, contentFeedback('content.copyUrlFailed'))
     }
   }
 
@@ -172,7 +185,7 @@ export function ContentExplorerPanel({
     if (others.length === 0) return null
     return {
       kind: 'submenu',
-      label: 'Move to collection',
+      label: t('content.copy.moveToCollection'),
       icon: <MoveIcon size={13} />,
       width: 220,
       items: others.map((collection) => ({
@@ -180,7 +193,7 @@ export function ContentExplorerPanel({
         label: collection.name,
         icon: <BookOpenSolidIcon size={13} />,
         action: () => {
-          void moveEntryToCollection(target.entry, collection.id)
+          void runContentMenuAction(() => moveEntryToCollection(target.entry, collection.id), contentFeedback('content.copy.couldNotMoveEntry'))
           setContextMenu(null)
         },
       })),
@@ -191,7 +204,7 @@ export function ContentExplorerPanel({
     if (target.kind === 'collection') {
       if (!canManageCollections) return []
       return [{
-        label: 'Collection settings',
+        label: t('content.copy.collectionSettings'),
         icon: <Settings2SolidIcon size={13} />,
         action: () => {
           setSettingsTarget(target.collection)
@@ -204,16 +217,16 @@ export function ContentExplorerPanel({
 
     if (target.entry.status !== 'published' && canPublishEntry(target.entry)) {
       items.push({
-        label: 'Publish',
+        label: t('content.copy.publish'),
         icon: <UploadIcon size={13} />,
         action: () => {
-          void publishEntry(target.entry)
+          void runContentMenuAction(() => publishEntry(target.entry), contentFeedback('content.copy.couldNotPublishEntry'))
           setContextMenu(null)
         },
       })
     } else {
       items.push({
-        label: 'Open in new tab',
+        label: t('content.copy.openInNewTab'),
         icon: <ExternalLinkSolidIcon size={13} />,
         action: () => {
           const collection = collectionForEntry(target.entry)
@@ -224,7 +237,7 @@ export function ContentExplorerPanel({
         },
       })
       items.push({
-        label: 'Copy URL',
+        label: t('content.copy.copyUrl'),
         icon: <Copy2SolidIcon size={13} />,
         action: () => {
           void copyEntryUrl(target.entry)
@@ -233,10 +246,10 @@ export function ContentExplorerPanel({
       })
       if (canEditEntry(target.entry)) {
         items.push({
-          label: 'Convert to draft',
+          label: t('content.copy.convertToDraft'),
           icon: <FileTextSolidIcon size={13} />,
           action: () => {
-            void convertEntryToDraft(target.entry)
+            void runContentMenuAction(() => convertEntryToDraft(target.entry), contentFeedback('content.copy.couldNotConvertEntryToDraft'))
             setContextMenu(null)
           },
         })
@@ -245,10 +258,10 @@ export function ContentExplorerPanel({
 
     if (canCreateEntry) {
       items.push({
-        label: 'Duplicate',
+        label: t('content.copy.duplicate'),
         icon: <CopySolidIcon size={13} />,
         action: () => {
-          void duplicateEntry(target.entry)
+          void runContentMenuAction(() => duplicateEntry(target.entry), contentFeedback('content.copy.couldNotDuplicateEntry'))
           setContextMenu(null)
         },
       })
@@ -261,9 +274,9 @@ export function ContentExplorerPanel({
   }
 
   function renameDialogTitle(target: ContentExplorerContextTarget): string {
-    if (target.kind === 'collection') return 'Rename collection'
+    if (target.kind === 'collection') return t('content.copy.renameCollection')
     const collection = collectionForEntry(target.entry)
-    return `Rename ${(collection?.singularLabel ?? 'entry').toLowerCase()}`
+    return t('content.renameEntry', { entity: collection?.singularLabel ?? t('content.copy.entry') })
   }
 
   async function handleRename(payload: ContentItemRenamePayload) {
@@ -293,20 +306,20 @@ export function ContentExplorerPanel({
     <>
       <Panel
         panelId="content-explorer"
-        title="Content"
-        ariaLabel="Content Explorer"
+        title={t('content.copy.content')}
+        ariaLabel={t('content.copy.contentExplorer')}
         testId="content-explorer-panel"
         onClose={onClose}
       >
-        {error && <p className={styles.error} role="alert">{error}</p>}
+        {error && <p className={styles.error} role="alert">{renderContentFeedback(error, locale)}</p>}
 
-          <section className={explorerStyles.section} aria-label="Collections">
+          <section className={explorerStyles.section} aria-label={t('content.copy.collections')}>
             <div className={explorerStyles.sectionHeader}>
-              <h2 className={explorerStyles.sectionTitle}>Collections</h2>
+              <h2 className={explorerStyles.sectionTitle}>{t('content.copy.collections')}</h2>
               {/* Hide the count while loading — `0` would look like an
                   empty install. Same for the entries section below. */}
               {!loading && (
-                <span className={explorerStyles.sectionCount}>{collections.length}</span>
+                <span className={explorerStyles.sectionCount} aria-label={t('content.count.collections', { count: collections.length, formattedCount: formatNumber(collections.length, undefined, locale) })}>{formatNumber(collections.length, undefined, locale)}</span>
               )}
               {canCreateCollection && (
                 <Button
@@ -314,8 +327,8 @@ export function ContentExplorerPanel({
                   size="xs"
                   iconOnly
                   onClick={createCollection}
-                  aria-label="New collection"
-                  tooltip="New collection"
+                  aria-label={t('content.copy.newCollection')}
+                  tooltip={t('content.copy.newCollection')}
                 >
                   <BookPlusSolidIcon size={13} aria-hidden="true" />
                 </Button>
@@ -355,7 +368,7 @@ export function ContentExplorerPanel({
                   <BookOpenSolidIcon size={14} aria-hidden="true" />
                   <span className={explorerStyles.rowLabel}>{collection.name}</span>
                   <span className={explorerStyles.rowMeta}>
-                    {collection.id === selectedCollectionId ? entries.length : ''}
+                    {collection.id === selectedCollectionId ? formatNumber(entries.length, undefined, locale) : ''}
                   </span>
                 </button>
               ))}
@@ -366,7 +379,7 @@ export function ContentExplorerPanel({
             <div className={explorerStyles.sectionHeader}>
               <h2 className={explorerStyles.sectionTitle}>{entryListLabel}</h2>
               {!loading && (
-                <span className={explorerStyles.sectionCount}>{entries.length}</span>
+                <span className={explorerStyles.sectionCount} aria-label={t('content.count.entries', { count: entries.length, formattedCount: formatNumber(entries.length, undefined, locale) })}>{formatNumber(entries.length, undefined, locale)}</span>
               )}
               <Button
                 variant="ghost"
@@ -384,7 +397,7 @@ export function ContentExplorerPanel({
             {loading ? (
               <ContentEntriesLoading />
             ) : entries.length === 0 ? (
-              <EmptyState compact title="No entries yet." />
+              <EmptyState compact title={t('content.copy.noEntriesYet')} />
             ) : (
               <div className={explorerStyles.rows}>
                 {entries.map((entry) => (
@@ -402,10 +415,10 @@ export function ContentExplorerPanel({
                   >
                     <EntryRowPreview asset={getFeaturedMediaAssetForEntry(entry)} />
                     <span className={styles.entryTitleStack}>
-                      <span className={styles.entryTitle}>{readDisplayTitle(entry.cells)}</span>
-                      <span className={styles.entryAuthor} aria-hidden="true">{entryAuthorLabel(entry)}</span>
+                      <span className={styles.entryTitle}>{readTitleCell(entry.cells) || t('content.placeholder.untitled')}</span>
+                      <span className={styles.entryAuthor} aria-hidden="true">{entryAuthorLabel(entry) || t('content.copy.unknownAuthor')}</span>
                     </span>
-                    <span className={explorerStyles.rowMeta}>{entry.status}</span>
+                    <span className={explorerStyles.rowMeta}>{t(`metadata.status.content.${entry.status}`)}</span>
                   </button>
                 ))}
               </div>
@@ -417,7 +430,9 @@ export function ContentExplorerPanel({
         <ExplorerItemContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          ariaLabel="Content item options"
+          ariaLabel={t('content.copy.contentItemOptions')}
+          renameLabel={t('content.rename')}
+          deleteLabel={t('content.copy.delete')}
           renameDisabled={contextMenu.target.kind === 'collection'
             ? !canManageCollections
             : !canEditEntry(contextMenu.target.entry)}
@@ -430,14 +445,14 @@ export function ContentExplorerPanel({
             setRenameTarget(contextMenu.target)
             setContextMenu(null)
           }}
-          onDelete={() => { void handleDelete(contextMenu.target) }}
+          onDelete={() => { void runContentMenuAction(() => handleDelete(contextMenu.target), contentFeedback(contextMenu.target.kind === 'collection' ? 'content.copy.couldNotDeleteCollection' : 'content.copy.couldNotDeleteEntry')) }}
         />
       )}
 
       {renameTarget && (
         <ContentItemRenameDialog
           title={renameDialogTitle(renameTarget)}
-          titleLabel={renameTarget.kind === 'collection' ? 'Name' : 'Title'}
+          titleLabel={renameTarget.kind === 'collection' ? t('content.copy.name') : t('content.copy.title')}
           initialTitle={renameTarget.kind === 'collection' ? renameTarget.collection.name : readTitleCell(renameTarget.entry.cells)}
           initialSlug={renameTarget.kind === 'collection' ? renameTarget.collection.slug : renameTarget.entry.slug}
           onCancel={() => setRenameTarget(null)}
@@ -489,6 +504,7 @@ function EntryRowPreview({ asset }: { asset: CmsMediaAsset | null }) {
 }
 
 function ContentEntriesLoading() {
+  const { t } = useI18n()
   // Skeleton entry row mirrors the real `.entryRow` chrome 1:1:
   //   - 28 × 28 thumbnail preview slot
   //   - title + author stack (two lines)
@@ -501,7 +517,7 @@ function ContentEntriesLoading() {
       className={explorerStyles.rows}
       data-testid="content-entries-loading"
       aria-busy="true"
-      aria-label="Loading entries"
+      aria-label={t('content.copy.loadingEntries')}
     >
       {Array.from({ length: 3 }, (_, i) => (
         <div

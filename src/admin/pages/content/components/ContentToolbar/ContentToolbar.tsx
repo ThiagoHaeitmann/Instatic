@@ -1,3 +1,4 @@
+import { useI18n, type MessageKey } from '@admin/i18n'
 import { Suspense, lazy, useState } from 'react'
 import { CalendarSolidIcon } from 'pixel-art-icons/icons/calendar-solid'
 import { CheckIcon } from 'pixel-art-icons/icons/check'
@@ -51,9 +52,9 @@ const VersionHistoryDialog = lazy(() =>
 )
 
 interface ToolbarViewState {
-  statusText: string
+  statusText: MessageKey
   statusTone: PublishActionStatusTone
-  publishLabel: string
+  publishLabel: MessageKey
   PublishIcon: IconComponent
   publishState: PublishButtonState
   isCleanPublished: boolean
@@ -75,19 +76,19 @@ function deriveStatusText(args: {
   isDirty: boolean
   selectedEntry: DataRow | null
   isCleanPublished: boolean
-}): string {
+}): MessageKey {
   const { contentLoading, saveMessage, isDirty, selectedEntry, isCleanPublished } = args
-  if (contentLoading) return 'Loading content'
-  if (saveMessage === 'publishing') return 'Publishing'
-  if (saveMessage === 'saving') return 'Saving draft'
-  if (saveMessage === 'error') return 'Save failed'
-  if (isDirty) return 'Unsaved draft'
-  if (selectedEntry?.status === 'scheduled') return 'Scheduled'
-  if (saveMessage === 'saved') return 'Draft saved'
-  if (isCleanPublished) return 'Published'
-  if (selectedEntry?.status === 'unpublished') return 'Unpublished'
-  if (selectedEntry) return 'Draft'
-  return 'No entry selected'
+  if (contentLoading) return 'content.copy.loadingContent'
+  if (saveMessage === 'publishing') return 'content.copy.publishing'
+  if (saveMessage === 'saving') return 'content.copy.savingDraft'
+  if (saveMessage === 'error') return 'content.copy.saveFailed'
+  if (isDirty) return 'content.copy.unsavedDraft'
+  if (selectedEntry?.status === 'scheduled') return 'content.copy.scheduled'
+  if (saveMessage === 'saved') return 'content.copy.draftSaved'
+  if (isCleanPublished) return 'content.copy.published'
+  if (selectedEntry?.status === 'unpublished') return 'content.copy.unpublished'
+  if (selectedEntry) return 'content.copy.draft'
+  return 'content.copy.noEntrySelected'
 }
 
 function deriveStatusTone(args: {
@@ -105,12 +106,12 @@ function deriveStatusTone(args: {
 function derivePublishLabel(args: {
   saveMessage: SaveMessage
   isCleanPublished: boolean
-}): string {
+}): MessageKey {
   const { saveMessage, isCleanPublished } = args
-  if (saveMessage === 'publishing') return 'Publishing'
-  if (isCleanPublished) return 'Published'
-  if (saveMessage === 'error') return 'Retry publish'
-  return 'Publish'
+  if (saveMessage === 'publishing') return 'content.copy.publishing'
+  if (isCleanPublished) return 'content.copy.published'
+  if (saveMessage === 'error') return 'content.copy.retryPublish'
+  return 'content.copy.publish'
 }
 
 function derivePublishIcon(args: {
@@ -174,7 +175,8 @@ export function ContentToolbar({
   onSchedule,
   onRestored,
 }: ContentToolbarProps) {
-  const entryLabel = (selectedCollection?.singularLabel ?? 'entry').toLowerCase()
+  const { t } = useI18n()
+  const entryLabel = selectedCollection?.singularLabel ?? t('content.copy.entry')
   // Destructure the derived view state so the JSX below keeps reading like
   // a flat list of locals — the architecture gate at
   // contentAdmin.test.tsx:1664 also relies on literal `isCleanPublished` /
@@ -189,11 +191,12 @@ export function ContentToolbar({
   // Publishing and scheduling only exist on main — disabled with the reason
   // inline while a branch is active.
   const branchGate = useBranchPublishGate()
+  const branchReason = branchGate.onBranch ? t('content.branchReason') : null
 
   const menuItems: PublishActionMenuItem[] = [
     {
       id: 'save-draft',
-      label: 'Save draft',
+      label: t('content.copy.saveDraft'),
       icon: SaveSolidIcon,
       disabled: !selectedEntry || !canSaveDraft || isSaving || !isDirty,
       onSelect: onSaveDraft,
@@ -204,7 +207,7 @@ export function ContentToolbar({
       // when there's no entry or the user lacks publish capability —
       // mirrors the publish button's own gate.
       id: 'schedule-publish',
-      label: `Schedule ${entryLabel}…`,
+      label: t('content.scheduleEntry', { entity: entryLabel }),
       icon: CalendarSolidIcon,
       disabled: !selectedEntry || !canPublish || isPublishing || branchGate.onBranch,
       onSelect: () => setScheduleDialogOpen(true),
@@ -212,7 +215,7 @@ export function ContentToolbar({
     },
     {
       id: 'version-history',
-      label: 'Version history…',
+      label: t('content.copy.versionHistory'),
       icon: ArchiveRestoreSolidIcon,
       disabled: !selectedEntry || !canSaveDraft,
       onSelect: () => setHistoryOpen(true),
@@ -220,7 +223,7 @@ export function ContentToolbar({
     },
     {
       id: 'open-live',
-      label: `Open live ${entryLabel}`,
+      label: t('content.openLiveEntry', { entity: entryLabel }),
       icon: ExternalLinkSolidIcon,
       disabled: !publicPath,
       onSelect: () => {
@@ -234,15 +237,17 @@ export function ContentToolbar({
   return (
     <>
       <PublishActionGroup
-        statusLabel={isCleanPublished ? null : statusText}
+        menuLabel={t('content.publishingActions')}
+        triggerLabel={t('content.morePublishingActions')}
+        statusLabel={isCleanPublished ? null : t(statusText)}
         statusTone={statusTone}
-        publishLabel={publishLabel}
+        publishLabel={t(publishLabel)}
         publishAriaLabel={
-          branchGate.reason
-            ? `Cannot publish: ${branchGate.reason}`
-            : isCleanPublished ? 'Published' : `Publish ${entryLabel}`
+          branchReason
+            ? t('content.cannotPublish', { reason: branchReason })
+            : isCleanPublished ? t('content.copy.published') : t('content.publishEntry', { entity: entryLabel })
         }
-        publishTitle={branchGate.reason ?? (isCleanPublished ? 'Published' : `Publish ${entryLabel}`)}
+        publishTitle={branchReason ?? (isCleanPublished ? t('content.copy.published') : t('content.publishEntry', { entity: entryLabel }))}
         publishState={publishState}
         publishBusy={isPublishing}
         publishDisabled={!selectedEntry || !canPublish || isPublishing || isCleanPublished || branchGate.onBranch}

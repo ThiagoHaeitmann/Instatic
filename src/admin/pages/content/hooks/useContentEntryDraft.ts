@@ -1,3 +1,4 @@
+import { contentFeedback, contentFeedbackError, reportContentError, type ContentFeedback } from '@admin/shared/contentFeedback'
 import { useCallback, useLayoutEffect, useState } from 'react'
 import {
   publishCmsDataRow,
@@ -15,14 +16,13 @@ import {
   stripPostTypeBuiltInCells,
 } from '@core/data/cells'
 import { slugFromTitle } from '@core/utils/slug'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 export type SaveMessage = 'idle' | 'saving' | 'saved' | 'publishing' | 'published' | 'error'
 
 interface UseContentEntryDraftOptions {
   selectedEntry: DataRow | null
   updateSelectedEntry: (entry: DataRow) => void
-  setError: (message: string | null) => void
+  setError: (message: ContentFeedback | null) => void
 }
 
 /**
@@ -125,7 +125,8 @@ export function useContentEntryDraft({
       setSaveMessage('saved')
     } catch (err) {
       setSaveMessage('error')
-      setError(getErrorMessage(err, 'Could not save draft'))
+      setError(contentFeedbackError(err, contentFeedback('content.copy.couldNotSaveDraft')))
+      reportContentError(err, contentFeedback('content.copy.couldNotSaveDraft'))
     }
   }
 
@@ -147,7 +148,8 @@ export function useContentEntryDraft({
       setSaveMessage('published')
     } catch (err) {
       setSaveMessage('error')
-      setError(getErrorMessage(err, 'Could not publish entry'))
+      setError(contentFeedbackError(err, contentFeedback('content.copy.couldNotPublishEntry')))
+      reportContentError(err, contentFeedback('content.copy.couldNotPublishEntry'))
     }
   }
 
@@ -163,7 +165,7 @@ export function useContentEntryDraft({
       // surfaces it via the `SchedulePublishDialog`, not through this
       // bare status setter. Reject defensively so a future caller can't
       // slip 'scheduled' through with no time set.
-      setError('Use the schedule dialog to set a publish time')
+      setError(contentFeedback('content.copy.useTheScheduleDialogToSetAPublishTime'))
       return
     }
 
@@ -178,7 +180,8 @@ export function useContentEntryDraft({
       setSaveMessage('idle')
     } catch (err) {
       setSaveMessage('error')
-      setError(getErrorMessage(err, 'Could not update entry status'))
+      setError(contentFeedbackError(err, contentFeedback('content.copy.couldNotUpdateEntryStatus')))
+      reportContentError(err, contentFeedback('content.copy.couldNotUpdateEntryStatus'))
     }
   }
 

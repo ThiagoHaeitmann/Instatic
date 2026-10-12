@@ -1,3 +1,4 @@
+import { useI18n, type MessageKey } from '@admin/i18n'
 /**
  * Inline "+" affordance shown in the editor's left gutter next to an empty
  * top-level paragraph.
@@ -62,8 +63,8 @@ interface QuickInsertContext {
 }
 
 interface QuickInsertOption {
-  label: string
-  description: string
+  labelKey: MessageKey
+  descriptionKey: MessageKey
   icon: ReactNode
   /**
    * Section the option belongs to. The menu groups items by section with
@@ -81,57 +82,57 @@ const QUICK_INSERT: QuickInsertOption[] = [
   // works whether the current block is empty or has content.
   {
     section: 'turn-into',
-    label: 'Paragraph',
-    description: 'Plain text',
+    labelKey: 'content.copy.paragraph',
+    descriptionKey: 'content.copy.plainText',
     icon: <TextStartTIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.setParagraph().run(),
   },
   {
     section: 'turn-into',
-    label: 'Heading 2',
-    description: 'Section title',
+    labelKey: 'content.copy.heading2',
+    descriptionKey: 'content.copy.sectionTitle',
     icon: <HeadingIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.setNode('heading', { level: 2 }).run(),
   },
   {
     section: 'turn-into',
-    label: 'Heading 3',
-    description: 'Sub-section',
+    labelKey: 'content.copy.heading3',
+    descriptionKey: 'content.copy.subSection',
     icon: <HeadingIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.setNode('heading', { level: 3 }).run(),
   },
   {
     section: 'turn-into',
-    label: 'Heading 4',
-    description: 'Small heading',
+    labelKey: 'content.copy.heading4',
+    descriptionKey: 'content.copy.smallHeading',
     icon: <HeadingIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.setNode('heading', { level: 4 }).run(),
   },
   {
     section: 'turn-into',
-    label: 'Bullet list',
-    description: 'Unordered list',
+    labelKey: 'content.copy.bulletList',
+    descriptionKey: 'content.copy.unorderedList',
     icon: <BulletlistSolidIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.toggleBulletList().run(),
   },
   {
     section: 'turn-into',
-    label: 'Numbered list',
-    description: 'Ordered list',
+    labelKey: 'content.copy.numberedList',
+    descriptionKey: 'content.copy.orderedList',
     icon: <BulletlistSolidIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.toggleOrderedList().run(),
   },
   {
     section: 'turn-into',
-    label: 'Quote',
-    description: 'Block quote',
+    labelKey: 'content.copy.quote',
+    descriptionKey: 'content.copy.blockQuote',
     icon: <TextPlusIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.toggleBlockquote().run(),
   },
   {
     section: 'turn-into',
-    label: 'Code block',
-    description: 'Fenced code',
+    labelKey: 'content.copy.codeBlock',
+    descriptionKey: 'content.copy.fencedCode',
     icon: <CodeIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.toggleCodeBlock().run(),
   },
@@ -139,8 +140,8 @@ const QUICK_INSERT: QuickInsertOption[] = [
   // ── Insert ───────────────────────────────────────────────────────────
   {
     section: 'insert',
-    label: 'Image / Video',
-    description: 'From media library',
+    labelKey: 'content.copy.imageVideo',
+    descriptionKey: 'content.copy.fromMediaLibrary',
     icon: <ImagesSolidIcon size={14} aria-hidden="true" />,
     apply: ({ onPickMedia }) => {
       // The host opens the existing media-picker modal and handles
@@ -154,8 +155,8 @@ const QUICK_INSERT: QuickInsertOption[] = [
   },
   {
     section: 'insert',
-    label: 'Divider',
-    description: 'Horizontal rule',
+    labelKey: 'content.copy.divider',
+    descriptionKey: 'content.copy.horizontalRule',
     icon: <MinusIcon size={14} aria-hidden="true" />,
     apply: ({ chain }) => chain.setHorizontalRule().run(),
   },
@@ -166,15 +167,15 @@ const QUICK_INSERT: QuickInsertOption[] = [
   // the doc tree before issuing the transaction.
   {
     section: 'block',
-    label: 'Duplicate',
-    description: 'Clone this block below',
+    labelKey: 'content.copy.duplicate',
+    descriptionKey: 'content.copy.cloneThisBlockBelow',
     icon: <CopySolidIcon size={14} aria-hidden="true" />,
     apply: ({ editor }) => duplicateCurrentBlock(editor),
   },
   {
     section: 'block',
-    label: 'Delete',
-    description: 'Remove this block',
+    labelKey: 'content.copy.delete',
+    descriptionKey: 'content.copy.removeThisBlock',
     icon: <TrashSolidIcon size={14} aria-hidden="true" />,
     apply: ({ editor }) => deleteCurrentBlock(editor),
   },
@@ -220,6 +221,7 @@ interface ButtonPosition {
 }
 
 export function BodyFloatingMenu({ editor, onPickMedia, iframeEl }: BodyFloatingMenuProps) {
+  const { t } = useI18n()
   // The button's vertical position. `null` means "don't render" — the
   // selection isn't on an empty top-level paragraph, or the editor is
   // blurred and we don't want a sticky affordance.
@@ -292,8 +294,8 @@ export function BodyFloatingMenu({ editor, onPickMedia, iframeEl }: BodyFloating
           variant="ghost"
           size="xs"
           iconOnly
-          tooltip="Block options"
-          aria-label="Block options"
+          tooltip={t('content.copy.blockOptions')}
+          aria-label={t('content.copy.blockOptions')}
           data-testid="content-floating-menu"
           className={styles.gutterButton}
           // In Write mode the button uses the CSS-defined absolute
@@ -331,7 +333,7 @@ export function BodyFloatingMenu({ editor, onPickMedia, iframeEl }: BodyFloating
           width={220}
           minWidth={220}
           zIndex={10001}
-          ariaLabel="Block options"
+          ariaLabel={t('content.copy.blockOptions')}
           onClose={() => setMenuRect(null)}
         >
           {QUICK_INSERT.map((option, index) => {
@@ -340,7 +342,7 @@ export function BodyFloatingMenu({ editor, onPickMedia, iframeEl }: BodyFloating
             const prev = index > 0 ? QUICK_INSERT[index - 1] : null
             const showDivider = prev !== null && prev.section !== option.section
             return (
-              <Fragment key={option.label}>
+              <Fragment key={option.labelKey}>
                 {showDivider && <ContextMenuSeparator />}
                 <ContextMenuItem
                   onClick={() => {
@@ -360,7 +362,7 @@ export function BodyFloatingMenu({ editor, onPickMedia, iframeEl }: BodyFloating
                   }}
                 >
                   {option.icon}
-                  <span>{option.label}</span>
+                  <span>{t(option.labelKey)}</span>
                 </ContextMenuItem>
               </Fragment>
             )

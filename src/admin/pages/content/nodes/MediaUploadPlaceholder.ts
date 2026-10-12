@@ -1,3 +1,5 @@
+import { translate, formatNumber, getLocale } from '@admin/i18n'
+import { renderContentFeedback } from '@admin/shared/contentFeedback'
 /**
  * Transient Tiptap node used while a pasted / dropped file is uploading.
  *
@@ -84,8 +86,8 @@ export const MediaUploadPlaceholder = Node.create<MediaUploadPlaceholderOptions>
     const attrs = node.attrs as MediaUploadPlaceholderAttributes
     const progressPct = Math.round(Math.max(0, Math.min(1, attrs.progress)) * 100)
     const stateText = attrs.status === 'failed'
-      ? `Upload failed: ${attrs.error ?? 'unknown error'}`
-      : `Uploading ${attrs.filename}… ${progressPct}%`
+      ? (attrs.error ? renderContentFeedback(attrs.error, getLocale()) : translate('content.copy.uploadFailed'))
+      : translate('content.upload.progress', { percent: formatNumber(progressPct / 100, { style: 'percent' }) })
     return [
       'div',
       mergeAttributes(HTMLAttributes, {

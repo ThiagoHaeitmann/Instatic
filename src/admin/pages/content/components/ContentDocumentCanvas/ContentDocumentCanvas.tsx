@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import { forwardRef, lazy, Suspense, useLayoutEffect, useRef, type KeyboardEvent, type Ref } from 'react'
 import { Button } from '@ui/components/Button'
 import { Textarea } from '@ui/components/Input'
@@ -7,7 +8,7 @@ import { FilePlusSolidIcon } from 'pixel-art-icons/icons/file-plus-solid'
 import { dataTableHasField } from '@core/data/fields'
 import { POST_TYPE_FIELD_BODY } from '@core/data/schemas'
 import type { DataTable, DataRow } from '@core/data/schemas'
-import { CanvasNotch, type CanvasNotchAction } from '@site/canvas/CanvasNotch'
+import { ContentInsertNotch, type ContentInsertAction } from '../ContentInsertNotch'
 import canvasStyles from '../../../site/canvas/CanvasRoot.module.css'
 import type { TiptapBodyEditorHandle } from '@content/TiptapBodyEditor'
 import { ContentModeToggle, type ContentMode } from '../ContentModeToggle/ContentModeToggle'
@@ -27,7 +28,7 @@ interface ContentDocumentCanvasProps {
   loading: boolean
   title: string
   body: string
-  notchActions: CanvasNotchAction[]
+  notchActions: ContentInsertAction[]
   canEditEntry: boolean
   canCreateEntry: boolean
   /**
@@ -58,6 +59,7 @@ interface ContentDocumentCanvasProps {
 
 export const ContentDocumentCanvas = forwardRef<TiptapBodyEditorHandle, ContentDocumentCanvasProps>(
   function ContentDocumentCanvas(props, ref) {
+    const { t } = useI18n()
     const {
       selectedEntry,
       selectedCollection,
@@ -83,7 +85,7 @@ export const ContentDocumentCanvas = forwardRef<TiptapBodyEditorHandle, ContentD
     const bodyEnabled = selectedCollection ? dataTableHasField(selectedCollection, POST_TYPE_FIELD_BODY) : false
     const editorEnabled = Boolean(selectedEntry && canEditEntry)
     const showInsertNotch = bodyEnabled && (editorEnabled || (!selectedEntry && canCreateEntry))
-    const singularLabel = selectedCollection?.singularLabel.toLowerCase() ?? 'entry'
+    const singularLabel = selectedCollection?.singularLabel ?? t('content.copy.entry')
 
     useLayoutEffect(() => {
       resizeTitleField(titleFieldRef.current)
@@ -112,7 +114,7 @@ export const ContentDocumentCanvas = forwardRef<TiptapBodyEditorHandle, ContentD
     return (
       <div
         role="region"
-        aria-label="Content canvas"
+        aria-label={t('content.copy.contentCanvas')}
         data-testid="content-canvas-root"
         className={cn(canvasStyles.canvas, styles.contentCanvas)}
       >
@@ -123,11 +125,7 @@ export const ContentDocumentCanvas = forwardRef<TiptapBodyEditorHandle, ContentD
         {/* The insertion notch is meaningful only in Write mode — Live
             mode has its own block affordances inside the iframe. */}
         {showInsertNotch && contentMode === 'write' && (
-          <CanvasNotch
-            actions={notchActions}
-            addControl={null}
-            showHistoryControls={false}
-          />
+          <ContentInsertNotch actions={notchActions} />
         )}
 
         <div className={styles.documentScroll}>
@@ -155,8 +153,8 @@ export const ContentDocumentCanvas = forwardRef<TiptapBodyEditorHandle, ContentD
                   value={title}
                   rows={1}
                   resize="none"
-                  placeholder="Untitled"
-                  aria-label="Title"
+                  placeholder={t('content.placeholder.untitled')}
+                  aria-label={t('content.copy.title')}
                   onChange={(event) => {
                     resizeTitleField(event.currentTarget)
                     onTitleChange(event.target.value)
@@ -184,11 +182,11 @@ export const ContentDocumentCanvas = forwardRef<TiptapBodyEditorHandle, ContentD
             )
           ) : (
             <div className={styles.emptyState}>
-              <h2>Create the first {singularLabel}</h2>
-              <p>Select a collection and create an entry to start writing.</p>
+              <h2>{t('content.firstEntry', { entity: singularLabel })}</h2>
+              <p>{t('content.copy.selectACollectionAndCreateAnEntryToStartWriting')}</p>
               <Button variant="primary" size="md" onClick={onCreateEntry} disabled={!selectedCollection || !canCreateEntry}>
                 <FilePlusSolidIcon size={15} aria-hidden="true" />
-                <span>New {selectedCollection?.singularLabel ?? 'Entry'}</span>
+                <span>{t('content.newEntry', { entity: selectedCollection?.singularLabel ?? t('content.copy.entry') })}</span>
               </Button>
             </div>
           )}
@@ -207,6 +205,7 @@ function resizeTitleField(node: HTMLTextAreaElement | null) {
 }
 
 function ContentCanvasLoading() {
+  const { t } = useI18n()
   // Universal three-bar skeleton — matches every other loading region
   // in the editor (dashboard widgets, plugin cards, dialogs, admin
   // page bodies). The bespoke title / line / block shapes this file
@@ -218,7 +217,7 @@ function ContentCanvasLoading() {
       className={styles.canvasLoading}
       data-testid="content-canvas-loading"
       aria-busy="true"
-      aria-label="Loading content"
+      aria-label={t('content.copy.loadingContent')}
     >
       <SkeletonBlock minHeight={240} />
     </div>

@@ -1994,12 +1994,15 @@ describe('ContentPage', () => {
   it('uses the content publish button as the single published-state indicator', () => {
     const src = readFileSync(join(process.cwd(), 'src/admin/pages/content/components/ContentToolbar/ContentToolbar.tsx'), 'utf8')
 
-    expect(src).toContain("'Retry publish'")
-    expect(src).toContain("'Published'")
-    expect(src).toContain('isCleanPublished ? null : statusText}')
+    expect(src).toContain("if (saveMessage === 'error') return 'content.copy.retryPublish'")
+    expect(src).toContain("if (isCleanPublished) return 'content.copy.published'")
+    expect(src).toContain('statusLabel={isCleanPublished ? null : t(statusText)}')
+    expect(src).toContain('publishLabel={t(publishLabel)}')
     expect(src).toContain('publishDisabled={!selectedEntry || !canPublish || isPublishing || isCleanPublished || branchGate.onBranch}')
     expect(src).not.toContain("'Live'")
+    expect(src).not.toContain("'content.copy.live'")
     expect(src).toContain('isCleanPublished ? CheckIcon')
     expect(src).not.toContain("'Publish failed'")
+    expect(src).not.toContain("'content.copy.publishFailed'")
   })
 })

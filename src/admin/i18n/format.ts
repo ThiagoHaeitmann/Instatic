@@ -37,8 +37,9 @@ export function formatRelativeTime(
 export function formatList(
   values: readonly string[],
   options?: Intl.ListFormatOptions,
+  locale: SupportedLocale = getLocale(),
 ): string {
-  return new Intl.ListFormat(getLocale(), options).format(values)
+  return new Intl.ListFormat(locale, options).format(values)
 }
 
 export function formatBytes(bytes: number, options?: Intl.NumberFormatOptions, locale: SupportedLocale = getLocale()): string {

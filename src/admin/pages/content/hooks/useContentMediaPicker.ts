@@ -1,3 +1,4 @@
+import { contentFeedback, contentFeedbackError, type ContentFeedback } from '@admin/shared/contentFeedback'
 import { useEffect, useState } from 'react'
 import {
   listCmsMediaAssets,
@@ -9,7 +10,6 @@ import { mediaTypeFromAsset } from '@content/utils/contentEntryUtils'
 import { useStandaloneMediaEditor } from '@admin/pages/media/hooks/useStandaloneMediaEditor'
 import type { MediaAssetEditor } from '@admin/pages/media/components/MediaViewerWindow/MediaViewerWindow'
 import type { ContentMediaType, MediaAttributes } from '@content/nodes/MediaNode'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 type MediaPickerKind = 'media' | 'featured'
 
@@ -52,13 +52,13 @@ export function useContentMediaPicker({
 }: UseContentMediaPickerOptions) {
   const [mediaAssets, setMediaAssets] = useState<CmsMediaAsset[]>([])
   const [mediaAssetsLoaded, setMediaAssetsLoaded] = useState(false)
-  const [mediaError, setMediaError] = useState<string | null>(null)
+  const [mediaError, setMediaError] = useState<ContentFeedback | null>(null)
   const [mediaPicker, setMediaPicker] = useState<MediaPickerState | null>(null)
   // MediaViewerWindow state: when set, the viewer opens with this asset so
   // authors can edit alt text, caption, tags, replace the file — same window
   // the Media page uses, mounted here so the featured-media field's "Edit"
   // affordance works without leaving the Content page.
-  const [viewerAssetId, setViewerAssetId] = useState<string | null>(null)
+  const [viewerAssetId, setViewerAssetId] = useState<ContentFeedback | null>(null)
 
   const assetsById = new Map<string, CmsMediaAsset>()
   for (const asset of mediaAssets) assetsById.set(asset.id, asset)
@@ -87,7 +87,7 @@ export function useContentMediaPicker({
       })
       .catch((err) => {
         if (!cancelled) {
-          const message = getErrorMessage(err, 'Could not load media')
+          const message = contentFeedbackError(err, contentFeedback('content.copy.couldNotLoadMedia'))
           setMediaError(message)
           console.error('[ContentPage] load media list error:', err)
         }

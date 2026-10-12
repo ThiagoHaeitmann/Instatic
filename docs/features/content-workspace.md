@@ -28,7 +28,7 @@ ContentPage.tsx
 │   │   ├── MediaExplorerPanel      ← shared media panel in the content rail
 │   │   └── ContentAgentMount       ← AI assistant panel
 │   ├── contentCanvas → ContentDocumentCanvas
-│   │   ├── CanvasNotch             ← quick-insert actions (Heading, Text, Media, Data token)
+│   │   ├── ContentInsertNotch      ← quick-insert actions (Heading, Text, Media, Data token)
 │   │   ├── ContentModeToggle       ← write / live mode switch
 │   │   ├── TiptapBodyEditor        ← ProseMirror body surface
 │   │   │   ├── BodyBubbleMenu      ← floating marks toolbar (B/I/code/strike/link)
@@ -79,7 +79,7 @@ The serializer produces stable, idempotent output. Existing entries load with no
 |---------|-----|
 | Bubble menu | Appears on text selection — bold / italic / code / strike / link |
 | Slash menu (`/`) | Contextual command menu at the caret — headings, lists, quote, code block, divider, table, media, data token |
-| Canvas notch | Top-center quick-action buttons — Heading, Text, Media, Insert data token. It does not show the Site editor's module picker. |
+| Content insert notch | Top-center quick-action buttons — Heading, Text, Media, Insert data token. `ContentInsertNotch` owns the document-only controls and imports no Site module picker or page-tree history. |
 | Input rules | `# ` → H1 (normalised), `## ` → H2, `**x**` → bold, `- ` → bullet, `` ``` `` → code block, etc. |
 
 ### Imperative handle
@@ -145,6 +145,18 @@ The mode switch is client-only. The markdown body is the source of truth in both
 
 ---
 
+## Admin locale
+
+Content-owned presentation uses `@admin/i18n` and the data-only `contentMessages.ts` catalog. Collections/entries, action menus, canvas/preview chrome, settings, body-editor menus, inline upload states, and rename/collection-settings/scheduling dialogs update on `en` / `pt-BR` switches. Counts use plural rules and explicit-locale number formatting; shared version history formats publication dates and relative time with the subscribed locale.
+
+Collection names and labels, entry titles/body/SEO, author/role names, alt text, media filenames, routes/URLs, schema field names/IDs, and stored statuses remain unchanged. `contentFeedback.ts` keeps host load/validation fallbacks as live message descriptors while preserving raw server details. User-operation failures use the global toast bus; field-local scheduling validation stays inline.
+
+Tiptap instances are not recreated when locale changes: `utils/editorI18n.ts` refreshes chrome and decorations without changing their document or selection. Write-mode editor options use the subscribed translator as well, preserving localized ARIA when Tiptap reapplies options after edits or parent rerenders. Rich-text option catalogs carry message keys and stable command IDs. The installed slash Suggestion plugin subscribes to locale changes to refilter an unchanged active query, refreshes awaited results using the latest locale, and unsubscribes when destroyed; this does not synthesize edits or move the caret. Delayed start/update callbacks are accepted only for a live plugin view and a currently active suggestion with matching query/range. Destruction invalidates the view before cleanup, so pending callbacks cannot reopen an exited or destroyed menu. Content passes translated labels into shared action-menu primitives rather than inheriting Site's English defaults.
+
+Embedded Data-owned creation/schema/custom-field/relation UI, Media library/picker/viewer UI, and AI UI retain their own migration phases. There is no separate Content-owned search/sort/filter or bulk toolbar. See [internationalization.md](internationalization.md) for phase boundaries and the compiler-backed regression suite.
+
+---
+
 ## AI assistant
 
 The Content workspace has its own `content` chat scope, mounted as the `agent` panel in `ContentSidebar` when the current user has `ai.chat`.
@@ -191,6 +203,10 @@ Body content is exchanged with the model as markdown. The browser bridge convert
   - `src/admin/pages/content/agent/contentBridge.ts` — content agent browser-tool dispatcher
   - `src/admin/pages/content/agent/contentBridgeHandle.ts` — live content workspace bridge handle
   - `src/admin/pages/content/TiptapBodyEditor.tsx` — body editor
+  - `src/admin/pages/content/components/ContentInsertNotch.tsx` — document-only insertion chrome
+  - `src/admin/pages/content/utils/editorI18n.ts` — long-lived editor locale refresh
+  - `src/admin/i18n/contentMessages.ts` — Content-owned presentation catalog
+  - `src/admin/shared/contentFeedback.ts` — live host feedback vs. raw details
   - `src/admin/pages/content/hooks/useContentWorkspace.ts` — collection/entry state
   - `src/admin/pages/content/hooks/useContentEntryDraft.ts` — field draft state
   - `src/core/markdown/markdownDocument.ts` — markdown ↔ ProseMirror round-trip

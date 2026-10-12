@@ -1,3 +1,6 @@
+import { contentEditorPlaceholder, syncContentEditorLocale } from '../../utils/editorI18n'
+import { contentFeedback, contentFeedbackError, renderContentFeedback, type ContentFeedback } from '@admin/shared/contentFeedback'
+import { useI18n, translate } from '@admin/i18n'
 /**
  * Live canvas — renders the active entry inside its real template + site
  * CSS bundle via a sandboxed iframe, with the body region wired to a
@@ -66,7 +69,6 @@ import { BodyBubbleMenu } from '../BodyBubbleMenu/BodyBubbleMenu'
 import { BodyFloatingMenu } from '../BodyFloatingMenu/BodyFloatingMenu'
 import { MediaNodeToolbar } from '../MediaNodeToolbar/MediaNodeToolbar'
 import styles from './LiveCanvas.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 const FETCH_DEBOUNCE_MS = 350
 
@@ -251,7 +253,7 @@ export interface LiveCanvasProps {
 interface PreviewState {
   status: 'loading' | 'ready' | 'error'
   html: string
-  error: string | null
+  error: ContentFeedback | null
 }
 
 export function LiveCanvas({
@@ -264,6 +266,7 @@ export function LiveCanvas({
   onPickMedia,
   onInsertDataToken,
 }: LiveCanvasProps) {
+  const { t, locale } = useI18n()
   // Both the iframe element and the live editor instance live in
   // *state* (not refs) because:
   //   - The three floating menus subscribe to them via React props
@@ -332,7 +335,7 @@ export function LiveCanvas({
         })
         .catch((err: unknown) => {
           if (err instanceof DOMException && err.name === 'AbortError') return
-          const message = getErrorMessage(err, 'Preview failed')
+          const message = contentFeedbackError(err, contentFeedback('content.copy.previewFailed'))
           setPreview({ status: 'error', html: '', error: message })
         })
     }, FETCH_DEBOUNCE_MS)
@@ -456,10 +459,7 @@ export function LiveCanvas({
           link: { openOnClick: false, autolink: true, linkOnPaste: true },
         }),
         Placeholder.configure({
-          placeholder: ({ node }) => {
-            if (node.type.name === 'heading') return 'Heading'
-            return 'Start writing…'
-          },
+          placeholder: ({ node }) => contentEditorPlaceholder(node.type.name, true),
           showOnlyCurrent: true,
         }),
         Table.configure({ resizable: true }),
@@ -483,7 +483,7 @@ export function LiveCanvas({
       editorProps: {
         attributes: {
           'data-testid': 'content-live-body-editor',
-          'aria-label': 'Post body (live preview)',
+          'aria-label': translate('content.copy.postBodyLivePreview'),
         },
       },
       onUpdate({ editor }) {
@@ -632,15 +632,16 @@ export function LiveCanvas({
   // the prop to keep its signature parity with the Write canvas.
   void onInsertDataToken
 
+  useEffect(() => { syncContentEditorLocale(editor, locale, true) }, [editor, locale])
+
   if (preview.status === 'error') {
     return (
       <div className={styles.shell} data-testid="content-live-canvas">
         <div className={styles.errorState} role="alert">
-          <h2>Live preview unavailable</h2>
-          <p>{preview.error ?? 'The preview pipeline could not render this entry.'}</p>
+          <h2>{t('content.copy.livePreviewUnavailable')}</h2>
+          <p>{preview.error ? renderContentFeedback(preview.error, locale) : t('content.copy.thePreviewPipelineCouldNotRenderThisEntry')}</p>
           <p className={styles.errorHint}>
-            Live mode needs at least one published version of the site so it
-            can resolve the entry template. Publish the site once and try again.
+            {t('content.preview.hint')}
           </p>
         </div>
       </div>
@@ -663,7 +664,7 @@ export function LiveCanvas({
         ref={setIframeEl}
         srcDoc={preview.html}
         className={styles.frame}
-        title="Live preview"
+        title={t('content.copy.livePreview')}
         // Editing happens inside the iframe via the Tiptap instance we
         // mount after load; allow-scripts is required for plugin runtime
         // assets the publisher injects.

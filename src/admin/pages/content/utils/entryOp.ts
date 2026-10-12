@@ -1,3 +1,4 @@
+import { contentFeedback, contentFeedbackError, reportContentError, type ContentFeedback } from '@admin/shared/contentFeedback'
 /**
  * The save-state machine shared by every async entry handler in ContentPage.
  *
@@ -11,21 +12,20 @@
  * Kept as a standalone function taking its setters as `deps` so it is unit
  * testable without mounting the whole page.
  */
-import { getErrorMessage } from '@core/utils/errorMessage'
 import type { SaveMessage } from '../hooks/useContentEntryDraft'
 
 export interface EntryOpDeps {
   setSaveMessage: (message: SaveMessage) => void
-  setError: (message: string | null) => void
+  setError: (message: ContentFeedback | null) => void
 }
 
 export interface EntryOpOptions<T> {
   /** Permission gate. When `false`, surface `permMsg` and skip the op entirely. */
   permitted?: boolean
   /** Message surfaced when `permitted` is `false`. */
-  permMsg?: string
+  permMsg?: ContentFeedback
   /** Fallback error text when the op throws a value without a usable message. */
-  fallback: string
+  fallback: ContentFeedback
   /** Apply the op's successful result (e.g. push it into the draft). */
   apply?: (result: T) => void
   /**
@@ -47,7 +47,7 @@ export async function runEntryOp<T>(
   options: EntryOpOptions<T>,
 ): Promise<void> {
   if (options.permitted === false) {
-    deps.setError(options.permMsg ?? 'You do not have permission to do that')
+    deps.setError(options.permMsg ?? contentFeedback('content.copy.youDoNotHavePermissionToDoThat'))
     return
   }
   if (options.phase) deps.setSaveMessage(options.phase.pending)
@@ -58,7 +58,8 @@ export async function runEntryOp<T>(
     if (options.phase) deps.setSaveMessage(options.phase.done)
   } catch (err) {
     if (options.phase) deps.setSaveMessage('error')
-    deps.setError(getErrorMessage(err, options.fallback))
+    deps.setError(contentFeedbackError(err, options.fallback))
+    if (!options.rethrow) reportContentError(err, options.fallback)
     if (options.rethrow) throw err
   }
 }

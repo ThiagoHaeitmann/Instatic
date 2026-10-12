@@ -1,3 +1,5 @@
+import { useI18n } from '@admin/i18n'
+import { contentEditorPlaceholder, syncContentEditorLocale } from './utils/editorI18n'
 /**
  * Tiptap-based body editor for the content workspace.
  *
@@ -116,6 +118,7 @@ export function TiptapBodyEditor({
   // ProseMirror handlers we spread into `editorProps` below, plus a
   // cancel callback that the placeholder NodeView's X button calls.
   // The hook owns its own AbortController map keyed by `uploadId`.
+  const { locale, t } = useI18n()
   const mediaEditorRef = useRef<Editor | null>(null)
   const mediaDrop = useEditorMediaDrop(mediaEditorRef)
 
@@ -140,10 +143,7 @@ export function TiptapBodyEditor({
         },
       }),
       Placeholder.configure({
-        placeholder: ({ node }) => {
-          if (node.type.name === 'heading') return 'Heading'
-          return "Type '/' for commands, or just write…"
-        },
+        placeholder: ({ node }) => contentEditorPlaceholder(node.type.name),
         showOnlyCurrent: true,
       }),
       Table.configure({ resizable: true }),
@@ -214,7 +214,7 @@ export function TiptapBodyEditor({
       attributes: {
         class: styles.proseSurface,
         spellcheck: 'true',
-        'aria-label': 'Post body',
+        'aria-label': t('content.copy.postBody'),
         'data-testid': 'content-body-editor',
       },
       // Paste / drop handlers from `useEditorMediaDrop`: intercept files
@@ -229,6 +229,8 @@ export function TiptapBodyEditor({
       onChange(proseMirrorDocToMarkdown(editor.getJSON()))
     },
   })
+
+  useEffect(() => { syncContentEditorLocale(editor, locale) }, [editor, locale])
 
   // Sync inbound markdown changes (e.g. user switched to a different
   // entry). Tiptap won't re-mount on `markdown` changes alone — we have

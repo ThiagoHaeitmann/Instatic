@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * Floating toolbar that appears when a `media` node is selected.
  *
@@ -60,6 +61,7 @@ interface MediaSelectionState {
 }
 
 export function MediaNodeToolbar({ editor, onPickMedia, iframeEl }: MediaNodeToolbarProps) {
+  const { t } = useI18n()
   // Iframe-aware overrides for the underlying BubbleMenu plugin — see
   // `BodyBubbleMenu` for the same pattern. The reference rect is the
   // selected media node's DOM rect (not selection coords) so the
@@ -137,8 +139,8 @@ export function MediaNodeToolbar({ editor, onPickMedia, iframeEl }: MediaNodeToo
             <Button
               variant="ghost"
               size="xs"
-              tooltip="Replace media"
-              aria-label="Replace media"
+              tooltip={t('content.copy.replaceMedia')}
+              aria-label={t('content.copy.replaceMedia')}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => onPickMedia()}
               className={styles.button}
@@ -149,21 +151,21 @@ export function MediaNodeToolbar({ editor, onPickMedia, iframeEl }: MediaNodeToo
               <Button
                 variant="ghost"
                 size="xs"
-                tooltip="Edit alt text"
-                aria-label="Edit alt text"
+                tooltip={t('content.copy.editAltText')}
+                aria-label={t('content.copy.editAltText')}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => setAltDraft({ src: state.src, value: state.alt })}
                 className={styles.altButton}
               >
-                Alt
+                {t('content.alt')}
               </Button>
             )}
             <span className={styles.divider} aria-hidden="true" />
             <Button
               variant="ghost"
               size="xs"
-              tooltip="Delete media"
-              aria-label="Delete media"
+              tooltip={t('content.copy.deleteMedia')}
+              aria-label={t('content.copy.deleteMedia')}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
                 editor.chain().focus().deleteSelection().run()
@@ -197,6 +199,7 @@ interface AltEditorProps {
 }
 
 function AltEditor({ initial, onCancel, onSubmit }: AltEditorProps) {
+  const { t } = useI18n()
   const [value, setValue] = useState(initial)
   return (
     <form
@@ -209,8 +212,8 @@ function AltEditor({ initial, onCancel, onSubmit }: AltEditorProps) {
       <Input
         autoFocus
         value={value}
-        placeholder="Describe the image…"
-        aria-label="Alt text"
+        placeholder={t('content.copy.describeTheImage')}
+        aria-label={t('content.copy.altText')}
         fieldSize="sm"
         emphasis="strong"
         onChange={(event) => setValue(event.target.value)}
@@ -222,7 +225,7 @@ function AltEditor({ initial, onCancel, onSubmit }: AltEditorProps) {
         }}
       />
       <Button type="submit" variant="primary" size="xs">
-        Save
+        {t('content.copy.save')}
       </Button>
     </form>
   )

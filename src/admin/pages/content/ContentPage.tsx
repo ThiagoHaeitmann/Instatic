@@ -1,3 +1,5 @@
+import { contentFeedback, contentFeedbackError, reportContentError } from '@admin/shared/contentFeedback'
+import { useI18n } from '@admin/i18n'
 import { Suspense, lazy, useEffect, useId, useRef, useState } from 'react'
 import {
   readWorkspaceLayout,
@@ -19,7 +21,7 @@ import { AdminWorkspaceCanvasLayout } from '@admin/layouts/AdminWorkspaceCanvasL
 import { DataBindingPicker } from '@admin/shared/DataBindingPicker'
 import { bindingToToken } from '@core/templates/tokenInterpolation'
 import { MediaExplorerPanel } from '@site/panels/MediaExplorerPanel'
-import type { CanvasNotchAction } from '@site/canvas/CanvasNotch'
+import type { ContentInsertAction } from './components/ContentInsertNotch'
 import { ContentDocumentCanvas } from './components/ContentDocumentCanvas/ContentDocumentCanvas'
 import { NewTableDialog } from '@admin/pages/data/components/NewTableDialog/NewTableDialog'
 import { ContentExplorerPanel } from './components/ContentExplorerPanel/ContentExplorerPanel'
@@ -44,7 +46,6 @@ import { useContentWorkspace } from './hooks/useContentWorkspace'
 import { publicContentPath } from './utils/contentEntryUtils'
 import { useAuthenticatedAdminUser } from '@admin/sessionContext'
 import { StepUpCancelledMessage, useStepUp } from '@admin/shared/StepUp'
-import { getErrorMessage } from '@core/utils/errorMessage'
 import { ContentAgentMount } from './agent/ContentAgentMount'
 import { useContentToolBridge } from './agent/useContentToolBridge'
 import {
@@ -69,6 +70,7 @@ function readPersistedContentPanel(): ContentPanelId | null {
 }
 
 export function ContentPage() {
+  const { t } = useI18n()
   // Initial value pulls from the per-workspace stored layout so the rail
   // remembers the last panel the user had open in the Content workspace.
   // First-time visitors fall back to the 'content' panel; an explicit `null`
@@ -195,8 +197,8 @@ export function ContentPage() {
   function handleCreateEntry() {
     return withEntryOp(() => workspace.createUntitledEntry(), {
       permitted: canCreateEntries,
-      permMsg: 'Your role cannot create content entries',
-      fallback: 'Could not create entry',
+      permMsg: contentFeedback('content.copy.yourRoleCannotCreateContentEntries'),
+      fallback: contentFeedback('content.copy.couldNotCreateEntry'),
       phase: SAVE_PHASE,
       // `createUntitledEntry` hands us an entry whose title is empty so the
       // editor's title field renders as a placeholder rather than pre-filling
@@ -211,8 +213,8 @@ export function ContentPage() {
   function handleMoveEntryCollection(tableId: string) {
     return withEntryOp(() => workspace.moveSelectedEntryToCollection(tableId), {
       permitted: canMoveSelectedEntry,
-      permMsg: 'Your role cannot move this entry',
-      fallback: 'Could not move entry',
+      permMsg: contentFeedback('content.copy.yourRoleCannotMoveThisEntry'),
+      fallback: contentFeedback('content.copy.couldNotMoveEntry'),
       phase: SAVE_PHASE,
       apply: (entry) => { if (entry) draft.applySelectedEntry(entry) },
     })
@@ -223,8 +225,8 @@ export function ContentPage() {
     if (!entry || entry.authorUserId === authorUserId) return Promise.resolve()
     return withEntryOp(() => workspace.updateEntryAuthor(entry, authorUserId), {
       permitted: canReassignAuthor,
-      permMsg: 'Your role cannot reassign authors',
-      fallback: 'Could not update author',
+      permMsg: contentFeedback('content.copy.yourRoleCannotReassignAuthors'),
+      fallback: contentFeedback('content.copy.couldNotUpdateAuthor'),
       phase: SAVE_PHASE,
       apply: (updatedEntry) => draft.applySelectedEntry(updatedEntry),
     })
@@ -239,7 +241,7 @@ export function ContentPage() {
     input: UpdateDataTableInput,
   ) {
     if (!canManageCollections) {
-      workspace.setError('Your role cannot manage content collections')
+      workspace.setError(contentFeedback('content.copy.yourRoleCannotManageContentCollections'))
       return
     }
     workspace.setError(null)
@@ -250,7 +252,7 @@ export function ContentPage() {
 
   async function handleDeleteCollection(collection: DataTable) {
     if (!canManageCollections) {
-      workspace.setError('Your role cannot manage content collections')
+      workspace.setError(contentFeedback('content.copy.yourRoleCannotManageContentCollections'))
       return
     }
     workspace.setError(null)
@@ -261,7 +263,8 @@ export function ContentPage() {
       }
     } catch (err) {
       if (err instanceof Error && err.message === StepUpCancelledMessage) return
-      workspace.setError(getErrorMessage(err, 'Could not delete collection'))
+      workspace.setError(contentFeedbackError(err, contentFeedback('content.copy.couldNotDeleteCollection')))
+      reportContentError(err, contentFeedback('content.copy.couldNotDeleteCollection'))
     }
   }
 
@@ -286,8 +289,8 @@ export function ContentPage() {
       return workspace.renameEntry(entrySnapshot, input)
     }, {
       permitted: canEditContentEntry(permissionUser, entry),
-      permMsg: 'Your role cannot edit this entry',
-      fallback: 'Could not rename entry',
+      permMsg: contentFeedback('content.copy.yourRoleCannotEditThisEntry'),
+      fallback: contentFeedback('content.copy.couldNotRenameEntry'),
       phase: SAVE_PHASE,
       rethrow: true,
       apply: (updatedEntry) => {
@@ -301,8 +304,8 @@ export function ContentPage() {
   function handleDeleteEntry(entry: DataRow) {
     return withEntryOp(() => workspace.deleteEntry(entry), {
       permitted: canEditContentEntry(permissionUser, entry),
-      permMsg: 'Your role cannot delete this entry',
-      fallback: 'Could not delete entry',
+      permMsg: contentFeedback('content.copy.yourRoleCannotDeleteThisEntry'),
+      fallback: contentFeedback('content.copy.couldNotDeleteEntry'),
       rethrow: true,
       apply: (nextEntry) => {
         if (workspace.selectedEntry?.id === entry.id) {
@@ -334,8 +337,8 @@ export function ContentPage() {
       return workspace.duplicateEntry(source)
     }, {
       permitted: canCreateEntries,
-      permMsg: 'Your role cannot create content entries',
-      fallback: 'Could not duplicate entry',
+      permMsg: contentFeedback('content.copy.yourRoleCannotCreateContentEntries'),
+      fallback: contentFeedback('content.copy.couldNotDuplicateEntry'),
       phase: SAVE_PHASE,
       rethrow: true,
       apply: (duplicated) => draft.applySelectedEntry(duplicated),
@@ -346,8 +349,8 @@ export function ContentPage() {
     if (entry.tableId === tableId) return Promise.resolve()
     return withEntryOp(() => workspace.moveEntryToCollection(entry, tableId), {
       permitted: canMoveRows && canEditContentEntry(permissionUser, entry),
-      permMsg: 'Your role cannot move this entry',
-      fallback: 'Could not move entry',
+      permMsg: contentFeedback('content.copy.yourRoleCannotMoveThisEntry'),
+      fallback: contentFeedback('content.copy.couldNotMoveEntry'),
       rethrow: true,
       apply: (updatedEntry) => {
         if (workspace.selectedEntry?.id === entry.id) {
@@ -359,7 +362,7 @@ export function ContentPage() {
 
   async function handlePublishEntry(entry: DataRow) {
     if (!canPublishContentEntry(permissionUser, entry)) {
-      workspace.setError('Your role cannot publish this entry')
+      workspace.setError(contentFeedback('content.copy.yourRoleCannotPublishThisEntry'))
       return
     }
 
@@ -368,7 +371,7 @@ export function ContentPage() {
         await draft.handlePublish()
       } else {
         await withEntryOp(() => workspace.publishEntry(entry), {
-          fallback: 'Could not publish entry',
+          fallback: contentFeedback('content.copy.couldNotPublishEntry'),
           phase: { pending: 'publishing', done: 'published' },
           apply: (published) => draft.applySelectedEntry(published),
         })
@@ -377,7 +380,7 @@ export function ContentPage() {
     }
 
     await withEntryOp(() => workspace.publishEntry(entry), {
-      fallback: 'Could not publish entry',
+      fallback: contentFeedback('content.copy.couldNotPublishEntry'),
       rethrow: true,
     })
   }
@@ -392,7 +395,7 @@ export function ContentPage() {
     }
 
     if (!canEditContentEntry(permissionUser, entry)) {
-      workspace.setError('Your role cannot edit this entry')
+      workspace.setError(contentFeedback('content.copy.yourRoleCannotEditThisEntry'))
       return
     }
 
@@ -406,7 +409,7 @@ export function ContentPage() {
 
   async function handleConvertEntryToDraft(entry: DataRow) {
     if (!canEditContentEntry(permissionUser, entry)) {
-      workspace.setError('Your role cannot edit this entry')
+      workspace.setError(contentFeedback('content.copy.yourRoleCannotEditThisEntry'))
       return
     }
     if (workspace.selectedEntry?.id === entry.id) {
@@ -415,7 +418,7 @@ export function ContentPage() {
     }
 
     await withEntryOp(() => workspace.updateEntryStatus(entry, 'draft'), {
-      fallback: 'Could not convert entry to draft',
+      fallback: contentFeedback('content.copy.couldNotConvertEntryToDraft'),
       rethrow: true,
     })
   }
@@ -425,28 +428,28 @@ export function ContentPage() {
     draft.applySelectedEntry(entry)
   }
 
-  const notchActions: CanvasNotchAction[] = [
+  const notchActions: ContentInsertAction[] = [
     {
       id: 'heading',
-      label: 'Heading',
+      label: t('content.copy.heading'),
       icon: HeadingIcon,
       onClick: () => bodyEditorRef.current?.appendBlock('heading'),
     },
     {
       id: 'text',
-      label: 'Text',
+      label: t('content.copy.text'),
       icon: TextPlusIcon,
       onClick: () => bodyEditorRef.current?.appendBlock('paragraph'),
     },
     {
       id: 'media',
-      label: 'Media',
+      label: t('content.copy.media'),
       icon: ImagesSolidIcon,
       onClick: () => void mediaPicker.openMediaPicker('media'),
     },
     {
       id: 'bind',
-      label: 'Insert data token',
+      label: t('content.copy.insertDataToken'),
       icon: BracesIcon,
       buttonRef: tokenPickerTriggerRef,
       expanded: tokenPickerOpen,
@@ -625,7 +628,7 @@ export function ContentPage() {
           variant="collection"
           onCreate={async (input) => {
             if (!canManageCollections) {
-              workspace.setError('Your role cannot manage content collections')
+              workspace.setError(contentFeedback('content.copy.yourRoleCannotManageContentCollections'))
               setCollectionDialogOpen(false)
               return
             }
@@ -639,14 +642,14 @@ export function ContentPage() {
 
       {tokenPickerOpen && workspace.selectedCollection && (
         <DataBindingPicker
-          label="Post body"
-          control={{ type: 'text', label: 'Post body' }}
+          label={t('content.copy.postBody')}
+          control={{ type: 'text', label: t('content.copy.postBody') }}
           insertMode
           fieldSelectionMode="token"
           anchorRef={tokenPickerTriggerRef}
           triggerRef={tokenPickerTriggerRef}
           scopedTableId={workspace.selectedCollection.id}
-          scopeLabel="Current entry"
+          scopeLabel={t('content.copy.currentEntry')}
           previewFields={{
             ...workspace.selectedEntry?.cells,
             ...draft.customCells,

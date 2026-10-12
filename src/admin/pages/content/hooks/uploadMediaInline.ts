@@ -1,3 +1,14 @@
+import { contentFeedback, type ContentFeedback } from '@admin/shared/contentFeedback'
+
+export class ContentUploadError extends Error {
+  readonly feedback: ContentFeedback
+
+  constructor(feedback: ContentFeedback) {
+    super('Content upload failed')
+    this.feedback = feedback
+  }
+}
+
 /**
  * Single-file upload helper for the content editor's paste / drop pipeline.
  *
@@ -55,12 +66,12 @@ export async function uploadMediaInline({ file, onProgress, signal }: UploadOpti
     xhr.onload = () => {
       signal?.removeEventListener('abort', abortListener)
       if (xhr.status < 200 || xhr.status >= 300) {
-        reject(new Error(extractError(xhr) ?? `Upload failed with ${xhr.status}`))
+        reject(new ContentUploadError(extractError(xhr) ?? contentFeedback('content.upload.http', { status: xhr.status })))
         return
       }
       const data = xhr.response as unknown
       if (!compiledCheck(CmsMediaAssetEnvelopeSchema, data)) {
-        reject(new Error('Server response did not match the expected shape'))
+        reject(new ContentUploadError(contentFeedback('content.upload.response')))
         return
       }
       const wire = (data as { asset: Parameters<typeof normalizeCmsMediaAsset>[0] }).asset
@@ -69,7 +80,7 @@ export async function uploadMediaInline({ file, onProgress, signal }: UploadOpti
 
     xhr.onerror = () => {
       signal?.removeEventListener('abort', abortListener)
-      reject(new Error('Upload network error'))
+      reject(new ContentUploadError(contentFeedback('content.upload.network')))
     }
 
     xhr.onabort = () => {

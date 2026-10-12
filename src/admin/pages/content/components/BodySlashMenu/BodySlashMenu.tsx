@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * React renderer for the slash-command menu.
  *
@@ -48,6 +49,7 @@ interface MenuState {
 }
 
 export function BodySlashMenu({ handleRef }: BodySlashMenuProps) {
+  const { t } = useI18n()
   const [state, setState] = useState<MenuState | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -108,7 +110,7 @@ export function BodySlashMenu({ handleRef }: BodySlashMenuProps) {
 
   return (
     <ContextMenu
-      ariaLabel="Insert block"
+      ariaLabel={t('content.copy.insertBlock')}
       onClose={() => setState(null)}
       x={state.position.x}
       y={state.position.y}
@@ -118,7 +120,7 @@ export function BodySlashMenu({ handleRef }: BodySlashMenuProps) {
       data-testid="content-slash-menu"
     >
       {state.items.length === 0 ? (
-        <ContextMenuItem disabled>No matches</ContextMenuItem>
+        <ContextMenuItem disabled>{t('content.copy.noMatches')}</ContextMenuItem>
       ) : (
         state.items.map((item, index) => (
           <ContextMenuItem
@@ -134,7 +136,7 @@ export function BodySlashMenu({ handleRef }: BodySlashMenuProps) {
               setState(null)
             }}
           >
-            {item.label}
+            {t(item.labelKey)}
           </ContextMenuItem>
         ))
       )}

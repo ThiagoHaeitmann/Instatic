@@ -1,3 +1,5 @@
+import { useI18n, formatNumber } from '@admin/i18n'
+import { renderContentFeedback } from '@admin/shared/contentFeedback'
 /**
  * React node-view for the `mediaUploadPlaceholder` Tiptap node.
  *
@@ -29,6 +31,7 @@ interface MediaUploadPlaceholderViewProps extends NodeViewProps {
 }
 
 export function MediaUploadPlaceholderView(props: MediaUploadPlaceholderViewProps) {
+  const { t, locale } = useI18n()
   const attrs = props.node.attrs as MediaUploadPlaceholderAttributes
   const progressPct = Math.round(Math.max(0, Math.min(1, attrs.progress)) * 100)
   const isFailed = attrs.status === 'failed'
@@ -51,14 +54,14 @@ export function MediaUploadPlaceholderView(props: MediaUploadPlaceholderViewProp
               <video
                 src={attrs.previewUrl}
                 muted
-                aria-label={`${attrs.filename} upload preview`}
+                aria-label={t('content.upload.preview', { filename: attrs.filename })}
                 className={styles.thumb}
               />
             )
             : <img src={attrs.previewUrl} alt="" className={styles.thumb} />
           : (
             <div className={styles.thumbEmpty} aria-hidden="true">
-              {attrs.kind === 'video' ? 'Video' : 'Image'}
+              {attrs.kind === 'video' ? t('content.copy.video') : t('content.copy.image')}
             </div>
           )}
       </div>
@@ -67,16 +70,16 @@ export function MediaUploadPlaceholderView(props: MediaUploadPlaceholderViewProp
           <span className={styles.filename}>{attrs.filename}</span>
           <span className={styles.status}>
             {isFailed
-              ? (attrs.error ?? 'Upload failed')
-              : `Uploading… ${progressPct}%`}
+              ? (attrs.error ? renderContentFeedback(attrs.error, locale) : t('content.copy.uploadFailed'))
+              : t('content.upload.progress', { percent: formatNumber(progressPct / 100, { style: 'percent' }, locale) })}
           </span>
         </div>
         <Button
           variant="ghost"
           size="xs"
           iconOnly
-          aria-label={isFailed ? 'Remove failed upload' : 'Cancel upload'}
-          tooltip={isFailed ? 'Remove' : 'Cancel'}
+          aria-label={isFailed ? t('content.copy.removeFailedUpload') : t('content.copy.cancelUpload')}
+          tooltip={isFailed ? t('content.copy.remove') : t('content.copy.cancel')}
           onClick={(event) => {
             event.preventDefault()
             event.stopPropagation()

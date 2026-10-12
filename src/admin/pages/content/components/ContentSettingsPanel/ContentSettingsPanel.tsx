@@ -1,5 +1,5 @@
+import { renderContentFeedback, type ContentFeedback } from '@admin/shared/contentFeedback'
 import { useI18n } from '@admin/i18n'
-import { CONTENT_STATUS_LABELS } from '@admin/shared/presentationCatalog'
 import { Suspense, lazy } from 'react'
 import { Input, Textarea } from '@ui/components/Input'
 import { Select } from '@ui/components/Select'
@@ -49,7 +49,7 @@ interface ContentSettingsPanelProps {
   seoDescription: string
   seoDescriptionId: string
   publicPath: string
-  mediaError: string | null
+  mediaError: ContentFeedback | null
   featuredMediaId: string | null
   featuredMediaAsset: CmsMediaAsset | null
   /** Draft values of the collection's custom (non-built-in) fields, keyed by field id. */
@@ -82,7 +82,7 @@ function contentAuthorLabel(entry: DataRow): string {
   const user = contentAuthor(entry)
   if (user?.displayName) return user.displayName
   if (user?.email) return user.email
-  return 'Unknown user'
+  return ''
 }
 
 function contentAuthorRoleLabel(entry: DataRow): string | null {
@@ -91,7 +91,7 @@ function contentAuthorRoleLabel(entry: DataRow): string | null {
 }
 
 function authorOptionLabel(author: DataUserReference): string {
-  return author.displayName || author.email || 'Unknown user'
+  return author.displayName || author.email || ''
 }
 
 /**
@@ -138,7 +138,7 @@ export function ContentSettingsPanel({
   onClearFeaturedMedia,
   onEditFeaturedMedia,
 }: ContentSettingsPanelProps) {
-  useI18n()
+  const { t, locale } = useI18n()
   const setRightPanel = useWorkspaceLayout((s) => s.setRightPanel)
   const seoEnabled = selectedCollection ? dataTableHasField(selectedCollection, POST_TYPE_FIELD_SEO_TITLE) : false
   const featuredMediaEnabled = selectedCollection ? dataTableHasField(selectedCollection, POST_TYPE_FIELD_FEATURED_MEDIA) : false
@@ -156,10 +156,10 @@ export function ContentSettingsPanel({
   const branchGate = useBranchPublishGate()
   const canPublishHere = canPublishEntry && !branchGate.onBranch
   const statusOptions = [
-    { value: 'draft', label: CONTENT_STATUS_LABELS.draft, enabled: canEditEntry },
-    { value: 'scheduled', label: CONTENT_STATUS_LABELS.scheduled, enabled: false },
-    { value: 'published', label: CONTENT_STATUS_LABELS.published, enabled: canPublishHere },
-    { value: 'unpublished', label: CONTENT_STATUS_LABELS.unpublished, enabled: canEditEntry },
+    { value: 'draft', label: t('metadata.status.content.draft'), enabled: canEditEntry },
+    { value: 'scheduled', label: t('metadata.status.content.scheduled'), enabled: false },
+    { value: 'published', label: t('metadata.status.content.published'), enabled: canPublishHere },
+    { value: 'unpublished', label: t('metadata.status.content.unpublished'), enabled: canEditEntry },
   ].filter((option) => option.enabled || option.value === selectedEntry?.status)
     .map(({ value, label, enabled }) => ({ value, label, disabled: !enabled }))
 
@@ -168,16 +168,16 @@ export function ContentSettingsPanel({
       data-panel=""
       data-testid="content-settings-panel"
       role="complementary"
-      aria-label="Content settings"
+      aria-label={t('content.copy.contentSettings')}
       className={cn(propertiesStyles.panel, propertiesStyles.panelDocked)}
     >
       <PanelHeader
         panelId="content-settings"
-        title="Settings"
+        title={t('content.copy.settings')}
         titleContent={(
           <span className={propertiesStyles.headerNodeTitle}>
             <Settings2SolidIcon size={13} aria-hidden="true" />
-            <span className={propertiesStyles.headerNodeLabel}>Settings</span>
+            <span className={propertiesStyles.headerNodeLabel}>{t('content.copy.settings')}</span>
           </span>
         )}
         onClose={() => setRightPanel({ collapsed: true })}
@@ -189,9 +189,9 @@ export function ContentSettingsPanel({
         ) : (
           <>
             <div className={styles.field}>
-              <span>Collection</span>
+              <span>{t('content.copy.collection')}</span>
               <Select
-                aria-label="Collection"
+                aria-label={t('content.copy.collection')}
                 value={selectedEntry?.tableId ?? selectedCollection?.id ?? ''}
                 disabled={!canMoveSelectedEntry}
                 onChange={(event) => onCollectionChange(event.target.value)}
@@ -202,7 +202,7 @@ export function ContentSettingsPanel({
               />
             </div>
             <label className={styles.field} htmlFor={slugId}>
-              <span>Slug</span>
+              <span>{t('content.copy.slug')}</span>
               <Input
                 id={slugId}
                 value={slug}
@@ -213,7 +213,7 @@ export function ContentSettingsPanel({
             {seoEnabled && (
               <>
                 <label className={styles.field} htmlFor={seoTitleId}>
-                  <span>SEO title</span>
+                  <span>{t('content.copy.seoTitle')}</span>
                   <Input
                     id={seoTitleId}
                     value={seoTitle}
@@ -222,7 +222,7 @@ export function ContentSettingsPanel({
                   />
                 </label>
                 <label className={styles.field} htmlFor={seoDescriptionId}>
-                  <span>SEO description</span>
+                  <span>{t('content.copy.seoDescription')}</span>
                   <Textarea
                     id={seoDescriptionId}
                     value={seoDescription}
@@ -235,9 +235,9 @@ export function ContentSettingsPanel({
               </>
             )}
             <div className={styles.field}>
-              <span>Status</span>
+              <span>{t('content.copy.status')}</span>
               <Select
-                aria-label="Status"
+                aria-label={t('content.copy.status')}
                 value={selectedEntry?.status ?? 'draft'}
                 disabled={!canChangeStatus}
                 onChange={(event) => {
@@ -248,31 +248,31 @@ export function ContentSettingsPanel({
                 }}
                 options={statusOptions}
               />
-              {branchGate.reason && (
-                <p className={styles.fieldHint} role="note">{branchGate.reason}</p>
+              {branchGate.onBranch && (
+                <p className={styles.fieldHint} role="note">{t('content.branchReason')}</p>
               )}
             </div>
             <div className={styles.metaBlock}>
-              <span>Public URL</span>
-              <strong>{publicPath || 'Not available'}</strong>
+              <span>{t('content.copy.publicUrl')}</span>
+              <strong>{publicPath || t('content.copy.notAvailable')}</strong>
             </div>
             {selectedEntry && (
-              <div className={styles.authorBlock} aria-label="Content author">
-                <span>Author</span>
+              <div className={styles.authorBlock} aria-label={t('content.copy.contentAuthor')}>
+                <span>{t('content.copy.author')}</span>
                 <div className={styles.authorRow}>
                   {canChangeAuthor && authorOptions.length > 0 ? (
                     <Select
-                      aria-label="Author"
+                      aria-label={t('content.copy.author')}
                       value={selectedEntry.authorUserId ?? selectedAuthor?.id ?? ''}
                       disabled={authorsLoading}
                       onChange={(event) => onAuthorChange(event.target.value)}
                       options={authorOptions.map((author) => ({
                         value: author.id,
-                        label: authorOptionLabel(author),
+                        label: authorOptionLabel(author) || t('content.copy.unknownUser'),
                       }))}
                     />
                   ) : (
-                    <strong>{contentAuthorLabel(selectedEntry)}</strong>
+                    <strong>{contentAuthorLabel(selectedEntry) || t('content.copy.unknownUser')}</strong>
                   )}
                   {authorRoleLabel && (
                     <span className={styles.authorRoleBadge}>{authorRoleLabel}</span>
@@ -282,21 +282,22 @@ export function ContentSettingsPanel({
             )}
             {featuredMediaEnabled && (
               <div className={styles.featuredMediaField}>
-                <span>Featured media</span>
+                <span>{t('content.copy.featuredMedia')}</span>
                 <MediaPickerField
                   asset={featuredMediaAsset}
                   hasValue={Boolean(featuredMediaId)}
                   fallbackLabel={featuredMediaId ?? undefined}
-                  fallbackHint="Saved reference"
+                  fallbackHint={t('content.copy.savedReference')}
                   mediaKind={featuredMediaAsset?.mimeType.startsWith('video/') ? 'video' : 'image'}
-                  subjectLabel="featured media"
-                  chooseLabel="Choose featured media"
+                  subjectLabel={t('content.copy.featuredMediaLabel')}
+                  changeLabel={t('content.changeFeaturedMedia')}
+                  chooseLabel={t('content.copy.chooseFeaturedMedia')}
                   disabled={!canEditSelectedEntry}
                   onBrowse={onChooseFeaturedMedia}
                   onEdit={featuredMediaAsset ? onEditFeaturedMedia : undefined}
                   onClear={featuredMediaId ? onClearFeaturedMedia : undefined}
                 />
-                {mediaError && <p className={styles.error} role="alert">{mediaError}</p>}
+                {mediaError && <p className={styles.error} role="alert">{renderContentFeedback(mediaError, locale)}</p>}
               </div>
             )}
             {selectedEntry && customFields.length > 0 && (
@@ -319,6 +320,7 @@ export function ContentSettingsPanel({
 }
 
 function ContentSettingsLoading() {
+  const { t } = useI18n()
   // Universal three-bar block — same visual as every other settings /
   // dialog / panel loading region in the editor. The bespoke
   // `settingsSkeleton*` shapes that used to render label / input /
@@ -329,7 +331,7 @@ function ContentSettingsLoading() {
       className={styles.settingsSkeleton}
       data-testid="content-settings-loading"
       aria-busy="true"
-      aria-label="Loading content settings"
+      aria-label={t('content.copy.loadingContentSettings')}
     >
       <SkeletonBlock minHeight={200} />
     </div>

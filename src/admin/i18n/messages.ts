@@ -1,3 +1,4 @@
+import { contentEnglishMessages, contentPortugueseMessages } from './contentMessages'
 import { accountUsersEnglishMessages, accountUsersPortugueseMessages } from './accountUsersMessages'
 import { metadataEnglishMessages, metadataPortugueseMessages } from './metadataMessages'
 import { dashboardEnglishMessages, dashboardPortugueseMessages } from './dashboardMessages'
@@ -7,6 +8,7 @@ import { uiEnglishMessages, uiPortugueseMessages } from './uiMessages'
 export type MessageCatalog = Readonly<Record<string, string>>
 
 export const englishMessages = {
+  ...contentEnglishMessages,
   ...accountUsersEnglishMessages,
   ...metadataEnglishMessages,
   ...dashboardEnglishMessages,
@@ -43,6 +45,7 @@ export const englishMessages = {
 } as const satisfies MessageCatalog
 
 export const portugueseBrazilMessages = {
+  ...contentPortugueseMessages,
   ...accountUsersPortugueseMessages,
   ...metadataPortugueseMessages,
   ...dashboardPortugueseMessages,

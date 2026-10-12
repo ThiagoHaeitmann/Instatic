@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { buildPostTypeDefaultFields, dataTableHasField } from '@core/data/fields'
 import {
@@ -15,7 +16,7 @@ import { Input } from '@ui/components/Input'
 import dialogStyles from '../../../../shared/dialogs/SiteCreateDialog/SiteCreateDialog.module.css'
 import styles from '../../ContentPage.module.css'
 import { slugFromTitle } from '@core/utils/slug'
-import { getErrorMessage } from '@core/utils/errorMessage'
+import { contentFeedback, reportContentError } from '@admin/shared/contentFeedback'
 import { StepUpCancelledMessage } from '@admin/shared/StepUp'
 
 interface ContentCollectionSettingsDialogProps {
@@ -29,9 +30,6 @@ function normalizeRouteBase(value: string): string {
   return `/${slug}`
 }
 
-function errorMessage(err: unknown) {
-  return getErrorMessage(err, 'Could not update collection').replace(/^\[[^\]]+\]\s*/, '')
-}
 
 const FORM_ID = 'content-collection-settings-form'
 
@@ -40,6 +38,7 @@ export function ContentCollectionSettingsDialog({
   onCancel,
   onSave,
 }: ContentCollectionSettingsDialogProps) {
+  const { t } = useI18n()
   const [name, setName] = useState(collection.name)
   const [slug, setSlug] = useState(collection.slug)
   const [routeBase, setRouteBase] = useState(collection.routeBase)
@@ -48,7 +47,6 @@ export function ContentCollectionSettingsDialog({
   const [bodyField, setBodyField] = useState(dataTableHasField(collection, POST_TYPE_FIELD_BODY))
   const [featuredMediaField, setFeaturedMediaField] = useState(dataTableHasField(collection, POST_TYPE_FIELD_FEATURED_MEDIA))
   const [seoField, setSeoField] = useState(dataTableHasField(collection, POST_TYPE_FIELD_SEO_TITLE))
-  const [submitError, setSubmitError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const nameId = useId()
   const slugId = useId()
@@ -96,7 +94,7 @@ export function ContentCollectionSettingsDialog({
       // A step-up cancellation means the user backed out of the password
       // re-entry prompt — not a failure. Leave the dialog open, show nothing.
       if (err instanceof Error && err.message === StepUpCancelledMessage) return
-      setSubmitError(errorMessage(err))
+      reportContentError(err, contentFeedback('content.copy.couldNotUpdateCollection'))
     }
   }
 
@@ -104,13 +102,13 @@ export function ContentCollectionSettingsDialog({
     <Dialog
       open
       onClose={onCancel}
-      title="Collection settings"
+      title={t('content.copy.collectionSettings')}
       size="sm"
       initialFocusRef={inputRef}
       footer={
         <>
           <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
-            Cancel
+            {t('content.copy.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -119,14 +117,14 @@ export function ContentCollectionSettingsDialog({
             form={FORM_ID}
             disabled={!canSave}
           >
-            Save
+            {t('content.copy.save')}
           </Button>
         </>
       }
     >
       <form id={FORM_ID} className={dialogStyles.form} onSubmit={handleSubmit}>
         <div className={dialogStyles.field}>
-          <label htmlFor={nameId} className={dialogStyles.label}>Name</label>
+          <label htmlFor={nameId} className={dialogStyles.label}>{t('content.copy.name')}</label>
           <Input
             id={nameId}
             ref={inputRef}
@@ -134,7 +132,6 @@ export function ContentCollectionSettingsDialog({
             value={name}
             onChange={(event) => {
               setName(event.target.value)
-              setSubmitError(null)
             }}
             autoComplete="off"
             spellCheck={false}
@@ -142,14 +139,13 @@ export function ContentCollectionSettingsDialog({
         </div>
 
         <div className={dialogStyles.field}>
-          <label htmlFor={slugId} className={dialogStyles.label}>Slug</label>
+          <label htmlFor={slugId} className={dialogStyles.label}>{t('content.copy.slug')}</label>
           <Input
             id={slugId}
             fieldSize="sm"
             value={slug}
             onChange={(event) => {
               setSlug(slugFromTitle(event.target.value))
-              setSubmitError(null)
             }}
             autoComplete="off"
             spellCheck={false}
@@ -157,14 +153,13 @@ export function ContentCollectionSettingsDialog({
         </div>
 
         <div className={dialogStyles.field}>
-          <label htmlFor={routeId} className={dialogStyles.label}>URL path</label>
+          <label htmlFor={routeId} className={dialogStyles.label}>{t('content.copy.urlPath')}</label>
           <Input
             id={routeId}
             fieldSize="sm"
             value={routeBase}
             onChange={(event) => {
               setRouteBase(event.target.value)
-              setSubmitError(null)
             }}
             autoComplete="off"
             spellCheck={false}
@@ -172,14 +167,13 @@ export function ContentCollectionSettingsDialog({
         </div>
 
         <div className={dialogStyles.field}>
-          <label htmlFor={singularId} className={dialogStyles.label}>Singular label</label>
+          <label htmlFor={singularId} className={dialogStyles.label}>{t('content.copy.singularLabel')}</label>
           <Input
             id={singularId}
             fieldSize="sm"
             value={singularLabel}
             onChange={(event) => {
               setSingularLabel(event.target.value)
-              setSubmitError(null)
             }}
             autoComplete="off"
             spellCheck={false}
@@ -187,14 +181,13 @@ export function ContentCollectionSettingsDialog({
         </div>
 
         <div className={dialogStyles.field}>
-          <label htmlFor={pluralId} className={dialogStyles.label}>Plural label</label>
+          <label htmlFor={pluralId} className={dialogStyles.label}>{t('content.copy.pluralLabel')}</label>
           <Input
             id={pluralId}
             fieldSize="sm"
             value={pluralLabel}
             onChange={(event) => {
               setPluralLabel(event.target.value)
-              setSubmitError(null)
             }}
             autoComplete="off"
             spellCheck={false}
@@ -202,14 +195,14 @@ export function ContentCollectionSettingsDialog({
         </div>
 
         <fieldset className={styles.collectionFields}>
-          <legend>Fields</legend>
+          <legend>{t('content.copy.fields')}</legend>
           <div>
             <Checkbox
               id={bodyFieldId}
               checked={bodyField}
               onCheckedChange={setBodyField}
             />
-            <label htmlFor={bodyFieldId}>Body</label>
+            <label htmlFor={bodyFieldId}>{t('content.copy.body')}</label>
           </div>
           <div>
             <Checkbox
@@ -217,7 +210,7 @@ export function ContentCollectionSettingsDialog({
               checked={featuredMediaField}
               onCheckedChange={setFeaturedMediaField}
             />
-            <label htmlFor={featuredMediaFieldId}>Featured media</label>
+            <label htmlFor={featuredMediaFieldId}>{t('content.copy.featuredMedia')}</label>
           </div>
           <div>
             <Checkbox
@@ -225,15 +218,10 @@ export function ContentCollectionSettingsDialog({
               checked={seoField}
               onCheckedChange={setSeoField}
             />
-            <label htmlFor={seoFieldId}>SEO fields</label>
+            <label htmlFor={seoFieldId}>{t('content.copy.seoFields')}</label>
           </div>
         </fieldset>
 
-        {submitError && (
-          <p role="alert" className={dialogStyles.errorText}>
-            {submitError}
-          </p>
-        )}
       </form>
     </Dialog>
   )

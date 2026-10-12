@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import { useRef, type CSSProperties, type ReactNode } from 'react'
 import { Button } from '@ui/components/Button'
 import { BookOpenSolidIcon } from 'pixel-art-icons/icons/book-open-solid'
@@ -34,6 +35,7 @@ export function ContentSidebar({
   agentPanel,
   canUseAiChat,
 }: ContentSidebarProps) {
+  const { t } = useI18n()
   const sidebarRef = useRef<HTMLElement | null>(null)
   const leftSidebarWidth = useWorkspaceLayout((s) => s.leftSidebarWidth)
   const setLeftSidebarWidth = useWorkspaceLayout((s) => s.setLeftSidebarWidth)
@@ -53,7 +55,7 @@ export function ContentSidebar({
       style={style}
     >
       <nav
-        aria-label="Content panel dock"
+        aria-label={t('content.copy.contentPanelDock')}
         className={panelRailStyles.rail}
         data-testid="content-panel-rail"
       >
@@ -61,7 +63,7 @@ export function ContentSidebar({
           <div className={panelRailStyles.itemGroup} data-testid="panel-rail-primary">
             <ContentRailButton
               id="content"
-              label="Content"
+              label={t('content.copy.content')}
               icon={BookOpenSolidIcon}
               iconName="book-open"
               active={activePanel === 'content'}
@@ -69,7 +71,7 @@ export function ContentSidebar({
             />
             <ContentRailButton
               id="media"
-              label="Media"
+              label={t('content.copy.media')}
               icon={ImagesSolidIcon}
               iconName="images"
               active={activePanel === 'media'}
@@ -81,7 +83,7 @@ export function ContentSidebar({
           <div className={panelRailStyles.globalGroup} data-testid="panel-rail-global">
             <ContentRailButton
               id="agent"
-              label="AI assistant"
+              label={t('content.copy.aiAssistant')}
               icon={AiSettingsSolidIcon}
               iconName="ai-settings-solid"
               active={activePanel === 'agent'}
@@ -114,7 +116,7 @@ export function ContentSidebar({
           targetRef={sidebarRef}
           cssVariable="--left-sidebar-panel-width"
           layoutCssVariable="--left-sidebar-panel-layout-width"
-          ariaLabel="Resize content sidebar"
+          ariaLabel={t('content.resizeSidebar')}
           onResize={setLeftSidebarWidth}
         />
       )}
@@ -139,9 +141,9 @@ function ContentRailButton({
   active,
   onToggle,
 }: ContentRailButtonProps) {
+  const { t } = useI18n()
   const RailIcon = icon
-  const action = active ? 'Close' : 'Open'
-  const accent = railAccent(`content:${id}:${label}`)
+  const accent = railAccent(`content:${id}`)
   const style = {
     '--rail-icon-tint': railTintVar(accent),
   } as CSSProperties
@@ -152,8 +154,8 @@ function ContentRailButton({
       size="md"
       iconOnly
       pressed={active}
-      aria-label={`${action} ${label} panel`}
-      tooltip={`${label} panel`}
+      aria-label={t(active ? 'content.panel.close' : 'content.panel.open', { label })}
+      tooltip={t('content.panel.tooltip', { label })}
       data-testid={`panel-rail-${id}`}
       data-icon={iconName}
       data-accent={accent}
