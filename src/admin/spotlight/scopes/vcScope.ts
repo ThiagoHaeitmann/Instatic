@@ -5,6 +5,8 @@
  * Each command opens the selected VC for editing.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope, Command } from '../types'
 
 function getVCCommands(): Command[] {
@@ -22,7 +24,7 @@ function getVCCommands(): Command[] {
     return vcs.map((vc): Command => ({
       id: `visualComponents.open.${vc.id}`,
       title: vc.name,
-      subtitle: 'Visual Component',
+      get subtitle() { return translate('metadata.spotlight.visualComponent') },
       group: 'visualComponents',
       iconName: 'box-stack-solid',
       keywords: [vc.name.toLowerCase(), 'visual component', 'vc', 'component'],
@@ -41,7 +43,7 @@ function getVCCommands(): Command[] {
 
 export const vcScope: Scope = {
   id: 'visualComponents',
-  title: 'Open Visual Component',
-  placeholder: 'Search Visual Components…',
+  get title() { return translate('metadata.spotlight.openVisualComponentAlternate') },
+  get placeholder() { return translate('metadata.spotlight.searchVisualComponents') },
   commands: getVCCommands,
 }

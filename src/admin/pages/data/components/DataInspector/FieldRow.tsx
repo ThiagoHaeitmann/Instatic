@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * FieldRow — a single field row in the FieldsSection list. Presentational:
  * drag-and-drop, edit, and delete are surfaced as handler props; all state and
@@ -14,7 +15,7 @@ import { ArrowDownIcon } from 'pixel-art-icons/icons/arrow-down'
 import { StarSolidIcon } from 'pixel-art-icons/icons/star-solid'
 import { getFieldIcon } from '@admin/pages/data/utils/fieldIcons'
 import type { DataField } from '@core/data/schemas'
-import { FIELD_TYPE_LABELS } from './fieldGuards'
+import { FIELD_TYPE_LABELS } from '@admin/shared/presentationCatalog'
 import styles from './DataInspector.module.css'
 
 interface FieldRowProps {
@@ -73,6 +74,7 @@ export function FieldRow({
   onDrop,
   onDragEnd,
 }: FieldRowProps): ReactElement {
+  useI18n()
   return (
     <div
       className={[

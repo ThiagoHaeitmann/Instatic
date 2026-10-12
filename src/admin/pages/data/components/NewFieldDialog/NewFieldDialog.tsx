@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import { useId, useState, type FormEvent } from 'react'
 import { Button } from '@ui/components/Button'
 import { Dialog } from '@ui/components/Dialog'
@@ -66,6 +67,7 @@ export function NewFieldDialog({
   lockLabel = false,
   onCreate,
 }: NewFieldDialogProps) {
+  useI18n()
   const [type, setType] = useState<DataFieldType>(initialField?.type ?? 'text')
   const [id, setId] = useState(initialField?.id ?? '')
   const [idManuallyEdited, setIdManuallyEdited] = useState(false)

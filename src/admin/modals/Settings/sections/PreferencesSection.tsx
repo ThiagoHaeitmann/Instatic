@@ -40,7 +40,7 @@ export function PreferencesSection() {
   return (
     <div>
       <p className={s.sectionDescription}>
-        Editor preferences are stored locally on this device and do not affect the site file.
+        {t('metadata.preferences.deviceDescription')}
       </p>
 
       <section className={s.sectionBlock}>
@@ -88,6 +88,7 @@ function PreferenceRow({ pref }: { pref: CatalogPreferenceDef }) {
 }
 
 function BooleanPreferenceRow({ pref }: { pref: BooleanCatalogDef }) {
+  useI18n()
   const checked = useEditorPreference(pref.id)
   const id = `pref-${pref.id}`
 
@@ -111,6 +112,7 @@ function BooleanPreferenceRow({ pref }: { pref: BooleanCatalogDef }) {
 function SelectPreferenceRow({
   pref,
 }: { pref: Extract<SelectCatalogDef, { type: 'select' }> }) {
+  useI18n()
   const value = useEditorSelectPreference(pref.id)
   const id = `pref-${pref.id}`
 
@@ -171,13 +173,13 @@ function useDynamicSelectOptions(
  * Lives here (not in the catalog) because it is an action, not a stored value.
  */
 function SpotlightHistoryControls() {
+  const { t } = useI18n()
   return (
     <div className={s.toggleRow}>
       <div className={s.toggleRowContent}>
-        <span className={s.toggleRowLabel}>Clear command history</span>
+        <span className={s.toggleRowLabel}>{t('metadata.preferences.history.label')}</span>
         <p className={s.toggleRowDesc}>
-          Removes the list of recently run commands shown when the palette opens
-          with an empty query, and erases any local usage counts.
+          {t('metadata.preferences.history.description')}
         </p>
       </div>
       <Button
@@ -188,7 +190,7 @@ function SpotlightHistoryControls() {
           clearTelemetry()
         }}
       >
-        Clear
+        {t('metadata.preferences.history.clear')}
       </Button>
     </div>
   )
@@ -197,6 +199,7 @@ function SpotlightHistoryControls() {
 function DynamicSelectPreferenceRow({
   pref,
 }: { pref: Extract<SelectCatalogDef, { type: 'select-dynamic' }> }) {
+  const { t } = useI18n()
   const value = useEditorSelectPreference(pref.id)
   const dynamicOptions = useDynamicSelectOptions(pref.optionsSource)
   const id = `pref-${pref.id}`
@@ -209,14 +212,14 @@ function DynamicSelectPreferenceRow({
   const valueIsKnown = dynamicOptions.some((option) => option.value === value)
   const options = valueIsKnown
     ? dynamicOptions
-    : [{ value, label: `${value} (not in current site)` }, ...dynamicOptions]
+    : [{ value, label: t('metadata.preferences.missingOption', { value }) }, ...dynamicOptions]
 
   // Empty state: site not loaded yet, or it has no items in the source.
   // Render a disabled select with a single placeholder to keep the row
   // shape stable. Copy into a mutable array for the Select primitive's API.
   const isEmpty = options.length === 0
   const renderOptions = isEmpty
-    ? [{ value: pref.default, label: 'No options available' }]
+    ? [{ value: pref.default, label: t('metadata.preferences.emptyOptions') }]
     : [...options]
 
   return (

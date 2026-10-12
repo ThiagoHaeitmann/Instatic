@@ -7,13 +7,15 @@
  * sync approach — but the provider lifecycle is managed uniformly by the runner.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope } from '../types'
 import { pagesProvider } from '../providers/pagesProvider'
 
 export const pagesScope: Scope = {
   id: 'pages',
-  title: 'Switch to page',
-  placeholder: 'Search pages…',
+  get title() { return translate('metadata.spotlight.switchToPageAlternate') },
+  get placeholder() { return translate('metadata.spotlight.searchPages') },
   commands: () => [],
   providers: [pagesProvider],
 }

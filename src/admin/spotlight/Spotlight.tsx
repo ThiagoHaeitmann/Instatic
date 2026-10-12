@@ -20,6 +20,8 @@
  *          query → close)
  */
 
+import { useI18n } from '@admin/i18n'
+
 import {
   use,
   useEffect,
@@ -56,6 +58,7 @@ export interface SpotlightProps {
 }
 
 export function Spotlight({ isClosing = false }: SpotlightProps): ReactNode {
+  useI18n()
   const ctx = use(SpotlightInternalContext)
   const inputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)

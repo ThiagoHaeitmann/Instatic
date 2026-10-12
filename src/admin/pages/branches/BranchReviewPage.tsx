@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * BranchReviewPage — the merge review of one branch
  * (`/admin/branches/:branchId/review`).
@@ -120,6 +121,7 @@ interface ReviewProps {
 }
 
 function Review({ branch }: ReviewProps) {
+  useI18n()
   const branchId = branch.id
   const branchName = branch.name
   const user = useAuthenticatedAdminUser()
@@ -596,6 +598,7 @@ function threadPlaceholder(change: MergeChange): string {
 }
 
 function StatusPill({ status, unresolved }: { status: 'open' | 'declined' | 'merged' | 'withdrawn'; unresolved: number }) {
+  useI18n()
   const label = status === 'open' && unresolved > 0
     ? `${requestStatusLabel(status)} · ${unresolved} conflict${unresolved === 1 ? '' : 's'}`
     : requestStatusLabel(status)

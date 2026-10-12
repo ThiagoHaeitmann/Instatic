@@ -4,6 +4,8 @@
  * Sign out (destructive), navigate to account settings sections.
  */
 
+import { translate } from '@admin/i18n'
+
 import { logoutCms } from '@core/persistence'
 import type { Command } from '../types'
 
@@ -11,8 +13,8 @@ export function getAccountCommands(): Command[] {
   return [
     {
       id: 'account.profile',
-      title: 'Edit profile',
-      subtitle: 'Update your name, email, and avatar',
+      get title() { return translate('metadata.spotlight.editProfile') },
+      get subtitle() { return translate('metadata.spotlight.updateYourNameEmailAndAvatar') },
       group: 'account',
       iconName: 'cursor-minimal-solid',
       keywords: ['account', 'profile', 'edit', 'name', 'email', 'avatar'],
@@ -25,8 +27,8 @@ export function getAccountCommands(): Command[] {
 
     {
       id: 'account.signOut',
-      title: 'Sign out',
-      subtitle: 'End your current session',
+      get title() { return translate('metadata.spotlight.signOut') },
+      get subtitle() { return translate('metadata.spotlight.endYourCurrentSession') },
       group: 'account',
       iconName: 'power-off',
       keywords: ['sign out', 'logout', 'log out', 'session', 'exit'],

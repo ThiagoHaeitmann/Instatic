@@ -8,6 +8,8 @@
  * - Delete current page → destructive
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { queuePendingAction } from '../pendingAction'
 
@@ -16,8 +18,8 @@ export function getPagesCommands(): Command[] {
     // ── Switch to page ───────────────────────────────────────────────────────
     {
       id: 'pages.switchPage',
-      title: 'Switch to page…',
-      subtitle: 'Navigate to a different page',
+      get title() { return translate('metadata.spotlight.switchToPage') },
+      get subtitle() { return translate('metadata.spotlight.navigateToADifferentPage') },
       group: 'pages',
       iconName: 'file-text-solid',
       keywords: ['page', 'switch', 'navigate', 'go', 'open'],
@@ -36,8 +38,8 @@ export function getPagesCommands(): Command[] {
     // runs `addPage` on mount once the site has loaded.
     {
       id: 'pages.newPage',
-      title: 'New page…',
-      subtitle: 'Create a new page in the current site',
+      get title() { return translate('metadata.spotlight.newPage') },
+      get subtitle() { return translate('metadata.spotlight.createANewPageInTheCurrentSite') },
       group: 'pages',
       iconName: 'file-plus-solid',
       keywords: ['page', 'add', 'new', 'create'],
@@ -46,9 +48,9 @@ export function getPagesCommands(): Command[] {
       args: [
         {
           id: 'title',
-          label: 'Page title',
+          get label() { return translate('metadata.spotlight.pageTitle') },
           type: 'text',
-          placeholder: 'e.g. About Us',
+          get placeholder() { return translate('metadata.spotlight.eGAboutUs') },
           required: true,
         },
       ],
@@ -78,8 +80,8 @@ export function getPagesCommands(): Command[] {
     // ── Rename current page ──────────────────────────────────────────────────
     {
       id: 'pages.renamePage',
-      title: 'Rename current page…',
-      subtitle: 'Change the title of the active page',
+      get title() { return translate('metadata.spotlight.renameCurrentPage') },
+      get subtitle() { return translate('metadata.spotlight.changeTheTitleOfTheActivePage') },
       group: 'pages',
       iconName: 'edit-solid',
       keywords: ['page', 'rename', 'title', 'slug'],
@@ -89,9 +91,9 @@ export function getPagesCommands(): Command[] {
       args: [
         {
           id: 'title',
-          label: 'New title',
+          get label() { return translate('metadata.spotlight.newTitle') },
           type: 'text',
-          placeholder: 'e.g. About Us',
+          get placeholder() { return translate('metadata.spotlight.eGAboutUs') },
           required: true,
         },
       ],
@@ -112,8 +114,8 @@ export function getPagesCommands(): Command[] {
     // ── Duplicate current page ───────────────────────────────────────────────
     {
       id: 'pages.duplicatePage',
-      title: 'Duplicate current page…',
-      subtitle: 'Create a copy of the active page',
+      get title() { return translate('metadata.spotlight.duplicateCurrentPage') },
+      get subtitle() { return translate('metadata.spotlight.createACopyOfTheActivePage') },
       group: 'pages',
       iconName: 'copy-solid',
       keywords: ['page', 'duplicate', 'copy', 'clone'],
@@ -123,9 +125,9 @@ export function getPagesCommands(): Command[] {
       args: [
         {
           id: 'title',
-          label: 'Copy title',
+          get label() { return translate('metadata.spotlight.copyTitle') },
           type: 'text',
-          placeholder: 'e.g. About Us (copy)',
+          get placeholder() { return translate('metadata.spotlight.eGAboutUsCopy') },
           required: true,
         },
       ],
@@ -146,8 +148,8 @@ export function getPagesCommands(): Command[] {
     // ── Delete current page ──────────────────────────────────────────────────
     {
       id: 'pages.deletePage',
-      title: 'Delete current page',
-      subtitle: 'Permanently remove the active page',
+      get title() { return translate('metadata.spotlight.deleteCurrentPage') },
+      get subtitle() { return translate('metadata.spotlight.permanentlyRemoveTheActivePage') },
       group: 'pages',
       iconName: 'trash-solid',
       keywords: ['page', 'delete', 'remove', 'destroy'],

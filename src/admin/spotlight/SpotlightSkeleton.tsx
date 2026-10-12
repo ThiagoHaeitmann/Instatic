@@ -10,6 +10,8 @@
  * - Accepts a `label` prop that becomes the group header shown to the user.
  */
 
+import { useI18n } from '@admin/i18n'
+
 import type { ReactNode } from 'react'
 import styles from './SpotlightSkeleton.module.css'
 
@@ -21,6 +23,7 @@ interface SpotlightSkeletonProps {
 }
 
 export function SpotlightSkeleton({ label }: SpotlightSkeletonProps): ReactNode {
+  useI18n()
   return (
     <div role="group" aria-label={label} aria-busy="true">
       <div className={styles.groupHeader} aria-hidden="true">

@@ -2,6 +2,8 @@
  * Media workspace commands — §4.10 of the Command Spotlight master plan.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { queuePendingAction } from '../pendingAction'
 
@@ -10,8 +12,8 @@ export function getMediaCommands(): Command[] {
     // ── Upload media ────────────────────────────────────────────────────────
     {
       id: 'media.upload',
-      title: 'Upload media…',
-      subtitle: 'Upload images, videos, or other files',
+      get title() { return translate('metadata.spotlight.uploadMedia') },
+      get subtitle() { return translate('metadata.spotlight.uploadImagesVideosOrOtherFiles') },
       group: 'media',
       iconName: 'image-solid',
       keywords: ['media', 'upload', 'file', 'image', 'video', 'asset', 'new', 'add'],
@@ -26,8 +28,8 @@ export function getMediaCommands(): Command[] {
     // ── New folder ──────────────────────────────────────────────────────────
     {
       id: 'media.newFolder',
-      title: 'New media folder…',
-      subtitle: 'Create a folder to organize uploaded files',
+      get title() { return translate('metadata.spotlight.newMediaFolder') },
+      get subtitle() { return translate('metadata.spotlight.createAFolderToOrganizeUploadedFiles') },
       group: 'media',
       iconName: 'box-stack-solid',
       keywords: ['media', 'folder', 'directory', 'organize', 'new', 'create', 'add'],

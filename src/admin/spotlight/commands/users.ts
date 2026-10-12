@@ -2,6 +2,8 @@
  * Users / Roles / Audit commands — §4.12 of the Command Spotlight master plan.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { queuePendingAction } from '../pendingAction'
 
@@ -10,8 +12,8 @@ export function getUsersCommands(): Command[] {
     // ── Invite user ─────────────────────────────────────────────────────────
     {
       id: 'users.invite',
-      title: 'Invite user…',
-      subtitle: 'Create a new admin user and send an invite',
+      get title() { return translate('metadata.spotlight.inviteUser') },
+      get subtitle() { return translate('metadata.spotlight.createANewAdminUserAndSendAnInvite') },
       group: 'users',
       iconName: 'plus',
       keywords: ['user', 'invite', 'team', 'member', 'new', 'create', 'add', 'account'],
@@ -26,8 +28,8 @@ export function getUsersCommands(): Command[] {
     // ── New role ─────────────────────────────────────────────────────────────
     {
       id: 'users.newRole',
-      title: 'New role…',
-      subtitle: 'Define a new role with custom capabilities',
+      get title() { return translate('metadata.spotlight.newRole') },
+      get subtitle() { return translate('metadata.spotlight.defineANewRoleWithCustomCapabilities') },
       group: 'users',
       iconName: 'cursor-minimal-solid',
       keywords: ['user', 'role', 'permissions', 'capabilities', 'new', 'create', 'add'],

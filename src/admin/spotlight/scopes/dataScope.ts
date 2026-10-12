@@ -5,6 +5,8 @@
  * for creating tables and fields.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope, Command } from '../types'
 import { dataProvider } from '../providers/dataProvider'
 
@@ -12,8 +14,8 @@ function getDataScopeCommands(): Command[] {
   return [
     {
       id: 'data.newTable',
-      title: 'New table…',
-      subtitle: 'Create a new data table',
+      get title() { return translate('metadata.spotlight.newTable') },
+      get subtitle() { return translate('metadata.spotlight.createANewDataTable') },
       group: 'data',
       iconName: 'table-solid',
       keywords: ['new', 'create', 'table', 'database'],
@@ -25,8 +27,8 @@ function getDataScopeCommands(): Command[] {
     },
     {
       id: 'data.newField',
-      title: 'New field in current table…',
-      subtitle: 'Add a field to the currently open table',
+      get title() { return translate('metadata.spotlight.newFieldInCurrentTable') },
+      get subtitle() { return translate('metadata.spotlight.addAFieldToTheCurrentlyOpenTable') },
       group: 'data',
       iconName: 'plus-circle-solid',
       keywords: ['new', 'create', 'field', 'column', 'attribute'],
@@ -41,8 +43,8 @@ function getDataScopeCommands(): Command[] {
 
 export const dataScope: Scope = {
   id: 'data',
-  title: 'Open table',
-  placeholder: 'Search tables…',
+  get title() { return translate('metadata.spotlight.openTable') },
+  get placeholder() { return translate('metadata.spotlight.searchTables') },
   commands: getDataScopeCommands,
   providers: [dataProvider],
 }

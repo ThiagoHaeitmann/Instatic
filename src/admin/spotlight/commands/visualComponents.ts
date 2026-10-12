@@ -6,6 +6,8 @@
  * - Exit Visual Component edit mode (go back to page canvas)
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { queuePendingAction } from '../pendingAction'
 
@@ -14,8 +16,8 @@ export function getVisualComponentsCommands(): Command[] {
     // ── Open Visual Component ────────────────────────────────────────────────
     {
       id: 'visualComponents.open',
-      title: 'Open Visual Component…',
-      subtitle: 'Open a Visual Component for editing',
+      get title() { return translate('metadata.spotlight.openVisualComponent') },
+      get subtitle() { return translate('metadata.spotlight.openAVisualComponentForEditing') },
       group: 'visualComponents',
       iconName: 'box-stack-solid',
       keywords: ['visual component', 'vc', 'component', 'open', 'edit'],
@@ -32,8 +34,8 @@ export function getVisualComponentsCommands(): Command[] {
     // creates the VC once the editor store has hydrated.
     {
       id: 'visualComponents.create',
-      title: 'New Visual Component…',
-      subtitle: 'Add a new reusable Visual Component to the site',
+      get title() { return translate('metadata.spotlight.newVisualComponent') },
+      get subtitle() { return translate('metadata.spotlight.addANewReusableVisualComponentToTheSite') },
       group: 'visualComponents',
       iconName: 'box-solid',
       keywords: ['visual component', 'vc', 'component', 'create', 'new', 'add'],
@@ -42,9 +44,9 @@ export function getVisualComponentsCommands(): Command[] {
       args: [
         {
           id: 'name',
-          label: 'Component name',
+          get label() { return translate('metadata.spotlight.componentName') },
           type: 'text',
-          placeholder: 'e.g. HeroSection',
+          get placeholder() { return translate('metadata.spotlight.eGHeroSectionAlternate') },
           required: true,
         },
       ],
@@ -74,8 +76,8 @@ export function getVisualComponentsCommands(): Command[] {
     // ── Exit Visual Component mode ───────────────────────────────────────────
     {
       id: 'visualComponents.exitMode',
-      title: 'Exit Visual Component mode',
-      subtitle: 'Return to the page canvas',
+      get title() { return translate('metadata.spotlight.exitVisualComponentMode') },
+      get subtitle() { return translate('metadata.spotlight.returnToThePageCanvas') },
       group: 'visualComponents',
       iconName: 'arrow-up',
       keywords: ['visual component', 'vc', 'exit', 'close', 'back', 'page'],

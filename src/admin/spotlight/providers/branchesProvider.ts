@@ -3,6 +3,8 @@
  * the root palette. LOCAL: reads the branch store synchronously (the toolbar
  * chip keeps the registry fresh), no HTTP, no debounce.
  */
+
+import { translate } from '@admin/i18n'
 import { switchBranch, useBranchStore } from '@admin/state/branchStore'
 import type { Command, SpotlightProvider } from '../types'
 
@@ -10,7 +12,7 @@ const MAX_RESULTS = 25
 
 export const branchesProvider: SpotlightProvider = {
   id: 'branches',
-  label: 'Branches',
+  get label() { return translate('metadata.spotlight.branches') },
   debounceMs: 0,
 
   search(query, _ctx, signal): Command[] {
@@ -24,8 +26,10 @@ export const branchesProvider: SpotlightProvider = {
       .slice(0, MAX_RESULTS)
       .map((branch): Command => ({
         id: `branch:${branch.id}`,
-        title: `Switch to ${branch.name}`,
-        subtitle: branch.baseBranchId ? `Branch from ${branch.baseBranchId}` : 'The live site',
+        get title() { return translate('metadata.spotlight.branches.switch', { name: branch.name }) },
+        get subtitle() { return branch.baseBranchId
+          ? translate('metadata.spotlight.branches.origin', { id: branch.baseBranchId })
+          : translate('metadata.spotlight.branches.live') },
         group: 'branches',
         iconName: branch.baseBranchId ? 'git-branch-solid' : 'circle-dot-solid',
         keywords: ['branch', 'switch', branch.id],

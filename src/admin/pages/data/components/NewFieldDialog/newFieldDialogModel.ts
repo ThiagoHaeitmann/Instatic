@@ -1,3 +1,5 @@
+import { FIELD_TYPE_LABELS } from '@admin/shared/presentationCatalog'
+import { translate } from '@admin/i18n'
 import { nanoid } from 'nanoid'
 import type { DataFieldType } from '@core/data/schemas'
 
@@ -8,20 +10,20 @@ export interface DraftOption {
 }
 
 export const FIELD_TYPE_OPTIONS: ReadonlyArray<{ value: DataFieldType; label: string }> = [
-  { value: 'text', label: 'Text' },
-  { value: 'longText', label: 'Long text' },
-  { value: 'richText', label: 'Rich text' },
-  { value: 'number', label: 'Number' },
-  { value: 'boolean', label: 'Boolean' },
-  { value: 'date', label: 'Date' },
-  { value: 'dateTime', label: 'Date & time' },
-  { value: 'select', label: 'Select' },
-  { value: 'multiSelect', label: 'Multi-select' },
-  { value: 'url', label: 'URL' },
-  { value: 'email', label: 'Email' },
-  { value: 'media', label: 'Media' },
-  { value: 'relation', label: 'Relation' },
-  { value: 'repeater', label: 'Repeater' },
+  { value: 'text', get label() { return FIELD_TYPE_LABELS.text } },
+  { value: 'longText', get label() { return FIELD_TYPE_LABELS.longText } },
+  { value: 'richText', get label() { return FIELD_TYPE_LABELS.richText } },
+  { value: 'number', get label() { return FIELD_TYPE_LABELS.number } },
+  { value: 'boolean', get label() { return FIELD_TYPE_LABELS.boolean } },
+  { value: 'date', get label() { return FIELD_TYPE_LABELS.date } },
+  { value: 'dateTime', get label() { return FIELD_TYPE_LABELS.dateTime } },
+  { value: 'select', get label() { return FIELD_TYPE_LABELS.select } },
+  { value: 'multiSelect', get label() { return FIELD_TYPE_LABELS.multiSelect } },
+  { value: 'url', get label() { return FIELD_TYPE_LABELS.url } },
+  { value: 'email', get label() { return FIELD_TYPE_LABELS.email } },
+  { value: 'media', get label() { return FIELD_TYPE_LABELS.media } },
+  { value: 'relation', get label() { return FIELD_TYPE_LABELS.relation } },
+  { value: 'repeater', get label() { return FIELD_TYPE_LABELS.repeater } },
 ]
 
 export const RICH_TEXT_FORMAT_OPTIONS = [
@@ -30,15 +32,15 @@ export const RICH_TEXT_FORMAT_OPTIONS = [
 ]
 
 export const NUMBER_FORMAT_OPTIONS = [
-  { value: 'number', label: 'Number' },
-  { value: 'currency', label: 'Currency' },
-  { value: 'percent', label: 'Percent' },
+  { value: 'number', get label() { return FIELD_TYPE_LABELS.number } },
+  { value: 'currency', get label() { return translate('metadata.fields.currency') } },
+  { value: 'percent', get label() { return translate('metadata.fields.percent') } },
 ]
 
 export const MEDIA_KIND_OPTIONS = [
-  { value: 'any', label: 'Any' },
-  { value: 'image', label: 'Image' },
-  { value: 'video', label: 'Video' },
+  { value: 'any', get label() { return translate('metadata.fields.any') } },
+  { value: 'image', get label() { return translate('metadata.fields.image') } },
+  { value: 'video', get label() { return translate('metadata.fields.video') } },
 ]
 
 /**

@@ -4,6 +4,8 @@
  * Open the AI assistant panel, send a prompt to the AI.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 export function getAiAssistantCommands(): Command[] {
@@ -11,8 +13,8 @@ export function getAiAssistantCommands(): Command[] {
     // ── Open AI Assistant ────────────────────────────────────────────────────
     {
       id: 'ai.open',
-      title: 'Open AI Assistant',
-      subtitle: 'Open the AI assistant panel',
+      get title() { return translate('metadata.spotlight.openAIAssistant') },
+      get subtitle() { return translate('metadata.spotlight.openTheAIAssistantPanel') },
       group: 'ai',
       iconName: 'sparkles-solid',
       keywords: ['ai', 'assistant', 'claude', 'open', 'panel', 'agent'],
@@ -32,8 +34,8 @@ export function getAiAssistantCommands(): Command[] {
     // ── Ask AI ───────────────────────────────────────────────────────────────
     {
       id: 'ai.ask',
-      title: 'Ask AI…',
-      subtitle: 'Send a prompt to the AI assistant',
+      get title() { return translate('metadata.spotlight.askAI') },
+      get subtitle() { return translate('metadata.spotlight.sendAPromptToTheAIAssistant') },
       group: 'ai',
       iconName: 'ai-box-solid',
       keywords: ['ai', 'ask', 'prompt', 'claude', 'generate', 'agent'],
@@ -42,9 +44,9 @@ export function getAiAssistantCommands(): Command[] {
       args: [
         {
           id: 'prompt',
-          label: 'Ask anything…',
+          get label() { return translate('metadata.spotlight.askAnything') },
           type: 'text',
-          placeholder: 'e.g. Add a hero section with a blue background',
+          get placeholder() { return translate('metadata.spotlight.eGAddAHeroSectionWithABlueBackground') },
           required: true,
         },
       ],

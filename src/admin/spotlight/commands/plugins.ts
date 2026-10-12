@@ -10,6 +10,8 @@
  * workspaces) flow through to the spotlight Command shape when present.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command, CommandArg } from '../types'
 import type { AdminWorkspace } from '@admin/workspace'
 import { pluginRuntime } from '@core/plugins/runtime'
@@ -24,8 +26,8 @@ export function getBuiltInPluginCommands(): Command[] {
   return [
     {
       id: 'plugins.install',
-      title: 'Install plugin…',
-      subtitle: 'Upload and install a plugin package',
+      get title() { return translate('metadata.spotlight.installPlugin') },
+      get subtitle() { return translate('metadata.spotlight.uploadAndInstallAPluginPackage') },
       group: 'plugins',
       iconName: 'package-solid',
       keywords: ['plugin', 'install', 'upload', 'extension', 'addon', 'new', 'add'],

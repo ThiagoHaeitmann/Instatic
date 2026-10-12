@@ -4,6 +4,8 @@
  * - Switch viewport → pushes 'breakpoints' scope
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 export function getBreakpointsCommands(): Command[] {
@@ -11,8 +13,8 @@ export function getBreakpointsCommands(): Command[] {
     // ── Switch viewport ──────────────────────────────────────────────────────
     {
       id: 'breakpoints.switch',
-      title: 'Switch viewport…',
-      subtitle: 'Change the active canvas viewport',
+      get title() { return translate('metadata.spotlight.switchViewport') },
+      get subtitle() { return translate('metadata.spotlight.changeTheActiveCanvasViewport') },
       group: 'editor',
       iconName: 'arrows-horizontal',
       keywords: ['breakpoint', 'switch', 'responsive', 'viewport', 'mobile', 'desktop', 'tablet'],

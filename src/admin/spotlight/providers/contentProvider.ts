@@ -11,13 +11,15 @@
  * workspace deep-links via these query params (see useContentWorkspace.ts).
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { DataSearchResponseSchema } from './schemas'
 import { makeServerProvider } from './serverProvider'
 
 export const contentProvider = makeServerProvider({
   id: 'content',
-  label: 'Content',
+  get label() { return translate('metadata.spotlight.content') },
   debounceMs: 150,
   endpoint: '/admin/api/cms/data/search',
   schema: DataSearchResponseSchema,

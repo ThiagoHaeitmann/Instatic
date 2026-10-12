@@ -5,6 +5,8 @@
  * Each command switches the active canvas viewport.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope, Command } from '../types'
 import { useEditorStore } from '@site/store/store'
 
@@ -32,7 +34,7 @@ function getBreakpointCommands(): Command[] {
 
 export const breakpointsScope: Scope = {
   id: 'breakpoints',
-  title: 'Switch viewport',
-  placeholder: 'Search viewports…',
+  get title() { return translate('metadata.spotlight.switchViewportAlternate') },
+  get placeholder() { return translate('metadata.spotlight.searchViewports') },
   commands: getBreakpointCommands,
 }

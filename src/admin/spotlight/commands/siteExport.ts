@@ -6,14 +6,16 @@
  * every workspace — exporting is not Data-workspace-specific.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 export function getSiteExportCommands(): Command[] {
   return [
     {
       id: 'data.exportSite',
-      title: 'Export Site',
-      subtitle: 'Download a full or partial site bundle — pages, media, folders, redirects',
+      get title() { return translate('metadata.spotlight.exportSite') },
+      get subtitle() { return translate('metadata.spotlight.downloadAFullOrPartialSiteBundlePagesMediaFoldersRedirects') },
       group: 'data',
       iconName: 'arrow-down',
       keywords: ['export', 'site', 'bundle', 'backup', 'download', 'json', 'migrate', 'transfer', 'snapshot'],

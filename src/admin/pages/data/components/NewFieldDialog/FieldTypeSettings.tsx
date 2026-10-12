@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 import type { Dispatch, SetStateAction } from 'react'
 import { Button } from '@ui/components/Button'
 import { Input } from '@ui/components/Input'
@@ -120,6 +121,7 @@ export function FieldTypeSettings({
   onAddRepeaterField,
   onEditRepeaterField,
 }: FieldTypeSettingsProps) {
+  useI18n()
   function moveRepeaterField(index: number, offset: -1 | 1) {
     const target = index + offset
     if (target < 0 || target >= repeaterFields.length) return

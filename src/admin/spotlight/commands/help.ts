@@ -8,14 +8,16 @@
  * - Copy environment info (for bug reports)
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 export function getHelpCommands(): Command[] {
   return [
     {
       id: 'help.shortcuts',
-      title: 'Show keyboard shortcuts',
-      subtitle: 'Browse all keyboard shortcuts',
+      get title() { return translate('metadata.spotlight.showKeyboardShortcuts') },
+      get subtitle() { return translate('metadata.spotlight.browseAllKeyboardShortcuts') },
       group: 'help',
       iconName: 'command',
       keywords: ['shortcuts', 'keyboard', 'hotkeys', 'keybindings', 'help', 'cheatsheet'],
@@ -29,8 +31,8 @@ export function getHelpCommands(): Command[] {
 
     {
       id: 'help.documentation',
-      title: 'Open documentation',
-      subtitle: 'View the Instatic docs',
+      get title() { return translate('metadata.spotlight.openDocumentation') },
+      get subtitle() { return translate('metadata.spotlight.viewTheInstaticDocs') },
       group: 'help',
       iconName: 'book-open-solid',
       keywords: ['docs', 'documentation', 'help', 'guide', 'reference'],
@@ -43,8 +45,8 @@ export function getHelpCommands(): Command[] {
 
     {
       id: 'help.reportIssue',
-      title: 'Report an issue',
-      subtitle: 'Open GitHub Issues to report a bug or request a feature',
+      get title() { return translate('metadata.spotlight.reportAnIssue') },
+      get subtitle() { return translate('metadata.spotlight.openGitHubIssuesToReportABugOrRequestAFeature') },
       group: 'help',
       iconName: 'circle-alert-solid',
       keywords: ['report', 'issue', 'bug', 'feedback', 'github'],
@@ -57,8 +59,8 @@ export function getHelpCommands(): Command[] {
 
     {
       id: 'help.about',
-      title: 'About Instatic',
-      subtitle: 'Version information and license',
+      get title() { return translate('metadata.spotlight.aboutInstatic') },
+      get subtitle() { return translate('metadata.spotlight.versionInformationAndLicense') },
       group: 'help',
       iconName: 'book-open-solid',
       keywords: ['about', 'version', 'license', 'info'],
@@ -72,8 +74,8 @@ export function getHelpCommands(): Command[] {
 
     {
       id: 'help.copyEnvInfo',
-      title: 'Copy environment info',
-      subtitle: 'Copy browser, OS, and version info for bug reports',
+      get title() { return translate('metadata.spotlight.copyEnvironmentInfo') },
+      get subtitle() { return translate('metadata.spotlight.copyBrowserOSAndVersionInfoForBugReports') },
       group: 'help',
       iconName: 'copy-solid',
       keywords: ['copy', 'environment', 'info', 'debug', 'browser', 'version', 'bug report'],

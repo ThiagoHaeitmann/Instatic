@@ -11,6 +11,8 @@
  * No hand-mirroring: the catalog is the single source of truth.
  */
 
+import { translate } from '@admin/i18n'
+
 import { PREFERENCE_CATALOG } from '@admin/pages/site/preferences/catalog'
 import {
   readEditorPreferenceBool,
@@ -24,8 +26,8 @@ import type { Command } from '../types'
 const SECTION_COMMANDS: Command[] = [
   {
     id: 'settings.open',
-    title: 'Open Settings',
-    subtitle: 'General, Shortcuts, Publishing, Preferences',
+    get title() { return translate('metadata.spotlight.openSettings') },
+    get subtitle() { return translate('metadata.spotlight.generalShortcutsPublishingPreferences') },
     group: 'settings',
     iconName: 'settings-cog-solid',
     keywords: ['settings', 'preferences', 'config', 'configuration', 'options'],
@@ -39,8 +41,8 @@ const SECTION_COMMANDS: Command[] = [
   },
   {
     id: 'settings.openPreferences',
-    title: 'Open Settings → Preferences',
-    subtitle: 'Editor preferences and auto-save settings',
+    get title() { return translate('metadata.spotlight.openSettingsPreferences') },
+    get subtitle() { return translate('metadata.spotlight.editorPreferencesAndAutoSaveSettings') },
     group: 'settings',
     iconName: 'sliders-horizontal',
     keywords: ['settings', 'preferences', 'autosave', 'editor', 'behavior'],
@@ -54,8 +56,8 @@ const SECTION_COMMANDS: Command[] = [
   },
   {
     id: 'settings.openPublishing',
-    title: 'Open Settings → Publishing',
-    subtitle: 'Configure publishing and deployment settings',
+    get title() { return translate('metadata.spotlight.openSettingsPublishing') },
+    get subtitle() { return translate('metadata.spotlight.configurePublishingAndDeploymentSettings') },
     group: 'settings',
     iconName: 'send-solid',
     keywords: ['settings', 'publishing', 'deploy', 'production', 'domain'],
@@ -79,11 +81,11 @@ function buildPrefCommands(): Command[] {
     if (pref.type === 'boolean') {
       commands.push({
         id: `settings.pref.${pref.id}`,
-        title: `Toggle: ${pref.label}`,
-        subtitle: pref.description,
+        get title() { return translate('metadata.spotlight.preferences.toggle', { label: pref.label }) },
+        get subtitle() { return pref.description },
         group: 'settings',
         iconName: 'sliders-horizontal',
-        keywords: [pref.label.toLowerCase(), pref.category, 'preference', 'toggle'],
+        get keywords() { return [pref.label.toLowerCase(), pref.category, 'preference', 'toggle'] },
         workspaces: ['site'],
         capability: 'site.read',
         run: (ctx) => {
@@ -96,19 +98,19 @@ function buildPrefCommands(): Command[] {
       // Build a select arg from static options
       commands.push({
         id: `settings.pref.${pref.id}`,
-        title: `Set: ${pref.label}…`,
-        subtitle: pref.description,
+        get title() { return translate('metadata.spotlight.preferences.set', { label: pref.label }) },
+        get subtitle() { return pref.description },
         group: 'settings',
         iconName: 'sliders-horizontal',
-        keywords: [pref.label.toLowerCase(), pref.category, 'preference', 'select'],
+        get keywords() { return [pref.label.toLowerCase(), pref.category, 'preference', 'select'] },
         workspaces: ['site'],
         capability: 'site.read',
         args: [
           {
             id: 'value',
-            label: pref.label,
+            get label() { return pref.label },
             type: 'select',
-            options: pref.options.map((o) => ({ value: o.value, label: o.label })),
+            options: pref.options.map((o) => ({ value: o.value, get label() { return o.label } })),
           },
         ],
         run: (ctx) => {

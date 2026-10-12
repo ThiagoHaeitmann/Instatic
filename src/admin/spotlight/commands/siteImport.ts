@@ -5,6 +5,8 @@
  * site-write capability can use this command.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 /** Mirrors SITE_WRITE_CAPABILITIES in editor.ts — any holder can import a site. */
@@ -18,8 +20,8 @@ export function getSiteImportCommands(): Command[] {
   return [
     {
       id: 'editor.importSite',
-      title: 'Import Site',
-      subtitle: 'Import pages or CMS bundles from files, folders, or .zip archives',
+      get title() { return translate('metadata.spotlight.importSite') },
+      get subtitle() { return translate('metadata.spotlight.importPagesOrCMSBundlesFromFilesFoldersOrZipArchives') },
       group: 'editor',
       iconName: 'files-stack-2-solid',
       keywords: ['import', 'site', 'zip', 'folder', 'bundle', 'json', 'cms', 'html', 'css'],

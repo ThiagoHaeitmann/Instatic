@@ -15,7 +15,7 @@ Instatic internationalizes its administration interface independently from site 
 - The selection is validated and stored under `instatic-locale`; storage events synchronize open tabs.
 - Messages support named `{{value}}` interpolation and `Intl.PluralRules` plural categories.
 - Dates, numbers, currency, relative time, lists, and byte sizes use helpers from `@admin/i18n`.
-- Admin shell, shared admin controls, authentication, Dashboard, and primitive-owned defaults are localized; other workspace copy is not yet migrated.
+- Admin shell, shared admin controls, authentication, Dashboard, Preferences, primitive-owned defaults, and host-owned structured metadata are localized; other workspace copy is not yet migrated.
 - Shared primitives consume `src/ui/localization/`, with English defaults outside the admin provider; they never initialize admin locale state.
 
 ## Architecture
@@ -63,9 +63,24 @@ The stored shape is validated with TypeBox:
 
 ## Messages
 
-`src/admin/i18n/messages.ts` aggregates English and Brazilian Portuguese catalogs with exact key parity. Shell messages live in `shellMessages.ts`, Dashboard messages in `dashboardMessages.ts`, and primitive translations in `uiMessages.ts`; the primitive English source is `src/ui/localization/englishMessages.ts`. Catalogs are data-only and do not import workspace implementations. The runtime retains English fallback behavior for missing translations; parity and interpolation tests prevent missing keys in shipped resources.
+`src/admin/i18n/messages.ts` aggregates English and Brazilian Portuguese catalogs with exact key parity. Shell messages live in `shellMessages.ts`, Dashboard messages in `dashboardMessages.ts`, structured metadata in `metadataMessages.ts`, and primitive translations in `uiMessages.ts`; the primitive English source is `src/ui/localization/englishMessages.ts`. Catalogs are data-only and do not import workspace implementations. The runtime retains English fallback behavior for missing translations; parity and interpolation tests prevent missing keys in shipped resources.
 
 Translate host-owned metadata at render/read time, not once at module initialization. First-party Dashboard definitions expose translated name/description getters, and `useDashboardWidgets` subscribes to locale changes without replacing the registry snapshot. Plugin names and descriptions remain author-owned.
+
+### Structured metadata catalogs
+
+`metadataMessages.ts` aggregates the data-only `preferenceMetadataMessages.ts`, `spotlightMetadataMessages.ts`, `aiMetadataMessages.ts`, and `presentationMetadataMessages.ts` catalogs, with 386 keys per locale. The leaf catalogs import nothing; the aggregate never imports metadata owners, React, or the runtime, so eager catalog loading cannot pull workspace implementations into the shell.
+
+Host-owned definitions resolve presentation fields through getters at read time:
+
+- `src/admin/pages/site/preferences/catalog.ts`: category labels/descriptions, preference labels/descriptions, and static option labels. Dynamic breakpoint labels remain site-authored. Preferences also translates its device/history controls and missing-option presentation without changing persisted values.
+- `src/admin/spotlight/commands/`, `scopes/`, and `providers/`: built-in command titles/subtitles, argument labels/placeholders, scope titles/placeholders, and host provider/group labels. Derived preference commands keep getters for their titles, descriptions, arguments, and options; `makeServerProvider` forwards the live config label instead of copying it. Cached command objects and their execution/gating metadata retain their identity. Search uses localized titles while existing command aliases remain intact.
+- `src/admin/pages/ai/providerCatalog.ts` and `src/admin/ai/scopeCatalog.ts`: host-owned descriptions and generic presentation labels. Provider brands, model names, endpoint addresses, auth modes, and scope IDs remain unchanged. Scope icons stay with their admin renderer.
+- `src/admin/shared/presentationCatalog.ts`: the single field-type label map, content/user status labels, media type/sort options, and storage-role labels. Field dialogs and the inspector share the same type labels. Branch review filter/action/status metadata remains with `reviewFormat.ts`; storage role descriptions remain with their owner. Filtering, permission checks, status values, and sort values do not change.
+
+Admin metadata renderers subscribe with `useI18n()` so an open palette, dialog, or metadata panel updates without reopening. Rendered option copies preserve their stable `value` while reading their current label. Plugin commands, providers, adapter labels, and option metadata pass through verbatim, even when their text matches a host English message. Capability and Dashboard metadata were already migrated in Phase 2 and are not duplicated in the metadata catalog.
+
+This is a metadata migration, not a workspace UI migration: workspace headings, forms, validation, operation feedback, body-editor menus, site-editor controls, first-party module/core presentation, and server envelopes remain for their numbered phases below. No admin localization imports are added to core, UI, modules, or the server.
 
 Use named interpolation:
 
@@ -114,6 +129,23 @@ Do not translate:
 - Module IDs, capability IDs, routes, database fields, CSS properties, or protocol values.
 - Developer logs, comments, or invariant messages.
 
+## Numbered migration roadmap
+
+1. **Foundation / pre-auth / Preferences — complete.** Locale runtime, persistence, formatting, React integration, pre-auth selection and authentication; Preferences language selection. Preference-catalog presentation is completed with Phase 3 metadata.
+2. **Shell / shared / Dashboard — complete.** Admin shell, shared controls, primitive defaults, capability presentation, Dashboard UI and first-party widget metadata; plugin isolation.
+3. **Structured metadata — complete.** Remaining Preferences catalogs; Spotlight core commands/groups/arguments/scopes/provider labels; AI provider/scope host metadata; admin field/status/filter/sort/storage-role/review presentation catalogs. Read-time lookup, live rendering, stable protocol values, and focused regression tests.
+4. **Account / Users — pending.** Workspace UI, profile/security forms, user/role management, audit UI, validation and operation feedback beyond shared metadata.
+5. **Content — pending.** Collections, entries, body editor, content settings, validation and operation feedback beyond shared metadata.
+6. **Data / import / export — pending.** Table and field management UI, import/export flows, validation and operation feedback beyond shared metadata.
+7. **Media — pending.** Library, picker, uploads, bulk editing, storage UI and operation feedback beyond shared metadata.
+8. **Plugins — pending.** Host-owned plugin workspace/install/settings UI and feedback; plugin-authored content remains outside admin translation.
+9. **AI / MCP — pending.** AI settings/chat, defaults, provider credentials, MCP connectors and audit UI beyond host-owned provider/scope metadata; preserve model/provider names and protocol values.
+10. **Branches — pending.** Branch dialogs, review UI, comments, merge feedback and history beyond filter/action/status metadata.
+11. **Site Editor — pending.** Canvas, panels, property controls, toolbar, explorer, settings outside Preferences, dialogs and feedback.
+12. **Modules / core presentation — pending.** First-party module and engine-owned presentation translated at admin rendering boundaries, with no admin imports into core/modules/UI and no changes to published output.
+13. **Server envelopes — pending.** Deliberate handling of user-visible server failures without translating identifiers, logs, or protocol values.
+14. **Audit / gates / E2E / docs — pending.** Remaining-copy audit, architectural enforcement, locale-switch/fresh-install user E2E, catalog quality and final documentation coverage.
+
 ## Adding a locale
 
 1. Add its canonical tag to `SUPPORTED_LOCALES` in `src/admin/i18n/locale.ts`.
@@ -141,12 +173,16 @@ Do not translate:
   - `src/admin/i18n/locale.ts`
   - `src/admin/i18n/runtime.ts`
   - `src/admin/i18n/messages.ts`
+  - `src/admin/i18n/metadataMessages.ts`
+  - `src/admin/ai/scopeCatalog.ts`
+  - `src/admin/shared/presentationCatalog.ts`
   - `src/admin/i18n/format.ts`
   - `src/admin/i18n/I18nProvider.tsx`
   - `src/admin/i18n/LanguageSelector.tsx`
   - `src/admin/main.tsx`
 - Tests:
   - `src/__tests__/admin/i18n.test.tsx` — runtime and aggregate catalog parity.
+  - `src/__tests__/admin/metadataI18n.test.tsx` — structured catalog parity/isolation, cached identity, translated search, live Preferences/Spotlight rendering, stable values, and plugin metadata preservation.
   - `src/__tests__/admin/shellI18n.test.tsx` — shared shell/authentication controls and metadata.
   - `src/__tests__/admin/dashboardI18n.test.tsx` — Dashboard widgets, metadata, pluralization, and plugin isolation.
   - `src/__tests__/ui/primitiveI18n.test.tsx` — primitive defaults, live switching, and standalone isolation.

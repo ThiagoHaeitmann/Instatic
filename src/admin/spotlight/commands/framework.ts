@@ -9,6 +9,8 @@
  * which is a style-edit operation.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 const FRAMEWORK_CAPABILITY = 'site.style.edit'
@@ -30,8 +32,8 @@ export function getFrameworkCommands(): Command[] {
   return [
     {
       id: 'framework.open',
-      title: 'Open Framework panel',
-      subtitle: 'Design tokens overview — colors, typography, spacing',
+      get title() { return translate('metadata.spotlight.openFrameworkPanel') },
+      get subtitle() { return translate('metadata.spotlight.designTokensOverviewColorsTypographySpacing') },
       group: 'framework',
       iconName: 'colors-swatch-solid',
       keywords: ['framework', 'design', 'tokens', 'overview', 'home', 'open'],
@@ -49,8 +51,8 @@ export function getFrameworkCommands(): Command[] {
 
     {
       id: 'framework.openColors',
-      title: 'Open Colors',
-      subtitle: 'Browse and manage color design tokens',
+      get title() { return translate('metadata.spotlight.openColors') },
+      get subtitle() { return translate('metadata.spotlight.browseAndManageColorDesignTokens') },
       group: 'framework',
       iconName: 'colors-swatch-solid',
       keywords: ['colors', 'tokens', 'palette', 'design', 'framework', 'open'],
@@ -68,8 +70,8 @@ export function getFrameworkCommands(): Command[] {
 
     {
       id: 'framework.openTypography',
-      title: 'Open Typography',
-      subtitle: 'Browse and manage typography design tokens',
+      get title() { return translate('metadata.spotlight.openTypography') },
+      get subtitle() { return translate('metadata.spotlight.browseAndManageTypographyDesignTokens') },
       group: 'framework',
       iconName: 'braces',
       keywords: ['typography', 'fonts', 'type', 'tokens', 'design', 'framework', 'open'],
@@ -87,8 +89,8 @@ export function getFrameworkCommands(): Command[] {
 
     {
       id: 'framework.openSpacing',
-      title: 'Open Spacing',
-      subtitle: 'Browse and manage spacing design tokens',
+      get title() { return translate('metadata.spotlight.openSpacing') },
+      get subtitle() { return translate('metadata.spotlight.browseAndManageSpacingDesignTokens') },
       group: 'framework',
       iconName: 'proportions-solid',
       keywords: ['spacing', 'gaps', 'padding', 'margin', 'tokens', 'design', 'framework', 'open'],
@@ -106,8 +108,8 @@ export function getFrameworkCommands(): Command[] {
 
     {
       id: 'framework.manage',
-      title: 'Manage Core Framework',
-      subtitle: 'Import, re-import, or remove the Core Framework preset',
+      get title() { return translate('metadata.spotlight.manageCoreFramework') },
+      get subtitle() { return translate('metadata.spotlight.importReImportOrRemoveTheCoreFrameworkPreset') },
       group: 'framework',
       iconName: 'sliders-horizontal',
       keywords: ['framework', 'core', 'import', 'remove', 'prune', 'manage', 'preset', 'tokens'],

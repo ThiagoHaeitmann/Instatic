@@ -12,6 +12,8 @@
  * fresh step-up window on top of `pages.publish`).
  */
 
+import { translate } from '@admin/i18n'
+
 import { StepUpCancelledMessage } from '@admin/shared/StepUp'
 import { publishCmsDraft } from '@core/persistence'
 import { isOnMainBranch } from '@admin/state/branchStore'
@@ -28,8 +30,8 @@ export function getEditorCommands(): Command[] {
   return [
     {
       id: 'editor.publish',
-      title: 'Publish',
-      subtitle: 'Publish the current draft to production',
+      get title() { return translate('metadata.spotlight.publish') },
+      get subtitle() { return translate('metadata.spotlight.publishTheCurrentDraftToProduction') },
       group: 'editor',
       iconName: 'send-solid',
       keywords: ['publish', 'deploy', 'live', 'production'],
@@ -51,8 +53,8 @@ export function getEditorCommands(): Command[] {
     },
     {
       id: 'editor.undo',
-      title: 'Undo',
-      subtitle: 'Undo the last change',
+      get title() { return translate('metadata.spotlight.undo') },
+      get subtitle() { return translate('metadata.spotlight.undoTheLastChange') },
       group: 'editor',
       iconName: 'undo',
       keywords: ['undo', 'revert', 'back'],
@@ -69,8 +71,8 @@ export function getEditorCommands(): Command[] {
     },
     {
       id: 'editor.redo',
-      title: 'Redo',
-      subtitle: 'Redo the last undone change',
+      get title() { return translate('metadata.spotlight.redo') },
+      get subtitle() { return translate('metadata.spotlight.redoTheLastUndoneChange') },
       group: 'editor',
       iconName: 'redo',
       keywords: ['redo', 'forward'],

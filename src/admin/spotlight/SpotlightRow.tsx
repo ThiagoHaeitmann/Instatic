@@ -11,6 +11,8 @@
  * Accessibility: role="option", aria-selected
  */
 
+import { useI18n } from '@admin/i18n'
+
 import type { ReactNode } from 'react'
 import { cn } from '@ui/cn'
 import { SearchSolidIcon } from 'pixel-art-icons/icons/search-solid'
@@ -187,6 +189,7 @@ export function SpotlightRow({
   onSelect,
   onHighlight,
 }: SpotlightRowProps): ReactNode {
+  useI18n()
   // Shortcut is looked up from the keybindings registry — single source of truth.
   const keybinding = getKeybindingForCommand(command.id)
   const shortcutLabel = keybinding

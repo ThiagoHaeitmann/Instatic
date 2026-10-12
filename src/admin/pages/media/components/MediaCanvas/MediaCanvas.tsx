@@ -1,3 +1,5 @@
+import { useI18n } from '@admin/i18n'
+import { localizePresentationOptions, MEDIA_TYPE_FILTERS as TYPE_FILTERS, MEDIA_SORT_OPTIONS as SORT_OPTIONS } from '@admin/shared/presentationCatalog'
 /**
  * MediaCanvas — the central file grid / list for the Media workspace.
  *
@@ -15,7 +17,7 @@ import {
 import { Button } from '@ui/components/Button'
 import { EmptyState } from '@ui/components/EmptyState'
 import { FileUpload } from '@ui/components/FileUpload'
-import { FilterBar, type FilterBarItem } from '@ui/components/FilterBar'
+import { FilterBar } from '@ui/components/FilterBar'
 import { Select } from '@ui/components/Select'
 import { Skeleton } from '@ui/components/Skeleton'
 import { canDeleteMedia, canWriteMedia } from '@admin/access'
@@ -70,23 +72,6 @@ interface MediaCanvasProps {
   selectionMode?: 'standard' | 'multiple'
 }
 
-const TYPE_FILTERS: FilterBarItem<MediaType>[] = [
-  { value: 'all', label: 'All' },
-  { value: 'image', label: 'Images' },
-  { value: 'svg', label: 'SVG' },
-  { value: 'video', label: 'Videos' },
-  { value: 'other', label: 'Other' },
-]
-
-const SORT_OPTIONS: Array<{ value: MediaSort; label: string }> = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'largest', label: 'Largest' },
-  { value: 'smallest', label: 'Smallest' },
-  { value: 'name-asc', label: 'Name A→Z' },
-  { value: 'name-desc', label: 'Name Z→A' },
-]
-
 function keyboardMenuPosition(element: HTMLElement) {
   const rect = element.getBoundingClientRect()
   return {
@@ -121,6 +106,8 @@ function folderMatchesQuery(folder: CmsMediaFolder, query: string): boolean {
 }
 
 export function MediaCanvas({ workspace, selectionMode = 'standard' }: MediaCanvasProps) {
+  const { locale } = useI18n()
+  const typeFilters = localizePresentationOptions(TYPE_FILTERS, locale)
   const currentUser = useCurrentAdminUser()
   const [viewMode, setViewModeState] = useState<MediaViewMode>(readStoredMediaViewMode)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
@@ -319,7 +306,7 @@ export function MediaCanvas({ workspace, selectionMode = 'standard' }: MediaCanv
     >
       <header className={styles.toolbar}>
         <FilterBar<MediaType>
-          items={TYPE_FILTERS}
+          items={typeFilters}
           value={workspace.filters.type}
           onValueChange={workspace.setFilterType}
           search={{
@@ -561,17 +548,18 @@ interface SortMenuProps {
 }
 
 function SortMenu({ value, onChange }: SortMenuProps) {
+  const { locale } = useI18n()
+  const options = localizePresentationOptions(SORT_OPTIONS, locale).map((option) => ({
+    ...option,
+    label: `Sort ${option.label}`,
+  }))
   return (
     <Select
       aria-label="Sort media"
       fieldSize="xs"
       value={value}
       onChange={(event) => onChange(event.target.value as MediaSort)}
-      options={SORT_OPTIONS.map((option) => ({
-        value: option.value,
-        label: `Sort ${option.label}`,
-        textValue: option.label,
-      }))}
+      options={options}
     />
   )
 }

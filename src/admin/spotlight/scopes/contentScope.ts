@@ -5,6 +5,8 @@
  * for creating/managing content.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope, Command } from '../types'
 import { contentProvider } from '../providers/contentProvider'
 
@@ -12,8 +14,8 @@ function getContentScopeCommands(): Command[] {
   return [
     {
       id: 'content.newDocument',
-      title: 'New content document…',
-      subtitle: 'Create a new untitled document in the current collection',
+      get title() { return translate('metadata.spotlight.newContentDocument') },
+      get subtitle() { return translate('metadata.spotlight.createANewUntitledDocumentInTheCurrentCollection') },
       group: 'content',
       iconName: 'file-plus-solid',
       keywords: ['new', 'create', 'document', 'content', 'entry'],
@@ -26,8 +28,8 @@ function getContentScopeCommands(): Command[] {
     },
     {
       id: 'content.createCollection',
-      title: 'Create collection…',
-      subtitle: 'Add a new content collection',
+      get title() { return translate('metadata.spotlight.createCollection') },
+      get subtitle() { return translate('metadata.spotlight.addANewContentCollection') },
       group: 'content',
       iconName: 'folder-solid',
       keywords: ['new', 'create', 'collection', 'table', 'post type'],
@@ -39,8 +41,8 @@ function getContentScopeCommands(): Command[] {
     },
     {
       id: 'content.openMedia',
-      title: 'Open Media picker…',
-      subtitle: 'Browse and insert media assets',
+      get title() { return translate('metadata.spotlight.openMediaPicker') },
+      get subtitle() { return translate('metadata.spotlight.browseAndInsertMediaAssets') },
       group: 'content',
       iconName: 'image-solid',
       keywords: ['media', 'image', 'file', 'asset', 'picker'],
@@ -55,8 +57,8 @@ function getContentScopeCommands(): Command[] {
 
 export const contentScope: Scope = {
   id: 'content',
-  title: 'Open content document',
-  placeholder: 'Search content…',
+  get title() { return translate('metadata.spotlight.openContentDocument') },
+  get placeholder() { return translate('metadata.spotlight.searchContent') },
   commands: getContentScopeCommands,
   providers: [contentProvider],
 }

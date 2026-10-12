@@ -8,6 +8,8 @@
  * `openInEditor(fileId)` which sets activeEditorFileId and shows the panel.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { SpotlightProvider, Command } from '../types'
 
 const MAX_RESULTS = 25
@@ -23,7 +25,7 @@ const FILE_TYPE_ICONS: Record<string, string> = {
 
 export const siteFilesProvider: SpotlightProvider = {
   id: 'siteFiles',
-  label: 'Site files',
+  get label() { return translate('metadata.spotlight.siteFiles') },
   debounceMs: 0,
 
   search(query, _ctx, signal): Command[] {

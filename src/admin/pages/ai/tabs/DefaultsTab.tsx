@@ -1,3 +1,5 @@
+import { useI18n } from '@admin/i18n'
+import { AI_TOOL_SCOPES as SCOPES, AI_SCOPE_META as SCOPE_META, type ToolScope } from '@admin/ai/scopeCatalog'
 /** Per-surface model defaults in the shared AI master-detail workspace. */
 import { useState } from 'react'
 import { useAsyncResource } from '@admin/lib/useAsyncResource'
@@ -24,41 +26,14 @@ import { AiSettingsListSection } from '../AiSettingsListSection'
 import { ProviderMark } from '../ProviderMark'
 import styles from '../AiPage.module.css'
 
-type ToolScope = 'site' | 'content' | 'data' | 'plugin'
-
-const SCOPES: ToolScope[] = ['site', 'content', 'data', 'plugin']
-const SCOPE_META: Record<ToolScope, {
-  label: string
-  description: string
-  icon: typeof LayoutSolidIcon
-}> = {
-  site: {
-    label: 'Site editor',
-    description: 'Visual editor chat and page-building tools.',
-    icon: LayoutSolidIcon,
-  },
-  content: {
-    label: 'Content',
-    description: 'Writing, editing, and structured content workflows.',
-    icon: FileTextSolidIcon,
-  },
-  data: {
-    label: 'Data',
-    description: 'Data workspace assistance and table operations.',
-    icon: DatabaseSolidIcon,
-  },
-  plugin: {
-    label: 'Plugins',
-    description: 'AI calls made through the plugin API.',
-    icon: CodeIcon,
-  },
-}
+const SCOPE_ICONS = { site: LayoutSolidIcon, content: FileTextSolidIcon, data: DatabaseSolidIcon, plugin: CodeIcon }
 
 export function DefaultsTab({
   onNavigateToProviders,
 }: {
   onNavigateToProviders: () => void
 }) {
+  useI18n()
   const { data, loading, error, refresh } = useAsyncResource(
     () => Promise.all([listCredentials(), listDefaults()]).then(([creds, defs]) => ({ creds, defs })),
     [],
@@ -119,7 +94,7 @@ export function DefaultsTab({
           <AiSettingsListSection label="Model routing">
             {SCOPES.map((scope) => {
               const meta = SCOPE_META[scope]
-              const Icon = meta.icon
+              const Icon = SCOPE_ICONS[scope]
               const active = selectedScope === scope
               return (
                 <Button
@@ -193,9 +168,10 @@ function ScopeDetail({
   onSave: (credentialId: string, modelId: string) => Promise<void>
   onClear: () => Promise<boolean>
 }) {
+  useI18n()
   const [override, setOverride] = useState<ModelChoice | null>(null)
   const meta = SCOPE_META[scope]
-  const Icon = meta.icon
+  const Icon = SCOPE_ICONS[scope]
   const savedCredential = current
     ? credentials.find((credential) => credential.id === current.credentialId)
     : undefined

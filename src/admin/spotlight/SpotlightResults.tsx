@@ -1,3 +1,5 @@
+import { translate, useI18n, type SupportedLocale } from '@admin/i18n'
+
 /**
  * SpotlightResults — ranked result list with group headers.
  *
@@ -25,7 +27,7 @@ import {
   getCappedResults,
   getOrderedAsyncGroups,
   getLoadingProviders,
-  getMergedCommandList,
+
   rowId,
 } from './spotlightSearch'
 import { getScope } from './commandRegistry'
@@ -42,24 +44,24 @@ const EMPTY_ASYNC_RESULTS: Record<string, Command[]> = {}
 const EMPTY_LOADING_PROVIDERS: Set<string> = new Set()
 
 const GROUP_LABELS: Record<CommandGroup, string> = {
-  navigation: 'Navigation',
-  editor: 'Editor',
-  pages: 'Pages',
-  content: 'Content',
-  data: 'Data',
-  media: 'Media',
-  visualComponents: 'Visual Components',
-  framework: 'Framework',
-  plugins: 'Plugins',
-  users: 'Users',
-  account: 'Account',
-  settings: 'Settings',
-  preview: 'Preview',
-  branches: 'Branches',
-  ai: 'AI Assistant',
-  help: 'Help',
-  recent: 'Recent',
-  results: 'Results',
+  get navigation() { return translate('metadata.spotlight.navigation') },
+  get editor() { return translate('metadata.spotlight.editor') },
+  get pages() { return translate('metadata.spotlight.pages') },
+  get content() { return translate('metadata.spotlight.content') },
+  get data() { return translate('metadata.spotlight.data') },
+  get media() { return translate('metadata.spotlight.media') },
+  get visualComponents() { return translate('metadata.spotlight.visualComponents') },
+  get framework() { return translate('metadata.spotlight.framework') },
+  get plugins() { return translate('metadata.spotlight.plugins') },
+  get users() { return translate('metadata.spotlight.users') },
+  get account() { return translate('metadata.spotlight.account') },
+  get settings() { return translate('metadata.spotlight.settings') },
+  get preview() { return translate('metadata.spotlight.preview') },
+  get branches() { return translate('metadata.spotlight.branches') },
+  get ai() { return translate('metadata.spotlight.aiAssistant') },
+  get help() { return translate('metadata.spotlight.help') },
+  get recent() { return translate('metadata.spotlight.recent') },
+  get results() { return translate('metadata.spotlight.results') },
 }
 
 interface GroupedResults {
@@ -101,6 +103,7 @@ function ArgModeResults({
   onHighlightChange: (index: number) => void
   onSelectArg: (value: string) => void
 }): ReactNode {
+  useI18n()
   const args = argMode.command.args ?? []
   const currentArg = args[argMode.argIndex]
 
@@ -185,12 +188,16 @@ function ArgModeResults({
 
 // ─── Scope breadcrumb ─────────────────────────────────────────────────────────
 
+// Scope titles are live locale-backed getters. Make their snapshot's locale
+// input explicit so the compiler refreshes it even when the stack is unchanged.
+function scopeBreadcrumbParts(scopeStack: Array<{ scopeId: string }>, _locale: SupportedLocale): string[] {
+  return scopeStack.slice(1).map(({ scopeId }) => getScope(scopeId)?.title ?? scopeId)
+}
+
 function ScopeBreadcrumb({ scopeStack }: { scopeStack: Array<{ scopeId: string }> }): ReactNode {
+  const { locale } = useI18n()
   if (scopeStack.length <= 1) return null
-  const parts = scopeStack.slice(1).map((frame) => {
-    const scope = getScope(frame.scopeId)
-    return scope?.title ?? frame.scopeId
-  })
+  const parts = scopeBreadcrumbParts(scopeStack, locale)
   return (
     <div className={styles.scopeBreadcrumb} aria-label={`Scope: ${parts.join(' › ')}`}>
       {parts.map((part, i) => (
@@ -222,6 +229,7 @@ export function SpotlightResults({
   onRun,
   activeScopeId,
 }: SpotlightResultsProps): ReactNode {
+  useI18n()
   const ctx = use(SpotlightInternalContext)
 
   const query = ctx?.state.phase === 'open' ? ctx.state.query : ''
@@ -274,9 +282,11 @@ export function SpotlightResults({
 
   // ─── Merged flat list for keyboard-navigation index tracking ──────────────
 
-  const mergedFlatList = argMode
-    ? []
-    : getMergedCommandList(query, commandContext, activeScopeId, asyncResults)
+  // Rendering and navigation must share the same locale-sensitive ranking.
+  const mergedFlatList = [
+    ...capped.map(({ command }) => command),
+    ...asyncGroups.flatMap(({ commands }) => commands),
+  ]
   const highlightedCommandId = mergedFlatList[highlightedIndex]?.id ?? null
   const resultsRef = useRef<HTMLDivElement>(null)
 

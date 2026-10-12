@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * ReviewChangeCard — the right-hand side of one timeline node: what the
  * change looks like. Pages get before/after frames, entries a field table,
@@ -96,6 +97,7 @@ function fieldLines(fields: MergeFieldChange[]): string[] {
 }
 
 export function ReviewChangeCard({ branchId, change, resolution, canResolve, onResolve }: ReviewChangeCardProps) {
+  useI18n()
   const { detail } = change
   const header = (
     <div className={styles.cardHead}>

@@ -3,11 +3,13 @@
  * Phase 5: replaces ShortcutsSection with a generated list from the registry.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope } from '../types'
 
 export const helpScope: Scope = {
   id: 'help',
-  title: 'Keyboard shortcuts',
-  placeholder: 'Search shortcuts…',
+  get title() { return translate('metadata.spotlight.keyboardShortcuts') },
+  get placeholder() { return translate('metadata.spotlight.searchShortcuts') },
   commands: () => [],  // Phase 5
 }

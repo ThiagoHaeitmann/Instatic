@@ -1,3 +1,4 @@
+import { USER_STATUS_LABELS } from '@admin/shared/presentationCatalog'
 /**
  * Pure formatting / labelling helpers used across the Users workspace.
  *
@@ -16,7 +17,7 @@ export function displayUserName(user: CmsCurrentUser): string {
 }
 
 export function statusLabel(status: CmsCurrentUser['status']): string {
-  return status === 'active' ? 'Active' : 'Suspended'
+  return USER_STATUS_LABELS[status]
 }
 
 export function formatDateTime(value: string | null): string {

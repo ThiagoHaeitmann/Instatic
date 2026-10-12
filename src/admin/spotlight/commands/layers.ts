@@ -17,6 +17,8 @@
  *   - Convert selection to Visual Component
  */
 
+import { translate } from '@admin/i18n'
+
 import { getParent } from '@core/page-tree'
 import type { Command } from '../types'
 
@@ -34,8 +36,8 @@ export function getLayersCommands(): Command[] {
     // ── Duplicate layer ──────────────────────────────────────────────────────
     {
       id: 'layers.duplicate',
-      title: 'Duplicate layer',
-      subtitle: 'Duplicate the selected layer',
+      get title() { return translate('metadata.spotlight.duplicateLayer') },
+      get subtitle() { return translate('metadata.spotlight.duplicateTheSelectedLayer') },
       group: 'editor',
       iconName: 'copy-2-solid',
       keywords: ['layer', 'duplicate', 'copy', 'clone'],
@@ -64,8 +66,8 @@ export function getLayersCommands(): Command[] {
     // ── Delete layer ─────────────────────────────────────────────────────────
     {
       id: 'layers.delete',
-      title: 'Delete layer',
-      subtitle: 'Remove the selected layer from the page',
+      get title() { return translate('metadata.spotlight.deleteLayer') },
+      get subtitle() { return translate('metadata.spotlight.removeTheSelectedLayerFromThePage') },
       group: 'editor',
       iconName: 'trash-solid',
       keywords: ['layer', 'delete', 'remove', 'destroy'],
@@ -94,8 +96,8 @@ export function getLayersCommands(): Command[] {
     // ── Copy layer ───────────────────────────────────────────────────────────
     {
       id: 'layers.copy',
-      title: 'Copy layer',
-      subtitle: 'Copy the selected layer to the clipboard',
+      get title() { return translate('metadata.spotlight.copyLayer') },
+      get subtitle() { return translate('metadata.spotlight.copyTheSelectedLayerToTheClipboard') },
       group: 'editor',
       iconName: 'copy-solid',
       keywords: ['layer', 'copy', 'clipboard'],
@@ -124,8 +126,8 @@ export function getLayersCommands(): Command[] {
     // ── Cut layer ────────────────────────────────────────────────────────────
     {
       id: 'layers.cut',
-      title: 'Cut layer',
-      subtitle: 'Cut the selected layer to the clipboard',
+      get title() { return translate('metadata.spotlight.cutLayer') },
+      get subtitle() { return translate('metadata.spotlight.cutTheSelectedLayerToTheClipboard') },
       group: 'editor',
       iconName: 'copy-x-solid',
       keywords: ['layer', 'cut', 'clipboard', 'remove'],
@@ -154,8 +156,8 @@ export function getLayersCommands(): Command[] {
     // ── Paste layer ──────────────────────────────────────────────────────────
     {
       id: 'layers.paste',
-      title: 'Paste layer',
-      subtitle: 'Paste from the clipboard into the selected layer',
+      get title() { return translate('metadata.spotlight.pasteLayer') },
+      get subtitle() { return translate('metadata.spotlight.pasteFromTheClipboardIntoTheSelectedLayer') },
       group: 'editor',
       iconName: 'box-solid',
       keywords: ['layer', 'paste', 'clipboard', 'insert'],
@@ -179,8 +181,8 @@ export function getLayersCommands(): Command[] {
     // ── Rename layer ─────────────────────────────────────────────────────────
     {
       id: 'layers.rename',
-      title: 'Rename layer…',
-      subtitle: 'Give the selected layer a custom label',
+      get title() { return translate('metadata.spotlight.renameLayer') },
+      get subtitle() { return translate('metadata.spotlight.giveTheSelectedLayerACustomLabel') },
       group: 'editor',
       iconName: 'edit-solid',
       keywords: ['layer', 'rename', 'label', 'name'],
@@ -190,9 +192,9 @@ export function getLayersCommands(): Command[] {
       args: [
         {
           id: 'label',
-          label: 'Layer label',
+          get label() { return translate('metadata.spotlight.layerLabel') },
           type: 'text',
-          placeholder: 'e.g. Hero Section',
+          get placeholder() { return translate('metadata.spotlight.eGHeroSection') },
           required: true,
         },
       ],
@@ -213,8 +215,8 @@ export function getLayersCommands(): Command[] {
     // ── Lock / Unlock layer ──────────────────────────────────────────────────
     {
       id: 'layers.toggleLock',
-      title: 'Toggle layer lock',
-      subtitle: 'Lock or unlock the selected layer',
+      get title() { return translate('metadata.spotlight.toggleLayerLock') },
+      get subtitle() { return translate('metadata.spotlight.lockOrUnlockTheSelectedLayer') },
       group: 'editor',
       iconName: 'lock-solid',
       keywords: ['layer', 'lock', 'unlock', 'protect'],
@@ -237,8 +239,8 @@ export function getLayersCommands(): Command[] {
     // ── Hide / Show layer ────────────────────────────────────────────────────
     {
       id: 'layers.toggleVisibility',
-      title: 'Toggle layer visibility',
-      subtitle: 'Hide or show the selected layer',
+      get title() { return translate('metadata.spotlight.toggleLayerVisibility') },
+      get subtitle() { return translate('metadata.spotlight.hideOrShowTheSelectedLayer') },
       group: 'editor',
       iconName: 'eye-solid',
       keywords: ['layer', 'hide', 'show', 'visibility', 'visible', 'invisible'],
@@ -261,8 +263,8 @@ export function getLayersCommands(): Command[] {
     // ── Wrap in container ────────────────────────────────────────────────────
     {
       id: 'layers.wrapInContainer',
-      title: 'Wrap layer in container',
-      subtitle: 'Wrap the selected layer in a new container',
+      get title() { return translate('metadata.spotlight.wrapLayerInContainer') },
+      get subtitle() { return translate('metadata.spotlight.wrapTheSelectedLayerInANewContainer') },
       group: 'editor',
       iconName: 'container-solid',
       keywords: ['layer', 'wrap', 'container', 'group', 'nest'],
@@ -285,8 +287,8 @@ export function getLayersCommands(): Command[] {
     // ── Move up ──────────────────────────────────────────────────────────────
     {
       id: 'layers.moveUp',
-      title: 'Move layer up',
-      subtitle: 'Move the selected layer one position up',
+      get title() { return translate('metadata.spotlight.moveLayerUp') },
+      get subtitle() { return translate('metadata.spotlight.moveTheSelectedLayerOnePositionUp') },
       group: 'editor',
       iconName: 'arrow-up',
       keywords: ['layer', 'move', 'up', 'reorder', 'position'],
@@ -315,8 +317,8 @@ export function getLayersCommands(): Command[] {
     // ── Move down ────────────────────────────────────────────────────────────
     {
       id: 'layers.moveDown',
-      title: 'Move layer down',
-      subtitle: 'Move the selected layer one position down',
+      get title() { return translate('metadata.spotlight.moveLayerDown') },
+      get subtitle() { return translate('metadata.spotlight.moveTheSelectedLayerOnePositionDown') },
       group: 'editor',
       iconName: 'arrow-down',
       keywords: ['layer', 'move', 'down', 'reorder', 'position'],
@@ -345,8 +347,8 @@ export function getLayersCommands(): Command[] {
     // ── Select parent ────────────────────────────────────────────────────────
     {
       id: 'layers.selectParent',
-      title: 'Select parent layer',
-      subtitle: 'Move selection to the parent of the current layer',
+      get title() { return translate('metadata.spotlight.selectParentLayer') },
+      get subtitle() { return translate('metadata.spotlight.moveSelectionToTheParentOfTheCurrentLayer') },
       group: 'editor',
       iconName: 'arrow-up',
       keywords: ['layer', 'parent', 'select', 'up', 'navigate'],
@@ -373,8 +375,8 @@ export function getLayersCommands(): Command[] {
     // ── Select first child ───────────────────────────────────────────────────
     {
       id: 'layers.selectFirstChild',
-      title: 'Select first child layer',
-      subtitle: 'Move selection to the first child of the current layer',
+      get title() { return translate('metadata.spotlight.selectFirstChildLayer') },
+      get subtitle() { return translate('metadata.spotlight.moveSelectionToTheFirstChildOfTheCurrentLayer') },
       group: 'editor',
       iconName: 'arrow-down',
       keywords: ['layer', 'child', 'select', 'down', 'navigate', 'first'],

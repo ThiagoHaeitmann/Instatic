@@ -7,12 +7,14 @@
  * activated plugins appear without needing to reopen the spotlight.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope } from '../types'
 import { getPluginsCommands } from '../commands/plugins'
 
 export const pluginCommandsScope: Scope = {
   id: 'pluginCommands',
-  title: 'Run plugin command',
-  placeholder: 'Search plugin commands…',
+  get title() { return translate('metadata.spotlight.runPluginCommand') },
+  get placeholder() { return translate('metadata.spotlight.searchPluginCommands') },
   commands: getPluginsCommands,
 }

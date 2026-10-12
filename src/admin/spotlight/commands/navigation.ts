@@ -8,6 +8,8 @@
  * them in sync if a workspace's gate changes.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 /** Mirrors `canAccessContent` in access.ts. */
@@ -54,8 +56,8 @@ export function getNavigationCommands(): Command[] {
   return [
     {
       id: 'navigation.goToSite',
-      title: 'Go to Site editor',
-      subtitle: 'Open the visual editor',
+      get title() { return translate('metadata.spotlight.goToSiteEditor') },
+      get subtitle() { return translate('metadata.spotlight.openTheVisualEditor') },
       group: 'navigation',
       iconName: 'layout-solid',
       keywords: ['site', 'editor', 'pages', 'builder', 'visual'],
@@ -68,8 +70,8 @@ export function getNavigationCommands(): Command[] {
     },
     {
       id: 'navigation.goToContent',
-      title: 'Go to Content',
-      subtitle: 'Manage content documents',
+      get title() { return translate('metadata.spotlight.goToContent') },
+      get subtitle() { return translate('metadata.spotlight.manageContentDocuments') },
       group: 'navigation',
       iconName: 'file-text-solid',
       keywords: ['content', 'documents', 'articles', 'cms'],
@@ -82,8 +84,8 @@ export function getNavigationCommands(): Command[] {
     },
     {
       id: 'navigation.goToData',
-      title: 'Go to Data',
-      subtitle: 'Manage structured data tables',
+      get title() { return translate('metadata.spotlight.goToData') },
+      get subtitle() { return translate('metadata.spotlight.manageStructuredDataTables') },
       group: 'navigation',
       iconName: 'database-solid',
       keywords: ['data', 'tables', 'fields', 'database', 'structured'],
@@ -96,8 +98,8 @@ export function getNavigationCommands(): Command[] {
     },
     {
       id: 'navigation.goToMedia',
-      title: 'Go to Media',
-      subtitle: 'Manage uploaded media files',
+      get title() { return translate('metadata.spotlight.goToMedia') },
+      get subtitle() { return translate('metadata.spotlight.manageUploadedMediaFiles') },
       group: 'navigation',
       iconName: 'image-solid',
       keywords: ['media', 'files', 'images', 'uploads', 'assets'],
@@ -110,8 +112,8 @@ export function getNavigationCommands(): Command[] {
     },
     {
       id: 'navigation.goToPlugins',
-      title: 'Go to Plugins',
-      subtitle: 'Manage installed plugins',
+      get title() { return translate('metadata.spotlight.goToPlugins') },
+      get subtitle() { return translate('metadata.spotlight.manageInstalledPlugins') },
       group: 'navigation',
       iconName: 'package-solid',
       keywords: ['plugins', 'extensions', 'addons', 'install'],
@@ -124,8 +126,8 @@ export function getNavigationCommands(): Command[] {
     },
     {
       id: 'navigation.goToAi',
-      title: 'Go to AI settings',
-      subtitle: 'Manage providers, defaults, connections, and usage',
+      get title() { return translate('metadata.spotlight.goToAISettings') },
+      get subtitle() { return translate('metadata.spotlight.manageProvidersDefaultsConnectionsAndUsage') },
       group: 'navigation',
       iconName: 'ai-box-solid',
       keywords: ['ai', 'models', 'providers', 'openai', 'anthropic', 'ollama', 'mcp'],
@@ -138,8 +140,8 @@ export function getNavigationCommands(): Command[] {
     },
     {
       id: 'navigation.goToUsers',
-      title: 'Go to Users',
-      subtitle: 'Manage users and roles',
+      get title() { return translate('metadata.spotlight.goToUsers') },
+      get subtitle() { return translate('metadata.spotlight.manageUsersAndRoles') },
       group: 'navigation',
       iconName: 'cursor-minimal-solid',
       keywords: ['users', 'roles', 'team', 'members', 'permissions', 'audit'],
@@ -156,8 +158,8 @@ export function getNavigationCommands(): Command[] {
       // declaring `capability` here matches `canAccessWorkspace('account')`'s
       // `user !== null` check.
       id: 'navigation.goToAccount',
-      title: 'Go to Account',
-      subtitle: 'Manage your profile and security',
+      get title() { return translate('metadata.spotlight.goToAccount') },
+      get subtitle() { return translate('metadata.spotlight.manageYourProfileAndSecurity') },
       group: 'navigation',
       iconName: 'settings-cog-solid',
       keywords: ['account', 'profile', 'security', 'password', 'mfa', 'sessions'],

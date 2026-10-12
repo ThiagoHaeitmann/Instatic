@@ -5,6 +5,8 @@
  * for uploading files and creating folders.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope, Command } from '../types'
 import { mediaProvider } from '../providers/mediaProvider'
 
@@ -12,8 +14,8 @@ function getMediaScopeCommands(): Command[] {
   return [
     {
       id: 'media.uploadFile',
-      title: 'Upload file…',
-      subtitle: 'Upload a new image, video, or document',
+      get title() { return translate('metadata.spotlight.uploadFile') },
+      get subtitle() { return translate('metadata.spotlight.uploadANewImageVideoOrDocument') },
       group: 'media',
       iconName: 'upload-solid',
       keywords: ['upload', 'file', 'image', 'video', 'media', 'add'],
@@ -25,8 +27,8 @@ function getMediaScopeCommands(): Command[] {
     },
     {
       id: 'media.newFolder',
-      title: 'New folder…',
-      subtitle: 'Create a new folder in the media library',
+      get title() { return translate('metadata.spotlight.newFolder') },
+      get subtitle() { return translate('metadata.spotlight.createANewFolderInTheMediaLibrary') },
       group: 'media',
       iconName: 'folder-solid',
       keywords: ['new', 'create', 'folder', 'directory', 'organize'],
@@ -34,9 +36,9 @@ function getMediaScopeCommands(): Command[] {
       args: [
         {
           id: 'name',
-          label: 'Folder name',
+          get label() { return translate('metadata.spotlight.folderName') },
           type: 'text',
-          placeholder: 'My folder',
+          get placeholder() { return translate('metadata.spotlight.myFolder') },
           required: true,
         },
       ],
@@ -55,8 +57,8 @@ function getMediaScopeCommands(): Command[] {
 
 export const mediaScope: Scope = {
   id: 'media',
-  title: 'Open file',
-  placeholder: 'Search media files…',
+  get title() { return translate('metadata.spotlight.openFile') },
+  get placeholder() { return translate('metadata.spotlight.searchMediaFiles') },
   commands: getMediaScopeCommands,
   providers: [mediaProvider],
 }

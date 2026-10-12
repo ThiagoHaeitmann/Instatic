@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /** Provider management in the shared AI master-detail workspace. */
 import { useId, useState } from 'react'
 import { useAsyncResource } from '@admin/lib/useAsyncResource'
@@ -47,6 +48,7 @@ export function ProvidersTab({
 }: {
   onNavigateToDefaults: () => void
 }) {
+  useI18n()
   const {
     data: loadedCredentials,
     loading,
@@ -289,6 +291,7 @@ function CredentialDetail({
   onRemove: () => void
   onNavigateToDefaults: () => void
 }) {
+  useI18n()
   const provider = getProviderSpec(credential.providerId)
   const {
     data: models,
@@ -477,6 +480,7 @@ function ProviderSetupPanel({
   provider: ProviderSpec
   onCreated: (credential: CredentialView) => void
 }) {
+  useI18n()
   return (
     <article className={styles.providerSetup} aria-labelledby="provider-setup-title">
       <header className={styles.providerSetupHeader}>
@@ -509,6 +513,7 @@ function AddCredentialForm({
   provider: ProviderSpec
   onCreated: (credential: CredentialView) => void
 }) {
+  useI18n()
   const formId = useId()
   const labelInputId = useId()
   const apiKeyInputId = useId()

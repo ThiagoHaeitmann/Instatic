@@ -7,6 +7,8 @@
  * of navigating away — all registered PluginCommands are listed there.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope, Command } from '../types'
 import { pluginPagesProvider } from '../providers/pluginPagesProvider'
 
@@ -14,8 +16,8 @@ function getPluginsScopeCommands(): Command[] {
   return [
     {
       id: 'plugins.install',
-      title: 'Install plugin…',
-      subtitle: 'Upload a plugin package (.zip)',
+      get title() { return translate('metadata.spotlight.installPlugin') },
+      get subtitle() { return translate('metadata.spotlight.uploadAPluginPackageZip') },
       group: 'plugins',
       iconName: 'download-solid',
       keywords: ['install', 'add', 'plugin', 'package', 'zip'],
@@ -27,8 +29,8 @@ function getPluginsScopeCommands(): Command[] {
     },
     {
       id: 'plugins.runCommand',
-      title: 'Run plugin command…',
-      subtitle: 'Browse and execute registered plugin commands',
+      get title() { return translate('metadata.spotlight.runPluginCommandAlternate') },
+      get subtitle() { return translate('metadata.spotlight.browseAndExecuteRegisteredPluginCommands') },
       group: 'plugins',
       iconName: 'play-solid',
       keywords: ['run', 'execute', 'plugin', 'command', 'action'],
@@ -42,8 +44,8 @@ function getPluginsScopeCommands(): Command[] {
 
 export const pluginsScope: Scope = {
   id: 'plugins',
-  title: 'Open plugin',
-  placeholder: 'Search plugins…',
+  get title() { return translate('metadata.spotlight.openPlugin') },
+  get placeholder() { return translate('metadata.spotlight.searchPlugins') },
   commands: getPluginsScopeCommands,
   providers: [pluginPagesProvider],
 }

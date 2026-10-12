@@ -7,13 +7,15 @@
  * Each result navigates to /admin/data with the table selected.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { DataTablesListResponseSchema } from './schemas'
 import { makeServerProvider } from './serverProvider'
 
 export const dataProvider = makeServerProvider({
   id: 'data',
-  label: 'Data',
+  get label() { return translate('metadata.spotlight.data') },
   debounceMs: 150,
   endpoint: '/admin/api/cms/data/tables',
   schema: DataTablesListResponseSchema,

@@ -6,6 +6,8 @@
  * pure viewing affordances against the canvas.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 const PREVIEW_CAPABILITY = 'site.read'
@@ -15,8 +17,8 @@ export function getPreviewCommands(): Command[] {
     // ── Toggle preview ───────────────────────────────────────────────────────
     {
       id: 'preview.toggle',
-      title: 'Toggle preview',
-      subtitle: 'Switch between edit and preview mode',
+      get title() { return translate('metadata.spotlight.togglePreview') },
+      get subtitle() { return translate('metadata.spotlight.switchBetweenEditAndPreviewMode') },
       group: 'preview',
       iconName: 'eye-solid',
       keywords: ['preview', 'toggle', 'view', 'live', 'read-only'],
@@ -41,8 +43,8 @@ export function getPreviewCommands(): Command[] {
     // ── Select mode ──────────────────────────────────────────────────────────
     {
       id: 'preview.modeSelect',
-      title: 'Switch to Select mode',
-      subtitle: 'Use the pointer to select and edit layers',
+      get title() { return translate('metadata.spotlight.switchToSelectMode') },
+      get subtitle() { return translate('metadata.spotlight.useThePointerToSelectAndEditLayers') },
       group: 'preview',
       iconName: 'pointer-solid',
       keywords: ['mode', 'select', 'pointer', 'cursor', 'canvas'],
@@ -62,8 +64,8 @@ export function getPreviewCommands(): Command[] {
     // ── Pan mode ─────────────────────────────────────────────────────────────
     {
       id: 'preview.modePan',
-      title: 'Switch to Pan mode',
-      subtitle: 'Use the hand tool to pan the canvas',
+      get title() { return translate('metadata.spotlight.switchToPanMode') },
+      get subtitle() { return translate('metadata.spotlight.useTheHandToolToPanTheCanvas') },
       group: 'preview',
       iconName: 'hand-grab-solid',
       keywords: ['mode', 'pan', 'hand', 'drag', 'canvas', 'scroll'],
@@ -83,8 +85,8 @@ export function getPreviewCommands(): Command[] {
     // ── Zoom in ──────────────────────────────────────────────────────────────
     {
       id: 'preview.zoomIn',
-      title: 'Zoom in',
-      subtitle: 'Increase canvas zoom level',
+      get title() { return translate('metadata.spotlight.zoomIn') },
+      get subtitle() { return translate('metadata.spotlight.increaseCanvasZoomLevel') },
       group: 'preview',
       iconName: 'plus',
       keywords: ['zoom', 'in', 'enlarge', 'magnify', 'canvas'],
@@ -105,8 +107,8 @@ export function getPreviewCommands(): Command[] {
     // ── Zoom out ─────────────────────────────────────────────────────────────
     {
       id: 'preview.zoomOut',
-      title: 'Zoom out',
-      subtitle: 'Decrease canvas zoom level',
+      get title() { return translate('metadata.spotlight.zoomOut') },
+      get subtitle() { return translate('metadata.spotlight.decreaseCanvasZoomLevel') },
       group: 'preview',
       iconName: 'proportions-solid',
       keywords: ['zoom', 'out', 'shrink', 'canvas'],
@@ -127,8 +129,8 @@ export function getPreviewCommands(): Command[] {
     // ── Reset zoom ───────────────────────────────────────────────────────────
     {
       id: 'preview.zoomReset',
-      title: 'Reset zoom to 100%',
-      subtitle: 'Reset the canvas to 1:1 zoom',
+      get title() { return translate('metadata.spotlight.resetZoomTo100') },
+      get subtitle() { return translate('metadata.spotlight.resetTheCanvasTo11Zoom') },
       group: 'preview',
       iconName: 'laptop-solid',
       keywords: ['zoom', 'reset', '100%', 'actual size', 'canvas'],

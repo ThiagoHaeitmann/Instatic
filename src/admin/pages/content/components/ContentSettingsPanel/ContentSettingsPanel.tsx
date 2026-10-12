@@ -1,3 +1,5 @@
+import { useI18n } from '@admin/i18n'
+import { CONTENT_STATUS_LABELS } from '@admin/shared/presentationCatalog'
 import { Suspense, lazy } from 'react'
 import { Input, Textarea } from '@ui/components/Input'
 import { Select } from '@ui/components/Select'
@@ -136,6 +138,7 @@ export function ContentSettingsPanel({
   onClearFeaturedMedia,
   onEditFeaturedMedia,
 }: ContentSettingsPanelProps) {
+  useI18n()
   const setRightPanel = useWorkspaceLayout((s) => s.setRightPanel)
   const seoEnabled = selectedCollection ? dataTableHasField(selectedCollection, POST_TYPE_FIELD_SEO_TITLE) : false
   const featuredMediaEnabled = selectedCollection ? dataTableHasField(selectedCollection, POST_TYPE_FIELD_FEATURED_MEDIA) : false
@@ -153,10 +156,10 @@ export function ContentSettingsPanel({
   const branchGate = useBranchPublishGate()
   const canPublishHere = canPublishEntry && !branchGate.onBranch
   const statusOptions = [
-    { value: 'draft', label: 'Draft', enabled: canEditEntry },
-    { value: 'scheduled', label: 'Scheduled', enabled: false },
-    { value: 'published', label: 'Published', enabled: canPublishHere },
-    { value: 'unpublished', label: 'Unpublished', enabled: canEditEntry },
+    { value: 'draft', label: CONTENT_STATUS_LABELS.draft, enabled: canEditEntry },
+    { value: 'scheduled', label: CONTENT_STATUS_LABELS.scheduled, enabled: false },
+    { value: 'published', label: CONTENT_STATUS_LABELS.published, enabled: canPublishHere },
+    { value: 'unpublished', label: CONTENT_STATUS_LABELS.unpublished, enabled: canEditEntry },
   ].filter((option) => option.enabled || option.value === selectedEntry?.status)
     .map(({ value, label, enabled }) => ({ value, label, disabled: !enabled }))
 

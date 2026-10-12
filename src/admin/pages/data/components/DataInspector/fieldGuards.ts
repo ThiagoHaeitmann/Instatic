@@ -1,6 +1,5 @@
 /**
- * fieldGuards — PostType field classification + the human-readable field-type
- * label map. Pure logic shared by FieldsSection and FieldSchemaComposer.
+ * fieldGuards — PostType field classification. Pure logic shared by FieldsSection and FieldSchemaComposer.
  *
  * PostType field guards:
  *   - Mandatory built-ins (title, slug): locked — no edit/delete.
@@ -11,29 +10,9 @@
 import {
   POST_TYPE_MANDATORY_FIELD_IDS,
   type DataField,
-  type DataFieldType,
   type DataTable,
 } from '@core/data/schemas'
 import { isPostTypeBuiltInFieldId } from '@core/data/fields'
-
-export const FIELD_TYPE_LABELS: Record<DataFieldType, string> = {
-  text: 'Text',
-  longText: 'Long text',
-  richText: 'Rich text',
-  number: 'Number',
-  boolean: 'Boolean',
-  date: 'Date',
-  dateTime: 'Date & time',
-  select: 'Select',
-  multiSelect: 'Multi-select',
-  url: 'URL',
-  email: 'Email',
-  media: 'Media',
-  relation: 'Relation',
-  repeater: 'Repeater',
-  pageTree: 'Page tree',
-  fieldSchema: 'Field schema',
-}
 
 export function isMandatoryField(fieldId: string): boolean {
   return (POST_TYPE_MANDATORY_FIELD_IDS as readonly string[]).includes(fieldId)

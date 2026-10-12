@@ -8,13 +8,15 @@
  * Each result navigates to /admin/media with the file pre-selected.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { MediaListResponseSchema } from './schemas'
 import { makeServerProvider } from './serverProvider'
 
 export const mediaProvider = makeServerProvider({
   id: 'media',
-  label: 'Media',
+  get label() { return translate('metadata.spotlight.media') },
   debounceMs: 150,
   endpoint: '/admin/api/cms/media',
   schema: MediaListResponseSchema,

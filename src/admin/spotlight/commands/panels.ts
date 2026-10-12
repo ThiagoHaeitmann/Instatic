@@ -8,6 +8,8 @@
  * underlying mutations the panels expose are themselves capability-gated.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 const PANEL_CAPABILITY = 'site.read'
@@ -17,8 +19,8 @@ export function getPanelsCommands(): Command[] {
     // ── Explorer panel ───────────────────────────────────────────────────────
     {
       id: 'panels.toggleExplorer',
-      title: 'Toggle Explorer panel',
-      subtitle: 'Show or hide the Explorer (Layers / Pages / Media) panel',
+      get title() { return translate('metadata.spotlight.toggleExplorerPanel') },
+      get subtitle() { return translate('metadata.spotlight.showOrHideTheExplorerLayersPagesMediaPanel') },
       group: 'editor',
       iconName: 'files-stack-2-solid',
       keywords: ['panel', 'explorer', 'layers', 'pages', 'site', 'media', 'sidebar', 'toggle'],
@@ -38,8 +40,8 @@ export function getPanelsCommands(): Command[] {
     // ── Explorer → Layers tab ────────────────────────────────────────────────
     {
       id: 'panels.showLayers',
-      title: 'Show Layers',
-      subtitle: 'Open the Explorer panel on the Layers (DOM tree) tab',
+      get title() { return translate('metadata.spotlight.showLayers') },
+      get subtitle() { return translate('metadata.spotlight.openTheExplorerPanelOnTheLayersDOMTreeTab') },
       group: 'editor',
       iconName: 'list-box-solid',
       keywords: ['panel', 'layers', 'dom', 'tree', 'explorer', 'show'],
@@ -61,8 +63,8 @@ export function getPanelsCommands(): Command[] {
     // ── Explorer → Site tab ──────────────────────────────────────────────────
     {
       id: 'panels.showSite',
-      title: 'Show Site',
-      subtitle: 'Open the Explorer panel on the Site (pages / templates / components) tab',
+      get title() { return translate('metadata.spotlight.showSite') },
+      get subtitle() { return translate('metadata.spotlight.openTheExplorerPanelOnTheSitePagesTemplatesComponentsTab') },
       group: 'editor',
       iconName: 'layout-solid',
       keywords: ['panel', 'site', 'pages', 'templates', 'components', 'explorer', 'sidebar', 'show'],
@@ -84,8 +86,8 @@ export function getPanelsCommands(): Command[] {
     // ── Explorer → Code tab ──────────────────────────────────────────────────
     {
       id: 'panels.showCode',
-      title: 'Show Code',
-      subtitle: 'Open the Explorer panel on the Code (stylesheets / scripts) tab',
+      get title() { return translate('metadata.spotlight.showCode') },
+      get subtitle() { return translate('metadata.spotlight.openTheExplorerPanelOnTheCodeStylesheetsScriptsTab') },
       group: 'editor',
       iconName: 'code',
       keywords: ['panel', 'code', 'styles', 'stylesheet', 'css', 'scripts', 'js', 'files', 'explorer', 'show'],
@@ -107,8 +109,8 @@ export function getPanelsCommands(): Command[] {
     // ── Selectors panel ──────────────────────────────────────────────────────
     {
       id: 'panels.toggleSelectors',
-      title: 'Toggle Selectors panel',
-      subtitle: 'Show or hide the CSS selectors panel',
+      get title() { return translate('metadata.spotlight.toggleSelectorsPanel') },
+      get subtitle() { return translate('metadata.spotlight.showOrHideTheCSSSelectorsPanel') },
       group: 'editor',
       iconName: 'code',
       keywords: ['panel', 'selectors', 'css', 'classes', 'toggle'],
@@ -128,8 +130,8 @@ export function getPanelsCommands(): Command[] {
     // ── Framework panel ──────────────────────────────────────────────────────
     {
       id: 'panels.toggleFramework',
-      title: 'Toggle Framework panel',
-      subtitle: 'Show or hide the design-token framework panel (colors, type, space)',
+      get title() { return translate('metadata.spotlight.toggleFrameworkPanel') },
+      get subtitle() { return translate('metadata.spotlight.showOrHideTheDesignTokenFrameworkPanelColorsTypeSpace') },
       group: 'editor',
       iconName: 'colors-swatch-solid',
       keywords: ['panel', 'framework', 'colors', 'typography', 'spacing', 'tokens', 'toggle'],
@@ -149,8 +151,8 @@ export function getPanelsCommands(): Command[] {
     // ── Explorer → Media tab ─────────────────────────────────────────────────
     {
       id: 'panels.showMedia',
-      title: 'Show Media',
-      subtitle: 'Open the Explorer panel on the Media (asset library) tab',
+      get title() { return translate('metadata.spotlight.showMedia') },
+      get subtitle() { return translate('metadata.spotlight.openTheExplorerPanelOnTheMediaAssetLibraryTab') },
       group: 'editor',
       iconName: 'image-solid',
       keywords: ['panel', 'media', 'assets', 'images', 'files', 'explorer', 'show'],
@@ -172,8 +174,8 @@ export function getPanelsCommands(): Command[] {
     // ── Dependencies panel ───────────────────────────────────────────────────
     {
       id: 'panels.toggleDependencies',
-      title: 'Toggle Dependencies panel',
-      subtitle: 'Show or hide the site dependencies panel',
+      get title() { return translate('metadata.spotlight.toggleDependenciesPanel') },
+      get subtitle() { return translate('metadata.spotlight.showOrHideTheSiteDependenciesPanel') },
       group: 'editor',
       iconName: 'package-solid',
       keywords: ['panel', 'dependencies', 'packages', 'plugins', 'toggle'],
@@ -193,8 +195,8 @@ export function getPanelsCommands(): Command[] {
     // ── AI Assistant panel ───────────────────────────────────────────────────
     {
       id: 'panels.toggleAgent',
-      title: 'Toggle AI Assistant panel',
-      subtitle: 'Show or hide the AI assistant panel',
+      get title() { return translate('metadata.spotlight.toggleAIAssistantPanel') },
+      get subtitle() { return translate('metadata.spotlight.showOrHideTheAIAssistantPanel') },
       group: 'editor',
       iconName: 'sparkles-solid',
       keywords: ['panel', 'ai', 'assistant', 'agent', 'claude', 'toggle'],
@@ -214,8 +216,8 @@ export function getPanelsCommands(): Command[] {
     // ── Properties panel ─────────────────────────────────────────────────────
     {
       id: 'panels.toggleProperties',
-      title: 'Toggle Properties panel',
-      subtitle: 'Show or hide the properties panel',
+      get title() { return translate('metadata.spotlight.togglePropertiesPanel') },
+      get subtitle() { return translate('metadata.spotlight.showOrHideThePropertiesPanel') },
       group: 'editor',
       iconName: 'sliders-horizontal',
       keywords: ['panel', 'properties', 'inspector', 'toggle'],
@@ -235,8 +237,8 @@ export function getPanelsCommands(): Command[] {
     // ── Code editor panel ────────────────────────────────────────────────────
     {
       id: 'panels.toggleCodeEditor',
-      title: 'Toggle Code editor panel',
-      subtitle: 'Show or hide the floating code editor',
+      get title() { return translate('metadata.spotlight.toggleCodeEditorPanel') },
+      get subtitle() { return translate('metadata.spotlight.showOrHideTheFloatingCodeEditor') },
       group: 'editor',
       iconName: 'code',
       keywords: ['panel', 'code', 'editor', 'file', 'toggle'],
@@ -257,8 +259,8 @@ export function getPanelsCommands(): Command[] {
     // ── Cycle panel focus ────────────────────────────────────────────────────
     {
       id: 'panels.cycleFocus',
-      title: 'Cycle panel focus',
-      subtitle: 'Move keyboard focus between canvas, layers, and properties',
+      get title() { return translate('metadata.spotlight.cyclePanelFocus') },
+      get subtitle() { return translate('metadata.spotlight.moveKeyboardFocusBetweenCanvasLayersAndProperties') },
       group: 'editor',
       iconName: 'arrows-horizontal',
       keywords: ['panel', 'focus', 'cycle', 'keyboard', 'navigate'],

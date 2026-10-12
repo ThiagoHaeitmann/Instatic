@@ -1,0 +1,46 @@
+// Data-only host-owned ai metadata.
+export const aiMetadataEnglishMessages = {
+  "metadata.ai.claudeModels": "Claude models",
+  "metadata.ai.claudeModelsWithStrongToolUseAndLongContextReasoning": "Claude models with strong tool use and long-context reasoning.",
+  "metadata.ai.gptModels": "GPT models",
+  "metadata.ai.generalPurposeLanguageAndMultimodalModelsFromOpenAI": "General-purpose language and multimodal models from OpenAI.",
+  "metadata.ai.multiProviderModels": "Multi-provider models",
+  "metadata.ai.routeRequestsToModelsFromMultipleProvidersThroughOneAPI": "Route requests to models from multiple providers through one API.",
+  "metadata.ai.localModels": "Local models",
+  "metadata.ai.runLocalModelsOnInfrastructureYouControl": "Run local models on infrastructure you control.",
+  "metadata.ai.localEndpoint": "Local endpoint",
+  "metadata.ai.customEndpoint": "Custom endpoint",
+  "metadata.ai.openaiCompatibleAPI": "OpenAI-compatible API",
+  "metadata.ai.connectAnyOpenAICompatibleAPIEndpoint": "Connect any OpenAI-compatible API endpoint.",
+  "metadata.ai.siteEditor": "Site editor",
+  "metadata.ai.visualEditorChatAndPageBuildingTools": "Visual editor chat and page-building tools.",
+  "metadata.ai.content": "Content",
+  "metadata.ai.writingEditingAndStructuredContentWorkflows": "Writing, editing, and structured content workflows.",
+  "metadata.ai.data": "Data",
+  "metadata.ai.dataWorkspaceAssistanceAndTableOperations": "Data workspace assistance and table operations.",
+  "metadata.ai.plugins": "Plugins",
+  "metadata.ai.aiCallsMadeThroughThePluginAPI": "AI calls made through the plugin API."
+} as const
+
+export const aiMetadataPortugueseMessages = {
+  "metadata.ai.claudeModels": "Modelos Claude",
+  "metadata.ai.claudeModelsWithStrongToolUseAndLongContextReasoning": "Modelos Claude com uso avançado de ferramentas e raciocínio em contextos longos.",
+  "metadata.ai.gptModels": "Modelos GPT",
+  "metadata.ai.generalPurposeLanguageAndMultimodalModelsFromOpenAI": "Modelos de linguagem e multimodais de uso geral da OpenAI.",
+  "metadata.ai.multiProviderModels": "Modelos de vários provedores",
+  "metadata.ai.routeRequestsToModelsFromMultipleProvidersThroughOneAPI": "Encaminhe solicitações a modelos de vários provedores por uma única API.",
+  "metadata.ai.localModels": "Modelos locais",
+  "metadata.ai.runLocalModelsOnInfrastructureYouControl": "Execute modelos locais na infraestrutura que você controla.",
+  "metadata.ai.localEndpoint": "Endpoint local",
+  "metadata.ai.customEndpoint": "Endpoint personalizado",
+  "metadata.ai.openaiCompatibleAPI": "API compatível com OpenAI",
+  "metadata.ai.connectAnyOpenAICompatibleAPIEndpoint": "Conecte qualquer endpoint de API compatível com OpenAI.",
+  "metadata.ai.siteEditor": "Editor do site",
+  "metadata.ai.visualEditorChatAndPageBuildingTools": "Chat do editor visual e ferramentas de criação de páginas.",
+  "metadata.ai.content": "Conteúdo",
+  "metadata.ai.writingEditingAndStructuredContentWorkflows": "Fluxos de escrita, edição e conteúdo estruturado.",
+  "metadata.ai.data": "Dados",
+  "metadata.ai.dataWorkspaceAssistanceAndTableOperations": "Assistência no espaço de dados e operações de tabelas.",
+  "metadata.ai.plugins": "Plugins",
+  "metadata.ai.aiCallsMadeThroughThePluginAPI": "Chamadas de IA feitas pela API de plugins."
+} satisfies Record<keyof typeof aiMetadataEnglishMessages, string>

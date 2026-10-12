@@ -64,11 +64,11 @@ interface ServerProviderConfig<S extends TSchema, TItem> {
 export function makeServerProvider<S extends TSchema, TItem>(
   config: ServerProviderConfig<S, TItem>,
 ): SpotlightProvider {
-  const { id, label, debounceMs, endpoint, schema, select, toCommand } = config
+  const { id, debounceMs, endpoint, schema, select, toCommand } = config
 
   return {
     id,
-    label,
+    get label() { return config.label },
     debounceMs,
 
     async search(query, _ctx, signal): Promise<Command[]> {

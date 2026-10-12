@@ -4,13 +4,15 @@
  * Returns commands for opening each section of the Settings modal.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope, Command } from '../types'
 
 const SETTINGS_COMMANDS: Command[] = [
   {
     id: 'scope.settings.general',
-    title: 'General',
-    subtitle: 'Site name, description, and general settings',
+    get title() { return translate('metadata.spotlight.general') },
+    get subtitle() { return translate('metadata.spotlight.siteNameDescriptionAndGeneralSettings') },
     group: 'settings',
     iconName: 'settings-cog-solid',
     keywords: ['general', 'site', 'name', 'description'],
@@ -23,8 +25,8 @@ const SETTINGS_COMMANDS: Command[] = [
   },
   {
     id: 'scope.settings.publishing',
-    title: 'Publishing',
-    subtitle: 'Configure publishing and deployment settings',
+    get title() { return translate('metadata.spotlight.publishing') },
+    get subtitle() { return translate('metadata.spotlight.configurePublishingAndDeploymentSettings') },
     group: 'settings',
     iconName: 'send-solid',
     keywords: ['publishing', 'deploy', 'production', 'domain'],
@@ -37,8 +39,8 @@ const SETTINGS_COMMANDS: Command[] = [
   },
   {
     id: 'scope.settings.preferences',
-    title: 'Preferences',
-    subtitle: 'Editor preferences and auto-save settings',
+    get title() { return translate('metadata.spotlight.preferences') },
+    get subtitle() { return translate('metadata.spotlight.editorPreferencesAndAutoSaveSettings') },
     group: 'settings',
     iconName: 'sliders-horizontal',
     keywords: ['preferences', 'autosave', 'editor', 'behavior'],
@@ -51,8 +53,8 @@ const SETTINGS_COMMANDS: Command[] = [
   },
   {
     id: 'scope.settings.shortcuts',
-    title: 'Keyboard Shortcuts',
-    subtitle: 'View and customize keyboard shortcuts',
+    get title() { return translate('metadata.spotlight.keyboardShortcutsAlternate') },
+    get subtitle() { return translate('metadata.spotlight.viewAndCustomizeKeyboardShortcuts') },
     group: 'settings',
     iconName: 'command',
     keywords: ['shortcuts', 'keyboard', 'hotkeys', 'keybindings'],
@@ -67,7 +69,7 @@ const SETTINGS_COMMANDS: Command[] = [
 
 export const settingsScope: Scope = {
   id: 'settings',
-  title: 'Settings',
-  placeholder: 'Search settings sections…',
+  get title() { return translate('metadata.spotlight.settings') },
+  get placeholder() { return translate('metadata.spotlight.searchSettingsSections') },
   commands: () => SETTINGS_COMMANDS,
 }

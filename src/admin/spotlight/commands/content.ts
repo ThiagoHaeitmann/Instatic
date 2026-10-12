@@ -6,6 +6,8 @@
  * Content page consumes the action on mount and pops the right dialog.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { queuePendingAction } from '../pendingAction'
 
@@ -14,8 +16,8 @@ export function getContentCommands(): Command[] {
     // ── New content document ────────────────────────────────────────────────
     {
       id: 'content.newDocument',
-      title: 'New content document…',
-      subtitle: 'Create a new blog post, article, or content entry',
+      get title() { return translate('metadata.spotlight.newContentDocument') },
+      get subtitle() { return translate('metadata.spotlight.createANewBlogPostArticleOrContentEntry') },
       group: 'content',
       iconName: 'file-plus-solid',
       keywords: ['content', 'post', 'article', 'document', 'entry', 'blog', 'new', 'create', 'add'],
@@ -36,8 +38,8 @@ export function getContentCommands(): Command[] {
     // ── New collection ──────────────────────────────────────────────────────
     {
       id: 'content.newCollection',
-      title: 'New content collection…',
-      subtitle: 'Create a new collection (group of documents)',
+      get title() { return translate('metadata.spotlight.newContentCollection') },
+      get subtitle() { return translate('metadata.spotlight.createANewCollectionGroupOfDocuments') },
       group: 'content',
       iconName: 'box-stack-solid',
       keywords: ['content', 'collection', 'group', 'new', 'create', 'add'],

@@ -8,6 +8,8 @@
  * site-write capability can use this command.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 
 /** Mirrors `SITE_WRITE_CAPABILITIES` in editor.ts — any holder can import HTML. */
@@ -21,8 +23,8 @@ export function getImportHtmlCommands(): Command[] {
   return [
     {
       id: 'editor.importHtml',
-      title: 'Import HTML',
-      subtitle: 'Parse HTML and insert as page nodes',
+      get title() { return translate('metadata.spotlight.importHTML') },
+      get subtitle() { return translate('metadata.spotlight.parseHTMLAndInsertAsPageNodes') },
       group: 'editor',
       iconName: 'code',
       keywords: ['import', 'html', 'paste', 'code'],

@@ -1,3 +1,4 @@
+import { translate } from '@admin/i18n'
 export type ProviderId = 'anthropic' | 'openai' | 'openrouter' | 'ollama' | 'openai-compatible'
 export type ProviderAuthMode = 'apiKey' | 'baseUrl'
 
@@ -14,42 +15,42 @@ export const PROVIDER_SPECS: ProviderSpec[] = [
   {
     id: 'anthropic',
     label: 'Anthropic',
-    shortLabel: 'Claude models',
-    description: 'Claude models with strong tool use and long-context reasoning.',
+    get shortLabel() { return translate('metadata.ai.claudeModels') },
+    get description() { return translate('metadata.ai.claudeModelsWithStrongToolUseAndLongContextReasoning') },
     authMode: 'apiKey',
     endpointLabel: 'api.anthropic.com',
   },
   {
     id: 'openai',
     label: 'OpenAI',
-    shortLabel: 'GPT models',
-    description: 'General-purpose language and multimodal models from OpenAI.',
+    get shortLabel() { return translate('metadata.ai.gptModels') },
+    get description() { return translate('metadata.ai.generalPurposeLanguageAndMultimodalModelsFromOpenAI') },
     authMode: 'apiKey',
     endpointLabel: 'api.openai.com',
   },
   {
     id: 'openrouter',
     label: 'OpenRouter',
-    shortLabel: 'Multi-provider models',
-    description: 'Route requests to models from multiple providers through one API.',
+    get shortLabel() { return translate('metadata.ai.multiProviderModels') },
+    get description() { return translate('metadata.ai.routeRequestsToModelsFromMultipleProvidersThroughOneAPI') },
     authMode: 'apiKey',
     endpointLabel: 'openrouter.ai',
   },
   {
     id: 'ollama',
     label: 'Ollama',
-    shortLabel: 'Local models',
-    description: 'Run local models on infrastructure you control.',
+    get shortLabel() { return translate('metadata.ai.localModels') },
+    get description() { return translate('metadata.ai.runLocalModelsOnInfrastructureYouControl') },
     authMode: 'baseUrl',
-    endpointLabel: 'Local endpoint',
+    get endpointLabel() { return translate('metadata.ai.localEndpoint') },
   },
   {
     id: 'openai-compatible',
-    label: 'Custom endpoint',
-    shortLabel: 'OpenAI-compatible API',
-    description: 'Connect any OpenAI-compatible API endpoint.',
+    get label() { return translate('metadata.ai.customEndpoint') },
+    get shortLabel() { return translate('metadata.ai.openaiCompatibleAPI') },
+    get description() { return translate('metadata.ai.connectAnyOpenAICompatibleAPIEndpoint') },
     authMode: 'baseUrl',
-    endpointLabel: 'Custom endpoint',
+    get endpointLabel() { return translate('metadata.ai.customEndpoint') },
   },
 ]
 

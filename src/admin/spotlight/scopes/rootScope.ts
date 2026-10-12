@@ -9,6 +9,8 @@
  * results; results are grouped by provider label.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Scope } from '../types'
 import { getAllCommands } from '../builtinCommands'
 import { pagesProvider } from '../providers/pagesProvider'
@@ -20,7 +22,7 @@ import { branchesProvider } from '../providers/branchesProvider'
 
 export const rootScope: Scope = {
   id: 'root',
-  placeholder: 'Type a command or search…',
+  get placeholder() { return translate('metadata.spotlight.typeACommandOrSearch') },
   commands: () => getAllCommands(),
   providers: [
     pagesProvider,

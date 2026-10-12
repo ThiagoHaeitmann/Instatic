@@ -2,6 +2,8 @@
  * Data workspace commands — §4.9 of the Command Spotlight master plan.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { Command } from '../types'
 import { queuePendingAction } from '../pendingAction'
 
@@ -10,8 +12,8 @@ export function getDataCommands(): Command[] {
     // ── New data table ──────────────────────────────────────────────────────
     {
       id: 'data.newTable',
-      title: 'New data table…',
-      subtitle: 'Create a new structured-data table',
+      get title() { return translate('metadata.spotlight.newDataTable') },
+      get subtitle() { return translate('metadata.spotlight.createANewStructuredDataTable') },
       group: 'data',
       iconName: 'database-solid',
       keywords: ['data', 'table', 'database', 'schema', 'new', 'create', 'add'],

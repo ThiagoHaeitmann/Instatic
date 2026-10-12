@@ -1,3 +1,4 @@
+import { translate } from '@admin/i18n'
 /**
  * Labels and grouping the merge review uses: how a change's kind and action
  * read, which filter a change belongs to, and short relative times.
@@ -10,12 +11,12 @@ export const REVIEW_FILTERS = ['all', 'pages', 'content', 'files', 'conflicts', 
 export type ReviewFilter = (typeof REVIEW_FILTERS)[number]
 
 export const FILTER_LABELS: Record<ReviewFilter, string> = {
-  all: 'All',
-  pages: 'Pages',
-  content: 'Content',
-  files: 'Files',
-  conflicts: 'Conflicts',
-  comments: 'With comments',
+  get all() { return translate('metadata.review.all') },
+  get pages() { return translate('metadata.review.pages') },
+  get content() { return translate('metadata.review.content') },
+  get files() { return translate('metadata.review.files') },
+  get conflicts() { return translate('metadata.review.conflicts') },
+  get comments() { return translate('metadata.review.withComments') },
 }
 
 /** Rows of these tables render as pages (before/after frames). */
@@ -32,7 +33,7 @@ export function changeKindLabel(change: MergeChange): string {
 }
 
 export const ACTION_TONE: Record<MergeChange['action'], TagPillTone> = { create: 'success', update: 'warning', delete: 'danger' }
-export const ACTION_WORD: Record<MergeChange['action'], string> = { create: 'new', update: 'changed', delete: 'removed' }
+export const ACTION_WORD: Record<MergeChange['action'], string> = { get create() { return translate('metadata.review.new') }, get update() { return translate('metadata.review.changed') }, get delete() { return translate('metadata.review.removed') } }
 
 export function matchesFilter(change: MergeChange, filter: ReviewFilter, commentCount: number): boolean {
   switch (filter) {
@@ -54,13 +55,13 @@ export function matchesFilter(change: MergeChange, filter: ReviewFilter, comment
 export function requestStatusLabel(status: MergeRequestStatus): string {
   switch (status) {
     case 'open':
-      return 'Awaiting review'
+      return translate('metadata.review.awaitingReview')
     case 'declined':
-      return 'Changes requested'
+      return translate('metadata.review.changesRequested')
     case 'merged':
-      return 'Merged'
+      return translate('metadata.review.merged')
     case 'withdrawn':
-      return 'Withdrawn'
+      return translate('metadata.review.withdrawn')
   }
 }
 

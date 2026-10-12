@@ -1,3 +1,5 @@
+import { useI18n } from '@admin/i18n'
+import { localizePresentationOptions, USER_STATUS_OPTIONS as STATUS_OPTIONS } from '@admin/shared/presentationCatalog'
 /**
  * Users → Users tab.
  *
@@ -55,10 +57,7 @@ interface UsersTabProps {
   canManageUsers: boolean
 }
 
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active', textValue: 'Active' },
-  { value: 'suspended', label: 'Suspended', textValue: 'Suspended' },
-] as const
+
 
 async function saveUser(
   dialogMode: UserDialogMode,
@@ -154,6 +153,8 @@ async function deleteUser(
 }
 
 export function UsersTab({ data, canManageUsers }: UsersTabProps) {
+  const { locale } = useI18n()
+  const statusOptions = localizePresentationOptions(STATUS_OPTIONS, locale)
   const { users, roles, defaultAssignableRoleId, setUsers, setError, refresh, error } = data
   const { runStepUp } = useStepUp()
   const [busy, setBusy] = useState(false)
@@ -400,7 +401,7 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
           mode={dialogMode}
           form={userForm}
           roleOptions={assignableRoleOptions}
-          statusOptions={[...STATUS_OPTIONS]}
+          statusOptions={statusOptions}
           busy={busy}
           error={error}
           onChange={setUserForm}

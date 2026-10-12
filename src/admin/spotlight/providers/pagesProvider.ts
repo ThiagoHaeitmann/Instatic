@@ -9,13 +9,15 @@
  * pages scope or typing in the root palette.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { SpotlightProvider, Command } from '../types'
 
 const MAX_RESULTS = 25
 
 export const pagesProvider: SpotlightProvider = {
   id: 'pages',
-  label: 'Pages',
+  get label() { return translate('metadata.spotlight.pages') },
   debounceMs: 0,
 
   search(query, _ctx, signal): Command[] {

@@ -9,6 +9,8 @@
  * their manifest.adminPages. Only enabled plugins' pages are surfaced.
  */
 
+import { translate } from '@admin/i18n'
+
 import type { SpotlightProvider, Command } from '../types'
 import { PluginsListResponseSchema } from './schemas'
 import { MAX_RESULTS, fetchOnAbortEmpty } from './serverProvider'
@@ -19,7 +21,7 @@ const ENDPOINT = '/admin/api/cms/plugins'
 
 export const pluginPagesProvider: SpotlightProvider = {
   id: 'pluginPages',
-  label: 'Plugin pages',
+  get label() { return translate('metadata.spotlight.pluginPages') },
   debounceMs: 150,
 
   async search(query, _ctx, signal): Promise<Command[]> {

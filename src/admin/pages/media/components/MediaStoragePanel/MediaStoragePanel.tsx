@@ -1,3 +1,5 @@
+import { translate, useI18n } from '@admin/i18n'
+import { MEDIA_ROLE_LABELS as ROLE_LABELS } from '@admin/shared/presentationCatalog'
 /**
  * MediaStoragePanel — Media sidebar panel for storage configuration.
  *
@@ -45,30 +47,19 @@ import styles from './MediaStoragePanel.module.css'
 import { getErrorMessage } from '@core/utils/errorMessage'
 
 const ROLE_HINTS: Record<MediaAssetRole, string> = {
-  original: 'Originals uploaded via the Media library and the editor.',
-  variant: 'Responsive WebP variants generated for every image.',
-  avatar: 'User profile photos from the Account page.',
-  font: 'Self-hosted webfont files installed via the Fonts panel.',
-  'plugin-pack': 'Plugin-shipped static assets (icons, frontend bundles).',
+  get original() { return translate('metadata.media.roleHints.original') },
+  get variant() { return translate('metadata.media.roleHints.variant') },
+  get avatar() { return translate('metadata.media.roleHints.avatar') },
+  get font() { return translate('metadata.media.roleHints.font') },
+  get 'plugin-pack'() { return translate('metadata.media.roleHints.pluginPack') },
 }
-
-const ROLE_LABELS: Record<MediaAssetRole, string> = {
-  original: 'Originals',
-  variant: 'Variants',
-  avatar: 'Avatars',
-  font: 'Fonts',
-  'plugin-pack': 'Plugin assets',
-}
-
-const LOCAL_DISK_LABEL = 'Local disk (built-in)'
-const LOCAL_DELEGATE_LABEL = 'Local sharp ladder (built-in)'
 
 function buildAdapterOptions(
   role: MediaAssetRole,
   adapters: ReadonlyArray<CmsMediaAdapterSummary>,
 ): Array<{ value: string; label: string }> {
   const opts: Array<{ value: string; label: string }> = [
-    { value: '', label: LOCAL_DISK_LABEL },
+    { value: '', label: translate('metadata.media.localDisk') },
   ]
   for (const adapter of adapters) {
     if (adapter.isBuiltIn) continue
@@ -320,6 +311,7 @@ function RoleSection({
   onMigrate: (role: MigrationRole) => void | Promise<void>
   onCancelMigration: () => void
 }) {
+  useI18n()
   const byRole = new Map<MediaAssetRole, CmsMediaElection>()
   for (const election of state.elections) byRole.set(election.role, election)
 
@@ -506,8 +498,9 @@ function DelegateSection({
   pendingDelegate: boolean
   onChange: (delegateId: string | null) => void | Promise<void>
 }) {
+  useI18n()
   const delegateOptions: Array<{ value: string; label: string }> = [
-    { value: '', label: LOCAL_DELEGATE_LABEL },
+    { value: '', label: translate('metadata.media.localDelegate') },
     ...state.delegates.map((d) => ({ value: d.id, label: d.id })),
   ]
   const elected = state.electedDelegate
