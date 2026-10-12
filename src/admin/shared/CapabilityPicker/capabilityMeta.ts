@@ -1,4 +1,5 @@
-import { translate } from '@admin/i18n'
+import { translate, type SupportedLocale } from '@admin/i18n'
+import { shellEnglishMessages, shellPortugueseMessages } from '../../i18n/shellMessages'
 /**
  * Capability presentation metadata — the human-readable label + description
  * rendered next to each capability checkbox so admins don't have to decode raw
@@ -11,6 +12,8 @@ import { translate } from '@admin/i18n'
 import type { CoreCapability } from '@core/capabilities'
 
 export interface CapabilityMeta {
+  labelKey: keyof typeof shellEnglishMessages
+  descriptionKey: keyof typeof shellEnglishMessages
   /** Human-readable label rendered next to the checkbox. */
   label: string
   /** Short, plain-language description of what this capability grants. */
@@ -19,179 +22,259 @@ export interface CapabilityMeta {
 
 export const CAPABILITY_META: Record<CoreCapability, CapabilityMeta> = {
   'dashboard.read': {
-    get label() { return translate('shell.copy.viewDashboard') },
-    get description() { return translate('shell.copy.openTheDashboardWorkspaceAndSeeActivityWidgets') },
+    labelKey: 'shell.copy.viewDashboard',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.openTheDashboardWorkspaceAndSeeActivityWidgets',
+    get description() { return translate(this.descriptionKey) },
   },
   'site.read': {
-    get label() { return translate('shell.copy.viewSite') },
-    get description() { return translate('shell.copy.openTheSiteWorkspaceViewPagesComponentsAndClasses') },
+    labelKey: 'shell.copy.viewSite',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.openTheSiteWorkspaceViewPagesComponentsAndClasses',
+    get description() { return translate(this.descriptionKey) },
   },
   'site.structure.edit': {
-    get label() { return translate('shell.copy.editSiteStructure') },
-    get description() { return translate('shell.copy.addRemoveMoveAndRenameNodesManagePagesComponentsAnd') },
+    labelKey: 'shell.copy.editSiteStructure',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.addRemoveMoveAndRenameNodesManagePagesComponentsAnd',
+    get description() { return translate(this.descriptionKey) },
   },
   'site.content.edit': {
-    get label() { return translate('shell.copy.editSiteContent') },
-    get description() { return translate('shell.copy.changeTextImagesAndLinksOnExistingNodesNoStructure') },
+    labelKey: 'shell.copy.editSiteContent',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.changeTextImagesAndLinksOnExistingNodesNoStructure',
+    get description() { return translate(this.descriptionKey) },
   },
   'site.style.edit': {
-    get label() { return translate('shell.copy.editSiteStyles') },
-    get description() { return translate('shell.copy.modifyCSSClassesStyleOverridesBreakpointsAndFrameworkTokens') },
+    labelKey: 'shell.copy.editSiteStyles',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.modifyCSSClassesStyleOverridesBreakpointsAndFrameworkTokens',
+    get description() { return translate(this.descriptionKey) },
   },
   'site.branches.create': {
-    get label() { return translate('shell.copy.createBranches') },
-    get description() { return translate('shell.copy.forkABranchAndRenameDeleteUpdateOrShareA') },
+    labelKey: 'shell.copy.createBranches',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.forkABranchAndRenameDeleteUpdateOrShareA',
+    get description() { return translate(this.descriptionKey) },
   },
   'site.branches.manage': {
-    get label() { return translate('shell.copy.manageBranches') },
-    get description() { return translate('shell.copy.actOnEveryBranchMergeBranchesIntoMainAndDecline') },
+    labelKey: 'shell.copy.manageBranches',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.actOnEveryBranchMergeBranchesIntoMainAndDecline',
+    get description() { return translate(this.descriptionKey) },
   },
   'pages.edit': {
-    get label() { return translate('shell.copy.editPages') },
-    get description() { return translate('shell.copy.editPageMetadataSuchAsTitleSlugAndSEOFields') },
+    labelKey: 'shell.copy.editPages',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.editPageMetadataSuchAsTitleSlugAndSEOFields',
+    get description() { return translate(this.descriptionKey) },
   },
   'pages.publish': {
-    get label() { return translate('shell.copy.publishPages') },
-    get description() { return translate('shell.copy.publishOrUnpublishPagesToTheLiveSite') },
+    labelKey: 'shell.copy.publishPages',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.publishOrUnpublishPagesToTheLiveSite',
+    get description() { return translate(this.descriptionKey) },
   },
   'content.create': {
-    get label() { return translate('shell.copy.createContent') },
-    get description() { return translate('shell.copy.createNewDraftPostsAndContentRows') },
+    labelKey: 'shell.copy.createContent',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.createNewDraftPostsAndContentRows',
+    get description() { return translate(this.descriptionKey) },
   },
   'content.edit.own': {
-    get label() { return translate('shell.copy.editOwnContent') },
-    get description() { return translate('shell.copy.editPostsAndRowsThatYouAuthored') },
+    labelKey: 'shell.copy.editOwnContent',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.editPostsAndRowsThatYouAuthored',
+    get description() { return translate(this.descriptionKey) },
   },
   'content.edit.any': {
-    get label() { return translate('shell.copy.editAnyContent') },
-    get description() { return translate('shell.copy.editPostsAndRowsAuthoredByAnyone') },
+    labelKey: 'shell.copy.editAnyContent',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.editPostsAndRowsAuthoredByAnyone',
+    get description() { return translate(this.descriptionKey) },
   },
   'content.publish.own': {
-    get label() { return translate('shell.copy.publishOwnContent') },
-    get description() { return translate('shell.copy.publishPostsAndRowsThatYouAuthored') },
+    labelKey: 'shell.copy.publishOwnContent',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.publishPostsAndRowsThatYouAuthored',
+    get description() { return translate(this.descriptionKey) },
   },
   'content.publish.any': {
-    get label() { return translate('shell.copy.publishAnyContent') },
-    get description() { return translate('shell.copy.publishPostsAndRowsAuthoredByAnyone') },
+    labelKey: 'shell.copy.publishAnyContent',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.publishPostsAndRowsAuthoredByAnyone',
+    get description() { return translate(this.descriptionKey) },
   },
   'content.manage': {
-    get label() { return translate('shell.copy.manageContent') },
-    get description() { return translate('shell.copy.fullAdminManageEveryContentRowRegardlessOfAuthor') },
+    labelKey: 'shell.copy.manageContent',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.fullAdminManageEveryContentRowRegardlessOfAuthor',
+    get description() { return translate(this.descriptionKey) },
   },
   // ---------------------------------------------------------------------
   // Media — granular split (read/write/replace/delete)
   // ---------------------------------------------------------------------
   'media.read': {
-    get label() { return translate('shell.copy.browseMediaLibrary') },
-    get description() { return translate('shell.copy.openTheMediaWorkspaceBrowseAssetsAndFoldersSeeThumbnails') },
+    labelKey: 'shell.copy.browseMediaLibrary',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.openTheMediaWorkspaceBrowseAssetsAndFoldersSeeThumbnails',
+    get description() { return translate(this.descriptionKey) },
   },
   'media.write': {
-    get label() { return translate('shell.copy.uploadAndEditMedia') },
-    get description() { return translate('shell.copy.uploadAssetsEditMetadataAltTextCaptionTagsManageFolders') },
+    labelKey: 'shell.copy.uploadAndEditMedia',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.uploadAssetsEditMetadataAltTextCaptionTagsManageFolders',
+    get description() { return translate(this.descriptionKey) },
   },
   'media.replace': {
-    get label() { return translate('shell.copy.replaceMediaBytes') },
-    get description() { return translate('shell.copy.overwriteTheBytesOfAnExistingAssetVariantsRegenerateUniquely') },
+    labelKey: 'shell.copy.replaceMediaBytes',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.overwriteTheBytesOfAnExistingAssetVariantsRegenerateUniquely',
+    get description() { return translate(this.descriptionKey) },
   },
   'media.delete': {
-    get label() { return translate('shell.copy.deleteMedia') },
-    get description() { return translate('shell.copy.softDeleteAssetsToTrashHardPurgeAlsoRequiresStep') },
+    labelKey: 'shell.copy.deleteMedia',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.softDeleteAssetsToTrashHardPurgeAlsoRequiresStep',
+    get description() { return translate(this.descriptionKey) },
   },
   // ---------------------------------------------------------------------
   // Runtime + storage — split from the old monolithic `runtime.manage`
   // ---------------------------------------------------------------------
   'runtime.dependencies': {
-    get label() { return translate('shell.copy.manageRuntimeDependencies') },
-    get description() { return translate('shell.copy.editTheSiteSPackageJsonDependenciesAndTriggerResolve') },
+    labelKey: 'shell.copy.manageRuntimeDependencies',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.editTheSiteSPackageJsonDependenciesAndTriggerResolve',
+    get description() { return translate(this.descriptionKey) },
   },
   'storage.elect': {
-    get label() { return translate('shell.copy.electStorageBackends') },
-    get description() { return translate('shell.copy.electTheMediaStorageAdapterPerAssetRoleOriginalsVariants') },
+    labelKey: 'shell.copy.electStorageBackends',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.electTheMediaStorageAdapterPerAssetRoleOriginalsVariants',
+    get description() { return translate(this.descriptionKey) },
   },
   'storage.migrate': {
-    get label() { return translate('shell.copy.migrateStorageBytes') },
-    get description() { return translate('shell.copy.runTheMigrationSSEThatMovesBytesBetweenStorageAdapters') },
+    labelKey: 'shell.copy.migrateStorageBytes',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.runTheMigrationSSEThatMovesBytesBetweenStorageAdapters',
+    get description() { return translate(this.descriptionKey) },
   },
   // ---------------------------------------------------------------------
   // Plugins — granular split (read/configure/install/lifecycle)
   // ---------------------------------------------------------------------
   'plugins.read': {
-    get label() { return translate('shell.copy.browseInstalledPlugins') },
-    get description() { return translate('shell.copy.seeTheInstalledPluginListMaskedSettingsSchedulesAndEvent') },
+    labelKey: 'shell.copy.browseInstalledPlugins',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.seeTheInstalledPluginListMaskedSettingsSchedulesAndEvent',
+    get description() { return translate(this.descriptionKey) },
   },
   'plugins.configure': {
-    get label() { return translate('shell.copy.configurePlugins') },
-    get description() { return translate('shell.copy.editPerPluginSettingsAndManagePluginOwnedRecords') },
+    labelKey: 'shell.copy.configurePlugins',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.editPerPluginSettingsAndManagePluginOwnedRecords',
+    get description() { return translate(this.descriptionKey) },
   },
   'plugins.install': {
-    get label() { return translate('shell.copy.installOrUninstallPlugins') },
-    get description() { return translate('shell.copy.installUpgradeAndUninstallPluginsRunsThirdPartyCodeOn') },
+    labelKey: 'shell.copy.installOrUninstallPlugins',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.installUpgradeAndUninstallPluginsRunsThirdPartyCodeOn',
+    get description() { return translate(this.descriptionKey) },
   },
   'plugins.lifecycle': {
-    get label() { return translate('shell.copy.pluginLifecycleControl') },
-    get description() { return translate('shell.copy.enableDisableRestartPluginsPauseResumeRunNowTheirSchedules') },
+    labelKey: 'shell.copy.pluginLifecycleControl',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.enableDisableRestartPluginsPauseResumeRunNowTheirSchedules',
+    get description() { return translate(this.descriptionKey) },
   },
   'users.manage': {
-    get label() { return translate('shell.copy.manageUsers') },
-    get description() { return translate('shell.copy.createEditDeleteAndSuspendUsersAssignRoles') },
+    labelKey: 'shell.copy.manageUsers',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.createEditDeleteAndSuspendUsersAssignRoles',
+    get description() { return translate(this.descriptionKey) },
   },
   'roles.manage': {
-    get label() { return translate('shell.copy.manageRoles') },
-    get description() { return translate('shell.copy.ownerAccountOnlyCreateEditAndDeleteRolesAssignCapabilities') },
+    labelKey: 'shell.copy.manageRoles',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.ownerAccountOnlyCreateEditAndDeleteRolesAssignCapabilities',
+    get description() { return translate(this.descriptionKey) },
   },
   'audit.read': {
-    get label() { return translate('shell.copy.readAuditLog') },
-    get description() { return translate('shell.copy.viewTheAuditLogAndTheDashboardActivityWidget') },
+    labelKey: 'shell.copy.readAuditLog',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.viewTheAuditLogAndTheDashboardActivityWidget',
+    get description() { return translate(this.descriptionKey) },
   },
   // ---------------------------------------------------------------------
   // Data workspace — split from `content.manage`
   // ---------------------------------------------------------------------
   'data.custom.tables.read': {
-    get label() { return translate('shell.copy.browseCustomTables') },
-    get description() { return translate('shell.copy.openTheDataWorkspaceBrowseUserCreatedCustomTablesAnd') },
+    labelKey: 'shell.copy.browseCustomTables',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.openTheDataWorkspaceBrowseUserCreatedCustomTablesAnd',
+    get description() { return translate(this.descriptionKey) },
   },
   'data.custom.tables.manage': {
-    get label() { return translate('shell.copy.manageCustomTables') },
-    get description() { return translate('shell.copy.createRenameAndDeleteCustomTablesAddEditRemoveTheir') },
+    labelKey: 'shell.copy.manageCustomTables',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.createRenameAndDeleteCustomTablesAddEditRemoveTheir',
+    get description() { return translate(this.descriptionKey) },
   },
   'data.system.tables.read': {
-    get label() { return translate('shell.copy.browseSystemTables') },
-    get description() { return translate('shell.copy.seeAndOpenTheFourBuiltInSystemTablesPosts') },
+    labelKey: 'shell.copy.browseSystemTables',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.seeAndOpenTheFourBuiltInSystemTablesPosts',
+    get description() { return translate(this.descriptionKey) },
   },
   'data.system.tables.manage': {
-    get label() { return translate('shell.copy.manageSystemTableCustomFields') },
-    get description() { return translate('shell.copy.onSystemTablesAddEditRemoveCustomFieldsAndChoose') },
+    labelKey: 'shell.copy.manageSystemTableCustomFields',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.onSystemTablesAddEditRemoveCustomFieldsAndChoose',
+    get description() { return translate(this.descriptionKey) },
   },
   'data.rows.move': {
-    get label() { return translate('shell.copy.moveRowsBetweenTables') },
-    get description() { return translate('shell.copy.moveARowFromOneTableToAnotherChangesPublic') },
+    labelKey: 'shell.copy.moveRowsBetweenTables',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.moveARowFromOneTableToAnotherChangesPublic',
+    get description() { return translate(this.descriptionKey) },
   },
   'data.export': {
-    get label() { return translate('shell.copy.exportDataBundles') },
-    get description() { return translate('shell.copy.downloadAJSONBundleOfTablesRowsPlusOptionalMedia') },
+    labelKey: 'shell.copy.exportDataBundles',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.downloadAJSONBundleOfTablesRowsPlusOptionalMedia',
+    get description() { return translate(this.descriptionKey) },
   },
   'data.import': {
-    get label() { return translate('shell.copy.importDataBundles') },
-    get description() { return translate('shell.copy.uploadAJSONBundleToMergeOrReplaceLocalData') },
+    labelKey: 'shell.copy.importDataBundles',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.uploadAJSONBundleToMergeOrReplaceLocalData',
+    get description() { return translate(this.descriptionKey) },
   },
   // ---------------------------------------------------------------------
   // AI runtime — split `ai.use` into chat vs write-tools
   // ---------------------------------------------------------------------
   'ai.chat': {
-    get label() { return translate('shell.copy.useAIChat') },
-    get description() { return translate('shell.copy.openAIConversationsAndUseReadOnlyToolsSnapshotSearch') },
+    labelKey: 'shell.copy.useAIChat',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.openAIConversationsAndUseReadOnlyToolsSnapshotSearch',
+    get description() { return translate(this.descriptionKey) },
   },
   'ai.tools.write': {
-    get label() { return translate('shell.copy.allowAIWriteTools') },
-    get description() { return translate('shell.copy.letsAIConversationsMutateTheEditorStoreInsertNodesEdit') },
+    labelKey: 'shell.copy.allowAIWriteTools',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.letsAIConversationsMutateTheEditorStoreInsertNodesEdit',
+    get description() { return translate(this.descriptionKey) },
   },
   'ai.providers.manage': {
-    get label() { return translate('shell.copy.manageAIProviders') },
-    get description() { return translate('shell.copy.configureAIProvidersCredentialsAndPerScopeDefaults') },
+    labelKey: 'shell.copy.manageAIProviders',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.configureAIProvidersCredentialsAndPerScopeDefaults',
+    get description() { return translate(this.descriptionKey) },
   },
   'ai.audit.read': {
-    get label() { return translate('shell.copy.readAIAuditLog') },
-    get description() { return translate('shell.copy.viewSiteWideAIUsageCostAndErrorEventsAcross') },
+    labelKey: 'shell.copy.readAIAuditLog',
+    get label() { return translate(this.labelKey) },
+    descriptionKey: 'shell.copy.viewSiteWideAIUsageCostAndErrorEventsAcross',
+    get description() { return translate(this.descriptionKey) },
   },
 }
 
@@ -202,4 +285,12 @@ export const CAPABILITY_META: Record<CoreCapability, CapabilityMeta> = {
  */
 export function capabilityLabel(capability: string): string {
   return (CAPABILITY_META as Record<string, CapabilityMeta>)[capability]?.label ?? capability
+}
+
+/** Snapshot existing metadata with an explicit locale input for compiler caches. */
+export function localizeCapabilityMetadata(capability: string, locale: SupportedLocale): { label: string; description: string | null } {
+  const meta = (CAPABILITY_META as Partial<Record<string, CapabilityMeta>>)[capability]
+  if (!meta) return { label: capability, description: null }
+  const messages = locale === 'pt-BR' ? shellPortugueseMessages : shellEnglishMessages
+  return { label: messages[meta.labelKey], description: messages[meta.descriptionKey] }
 }

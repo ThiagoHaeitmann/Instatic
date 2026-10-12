@@ -1,3 +1,5 @@
+import { renderFeedback } from '@admin/shared/accountUsersFeedback'
+import { useI18n } from '@admin/i18n'
 /**
  * UsersPage — `/admin/users`.
  *
@@ -26,6 +28,7 @@ import type { Tab as UsersPageTab, UsersPageLoadAccess } from './types'
 import styles from './UsersPage.module.css'
 
 export function UsersPage() {
+  const { t, locale } = useI18n()
   const currentUser = useCurrentAdminUser()
   const unrestricted = !currentUser
   const canManageUsers = unrestricted || hasCapability(currentUser, 'users.manage')
@@ -69,10 +72,10 @@ export function UsersPage() {
   }, [])
 
   const tabs = (
-    <TabList ariaLabel="Users sections">
+    <TabList ariaLabel={t('accountUsers.copy.usersSections')}>
       {availableTabs.map((item) => (
         <Tab key={item} value={item}>
-          <span>{tabLabel(item)}</span>
+          <span>{tabLabel(item, t)}</span>
         </Tab>
       ))}
     </TabList>
@@ -82,16 +85,16 @@ export function UsersPage() {
     <Tabs value={activeTab} onChange={setTab}>
       <AdminPageLayout
         workspace="users"
-        title="Users"
+        title={t('accountUsers.copy.users')}
         titleId="users-title"
-        description="Manage admin access, custom roles, and security audit events."
+        description={t('accountUsers.copy.manageAdminAccessCustomRolesAndSecurityAuditEvents')}
         tabs={tabs}
       >
         {/* No `loading` on the layout — the tabs below own their own
             skeleton states, each matching their real (DataTable) layout
             1:1 so the column ladder stays put when the data arrives. */}
         <div className={styles.body}>
-          {data.error && <p className={styles.error} role="alert">{data.error}</p>}
+          {data.error && <p className={styles.error} role="alert">{renderFeedback(data.error, locale, t)}</p>}
 
           <TabPanel value="users"><UsersTab data={data} canManageUsers={canManageUsers} /></TabPanel>
           <TabPanel value="roles"><RolesTab data={data} canManageRoles={canManageRoles} /></TabPanel>

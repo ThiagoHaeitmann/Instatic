@@ -1,3 +1,4 @@
+import { translate, getLocale, type SupportedLocale } from '@admin/i18n'
 /**
  * Audit-event labelling helpers.
  *
@@ -20,29 +21,29 @@ function capitalize(value: string): string {
   return value ? `${value[0]?.toUpperCase()}${value.slice(1)}` : value
 }
 
-function humanizeActionId(action: string): string {
+function humanizeActionId(action: string, t: typeof translate): string {
   const words = action.split('.').filter(Boolean)
-  if (words.length === 0) return 'Unknown activity'
+  if (words.length === 0) return t('accountUsers.copy.unknownActivity')
   return capitalize(words.join(' '))
 }
 
-function dataTableLabel(event: CmsAuditEvent): string {
+function dataTableLabel(event: CmsAuditEvent, t: typeof translate): string {
   return metadataString(event.metadata, 'name')
     ?? metadataString(event.metadata, 'slug')
     ?? event.targetId
-    ?? 'unknown table'
+    ?? t('accountUsers.copy.unknownTable')
 }
 
-function dataRowLabel(event: CmsAuditEvent): string {
-  return metadataString(event.metadata, 'slug') ?? event.targetId ?? 'unknown row'
+function dataRowLabel(event: CmsAuditEvent, t: typeof translate): string {
+  return metadataString(event.metadata, 'slug') ?? event.targetId ?? t('accountUsers.copy.unknownRow')
 }
 
-function aiCredentialLabel(event: CmsAuditEvent): string {
-  return metadataString(event.metadata, 'displayLabel') ?? event.targetId ?? 'AI credential'
+function aiCredentialLabel(event: CmsAuditEvent, t: typeof translate): string {
+  return metadataString(event.metadata, 'displayLabel') ?? event.targetId ?? t('accountUsers.copy.aICredential')
 }
 
-function aiScopeLabel(event: CmsAuditEvent): string {
-  return metadataString(event.metadata, 'scope') ?? event.targetId ?? 'scope'
+function aiScopeLabel(event: CmsAuditEvent, t: typeof translate): string {
+  return metadataString(event.metadata, 'scope') ?? event.targetId ?? t('accountUsers.copy.scope')
 }
 
 function auditUserLabel(
@@ -55,13 +56,13 @@ function auditUserLabel(
   return user ? displayUserName(user) : fallback ?? userId
 }
 
-export function auditActor(event: CmsAuditEvent, usersById: Map<string, CmsCurrentUser>): string {
-  if (!event.actorUserId) return 'by system'
-  return `by ${auditUserLabel(event.actorUserId, usersById, event.actorLabel)}`
+export function auditActor(event: CmsAuditEvent, usersById: Map<string, CmsCurrentUser>, t: typeof translate = translate): string {
+  if (!event.actorUserId) return t('accountUsers.copy.bySystem')
+  return t('accountUsers.audit.actor', { name: auditUserLabel(event.actorUserId, usersById, event.actorLabel) ?? t('accountUsers.copy.unknownUser') })
 }
 
-function auditTargetUser(event: CmsAuditEvent, usersById: Map<string, CmsCurrentUser>): string {
-  return auditUserLabel(event.targetId, usersById, event.targetLabel) ?? 'Unknown user'
+function auditTargetUser(event: CmsAuditEvent, usersById: Map<string, CmsCurrentUser>, t: typeof translate): string {
+  return auditUserLabel(event.targetId, usersById, event.targetLabel) ?? t('accountUsers.copy.unknownUser')
 }
 
 function roleName(
@@ -86,120 +87,121 @@ export function auditTitle(
   event: CmsAuditEvent,
   usersById: Map<string, CmsCurrentUser>,
   rolesById: Map<string, CmsRole>,
+  t: typeof translate = translate,
 ): string {
-  const targetUser = auditTargetUser(event, usersById)
+  const targetUser = auditTargetUser(event, usersById, t)
   const role = auditTargetRole(event, rolesById)
   const email = metadataString(event.metadata, 'email')
-  const pluginId = metadataString(event.metadata, 'pluginId') ?? event.targetId ?? 'Plugin'
-  const dataTable = dataTableLabel(event)
-  const dataRow = dataRowLabel(event)
-  const aiCredential = aiCredentialLabel(event)
-  const aiScope = aiScopeLabel(event)
+  const pluginId = metadataString(event.metadata, 'pluginId') ?? event.targetId ?? t('accountUsers.copy.plugin')
+  const dataTable = dataTableLabel(event, t)
+  const dataRow = dataRowLabel(event, t)
+  const aiCredential = aiCredentialLabel(event, t)
+  const aiScope = aiScopeLabel(event, t)
 
   switch (event.action) {
     case 'login.success':
-      return `${event.actorUserId ? auditUserLabel(event.actorUserId, usersById, event.actorLabel) : email ?? 'User'} logged in`
+      return t('accountUsers.audit.action.login.success', { name: event.actorUserId ? auditUserLabel(event.actorUserId, usersById, event.actorLabel) ?? t('accountUsers.copy.user') : email ?? t('accountUsers.copy.user') })
     case 'login.failure':
-      return `Failed login for ${email ?? targetUser}`
+      return t('accountUsers.audit.action.login.failure', { name: email ?? targetUser })
     case 'login.locked':
-      return `${targetUser} was locked`
+      return t('accountUsers.audit.action.login.locked', { name: targetUser })
     case 'login.unlocked':
-      return `${targetUser} was unlocked`
+      return t('accountUsers.audit.action.login.unlocked', { name: targetUser })
     case 'login.rate_limited':
-      return email ? `Login rate limit hit for ${email}` : 'Login rate limit hit'
+      return email ? t('accountUsers.audit.action.login.rate_limited.email', { name: email }) : t('accountUsers.audit.action.login.rate_limited')
     case 'logout':
-      return `${event.actorUserId ? auditUserLabel(event.actorUserId, usersById, event.actorLabel) : 'User'} logged out`
+      return t('accountUsers.audit.action.logout', { name: event.actorUserId ? auditUserLabel(event.actorUserId, usersById, event.actorLabel) ?? t('accountUsers.copy.user') : t('accountUsers.copy.user') })
     case 'user.create':
-      return `${targetUser} was created`
+      return t('accountUsers.audit.action.user.create', { name: targetUser })
     case 'user.update':
-      return `${targetUser} was updated`
+      return t('accountUsers.audit.action.user.update', { name: targetUser })
     case 'user.delete':
-      return `${targetUser} was deleted`
+      return t('accountUsers.audit.action.user.delete', { name: targetUser })
     case 'user.suspend':
-      return `${targetUser} was suspended`
+      return t('accountUsers.audit.action.user.suspend', { name: targetUser })
     case 'password.change':
-      return `Password changed for ${targetUser}`
+      return t('accountUsers.audit.action.password.change', { name: targetUser })
     case 'role.create':
-      return `${role ?? 'Role'} was created`
+      return t('accountUsers.audit.action.role.create', { name: role ?? t('accountUsers.copy.role') })
     case 'role.update':
-      return `${role ?? 'Role'} was updated`
+      return t('accountUsers.audit.action.role.update', { name: role ?? t('accountUsers.copy.role') })
     case 'role.delete':
-      return `${role ?? event.targetId ?? 'Role'} was deleted`
+      return t('accountUsers.audit.action.role.delete', { name: role ?? event.targetId ?? t('accountUsers.copy.role') })
     case 'role.assign':
-      return `${targetUser} role changed`
+      return t('accountUsers.audit.action.role.assign', { name: targetUser })
     case 'data.table.create':
-      return `Data table ${dataTable} was created`
+      return t('accountUsers.audit.action.data.table.create', { name: dataTable })
     case 'data.table.update':
-      return `Data table ${dataTable} was updated`
+      return t('accountUsers.audit.action.data.table.update', { name: dataTable })
     case 'data.table.delete':
-      return `Data table ${dataTable} was deleted`
+      return t('accountUsers.audit.action.data.table.delete', { name: dataTable })
     case 'data.row.create':
-      return `Data row ${dataRow} was created`
+      return t('accountUsers.audit.action.data.row.create', { name: dataRow })
     case 'data.row.update':
-      return `Data row ${dataRow} was updated`
+      return t('accountUsers.audit.action.data.row.update', { name: dataRow })
     case 'data.row.delete':
-      return `Data row ${dataRow} was deleted`
+      return t('accountUsers.audit.action.data.row.delete', { name: dataRow })
     case 'data.row.publish':
-      return `Data row ${dataRow} was published`
+      return t('accountUsers.audit.action.data.row.publish', { name: dataRow })
     case 'data.row.schedule':
-      return `Data row ${dataRow} was scheduled`
+      return t('accountUsers.audit.action.data.row.schedule', { name: dataRow })
     case 'data.row.schedule.cancel':
-      return `Data row ${dataRow} schedule was canceled`
+      return t('accountUsers.audit.action.data.row.schedule.cancel', { name: dataRow })
     case 'data.row.status':
-      return `Data row ${dataRow} status changed`
+      return t('accountUsers.audit.action.data.row.status', { name: dataRow })
     case 'data.row.move':
-      return `Data row ${dataRow} was moved`
+      return t('accountUsers.audit.action.data.row.move', { name: dataRow })
     case 'data.author.assign':
-      return `Data row ${dataRow} author changed`
+      return t('accountUsers.audit.action.data.author.assign', { name: dataRow })
     case 'publish':
-      return 'Site was published'
+      return t('accountUsers.audit.action.publish')
     case 'plugin.install':
-      return `${pluginId} was installed`
+      return t('accountUsers.audit.action.plugin.install', { name: pluginId })
     case 'plugin.update':
-      return `${pluginId} was updated`
+      return t('accountUsers.audit.action.plugin.update', { name: pluginId })
     case 'plugin.enable':
-      return `${pluginId} was enabled`
+      return t('accountUsers.audit.action.plugin.enable', { name: pluginId })
     case 'plugin.disable':
-      return `${pluginId} was disabled`
+      return t('accountUsers.audit.action.plugin.disable', { name: pluginId })
     case 'plugin.delete':
-      return `${pluginId} was deleted`
+      return t('accountUsers.audit.action.plugin.delete', { name: pluginId })
     case 'plugin.pack.install':
-      return `${pluginId} pack was installed`
+      return t('accountUsers.audit.action.plugin.pack.install', { name: pluginId })
     case 'plugin.settings.update':
-      return `${pluginId} settings were updated`
+      return t('accountUsers.audit.action.plugin.settings.update', { name: pluginId })
     case 'ai.credential.created':
-      return `AI credential ${aiCredential} was created`
+      return t('accountUsers.audit.action.ai.credential.created', { name: aiCredential })
     case 'ai.credential.updated':
-      return `AI credential ${aiCredential} was updated`
+      return t('accountUsers.audit.action.ai.credential.updated', { name: aiCredential })
     case 'ai.credential.deleted':
-      return `AI credential ${aiCredential} was deleted`
+      return t('accountUsers.audit.action.ai.credential.deleted', { name: aiCredential })
     case 'ai.credential.tested':
-      return `AI credential ${aiCredential} was tested`
+      return t('accountUsers.audit.action.ai.credential.tested', { name: aiCredential })
     case 'ai.default.updated':
-      return `AI default for ${aiScope} was updated`
+      return t('accountUsers.audit.action.ai.default.updated', { name: aiScope })
     case 'ai.default.cleared':
-      return `AI default for ${aiScope} was cleared`
+      return t('accountUsers.audit.action.ai.default.cleared', { name: aiScope })
     case 'ai.chat.started':
-      return `AI chat in ${aiScope} started`
+      return t('accountUsers.audit.action.ai.chat.started', { name: aiScope })
     case 'ai.chat.completed':
-      return `AI chat in ${aiScope} completed`
+      return t('accountUsers.audit.action.ai.chat.completed', { name: aiScope })
     case 'ai.chat.failed':
-      return `AI chat in ${aiScope} failed`
+      return t('accountUsers.audit.action.ai.chat.failed', { name: aiScope })
     case 'ai.mcp_connector.created':
-      return `MCP connector was created`
+      return t('accountUsers.audit.action.ai.mcp_connector.created')
     case 'ai.mcp_connector.revoked':
-      return `MCP connector was revoked`
+      return t('accountUsers.audit.action.ai.mcp_connector.revoked')
     default:
-      return humanizeActionId(event.action)
+      return humanizeActionId(event.action, t)
   }
 }
 
-export function auditDetails(event: CmsAuditEvent, rolesById: Map<string, CmsRole>): string[] {
+export function auditDetails(event: CmsAuditEvent, rolesById: Map<string, CmsRole>, locale: SupportedLocale = getLocale(), t: typeof translate = translate): string[] {
   const details: string[] = []
   const roleId = metadataString(event.metadata, 'roleId')
   const status = metadataString(event.metadata, 'status')
-  if (roleId) details.push(`Role: ${roleName(roleId, rolesById, event.metadataLabels.roleId)}`)
-  if (status) details.push(`Status: ${statusLabel(status as CmsCurrentUser['status'])}`)
-  if (event.ipAddress && event.ipAddress !== 'unknown') details.push(`IP: ${event.ipAddress}`)
+  if (roleId) details.push(t('accountUsers.audit.role', { name: roleName(roleId, rolesById, event.metadataLabels.roleId) ?? roleId }))
+  if (status) details.push(t('accountUsers.audit.status', { status: status === 'active' || status === 'suspended' ? statusLabel(status, locale) : status }))
+  if (event.ipAddress && event.ipAddress !== 'unknown') details.push(t('accountUsers.audit.ip', { ip: event.ipAddress }))
   return details
 }

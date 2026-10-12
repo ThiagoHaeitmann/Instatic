@@ -1,3 +1,4 @@
+import { translate } from '@admin/i18n'
 /**
  * Role-edit capability groupings.
  *
@@ -15,10 +16,10 @@
 import type { CoreCapability } from '@core/capabilities'
 import type { CapabilityGroup } from '../types'
 
-export const CAPABILITY_GROUPS: CapabilityGroup[] = [
-  { title: 'Dashboard', capabilities: ['dashboard.read'] },
+export const CAPABILITY_GROUPS = [
+  { titleKey: 'accountUsers.groups.dashboard', get title() { return translate(this.titleKey) }, capabilities: ['dashboard.read'] },
   {
-    title: 'Site',
+    titleKey: 'accountUsers.groups.site', get title() { return translate(this.titleKey) },
     capabilities: [
       'site.read',
       'site.structure.edit',
@@ -28,9 +29,9 @@ export const CAPABILITY_GROUPS: CapabilityGroup[] = [
       'site.branches.manage',
     ],
   },
-  { title: 'Pages', capabilities: ['pages.edit', 'pages.publish'] },
+  { titleKey: 'accountUsers.groups.pages', get title() { return translate(this.titleKey) }, capabilities: ['pages.edit', 'pages.publish'] },
   {
-    title: 'Content',
+    titleKey: 'accountUsers.groups.content', get title() { return translate(this.titleKey) },
     capabilities: [
       'content.create',
       'content.edit.own',
@@ -41,7 +42,7 @@ export const CAPABILITY_GROUPS: CapabilityGroup[] = [
     ],
   },
   {
-    title: 'Data',
+    titleKey: 'accountUsers.groups.data', get title() { return translate(this.titleKey) },
     capabilities: [
       'data.custom.tables.read',
       'data.custom.tables.manage',
@@ -53,24 +54,24 @@ export const CAPABILITY_GROUPS: CapabilityGroup[] = [
     ],
   },
   {
-    title: 'Media',
+    titleKey: 'accountUsers.groups.media', get title() { return translate(this.titleKey) },
     capabilities: ['media.read', 'media.write', 'media.replace', 'media.delete'],
   },
   {
-    title: 'Runtime & storage',
+    titleKey: 'accountUsers.groups.runtimeStorage', get title() { return translate(this.titleKey) },
     capabilities: ['runtime.dependencies', 'storage.elect', 'storage.migrate'],
   },
   {
-    title: 'Plugins',
+    titleKey: 'accountUsers.groups.plugins', get title() { return translate(this.titleKey) },
     capabilities: ['plugins.read', 'plugins.configure', 'plugins.install', 'plugins.lifecycle'],
   },
   {
-    title: 'AI',
+    titleKey: 'accountUsers.groups.ai', get title() { return translate(this.titleKey) },
     capabilities: ['ai.chat', 'ai.tools.write', 'ai.providers.manage', 'ai.audit.read'],
   },
-  { title: 'Users & Roles', capabilities: ['users.manage', 'roles.manage'] },
-  { title: 'Audit', capabilities: ['audit.read'] },
-]
+  { titleKey: 'accountUsers.groups.usersRoles', get title() { return translate(this.titleKey) }, capabilities: ['users.manage', 'roles.manage'] },
+  { titleKey: 'accountUsers.groups.audit', get title() { return translate(this.titleKey) }, capabilities: ['audit.read'] },
+] satisfies CapabilityGroup[]
 
 /**
  * Flat list of every capability rendered by the role-edit dialog, in the
@@ -80,3 +81,7 @@ export const CAPABILITY_GROUPS: CapabilityGroup[] = [
 export const ALL_PICKER_CAPABILITIES: readonly CoreCapability[] = CAPABILITY_GROUPS.flatMap(
   (group) => group.capabilities,
 )
+
+export function localizeRoleCapabilityGroups(t: typeof translate) {
+  return CAPABILITY_GROUPS.map((group) => ({ id: group.titleKey, title: t(group.titleKey), capabilities: group.capabilities }))
+}

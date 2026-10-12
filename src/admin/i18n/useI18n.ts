@@ -13,6 +13,7 @@ export function useI18n() {
   return {
     locale,
     setLocale,
-    t: (key: TranslationKey, values?: MessageValues) => translate(key, values),
+    // The compiler must see locale in this closure, not just an ambient runtime read.
+    t: (key: TranslationKey, values?: MessageValues) => translate(key, values, locale),
   }
 }

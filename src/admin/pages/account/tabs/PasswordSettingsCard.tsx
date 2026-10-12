@@ -1,3 +1,5 @@
+import { reportFeedbackError, feedback, renderFeedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { useI18n } from '@admin/i18n'
 import { useId, useState, type FormEvent } from 'react'
 import type { CmsCurrentUser } from '@core/persistence'
 import { changeCurrentUserPassword } from '@core/persistence'
@@ -8,7 +10,6 @@ import { SecurityCard } from './SecurityCard'
 import { isStepUpCancelled } from './securityErrors'
 import { formatDateTime } from './securityFormat'
 import styles from '../AccountPage.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 interface PasswordSettingsCardProps {
   user: CmsCurrentUser
@@ -16,8 +17,27 @@ interface PasswordSettingsCardProps {
   runStepUp: <T>(fn: () => Promise<T>) => Promise<T>
   setSessionUser: (user: CmsCurrentUser) => void
   setBusy: (v: string | null) => void
-  setError: (v: string | null) => void
-  setStatus: (v: string | null) => void
+  setStatus: (v: AccountUsersFeedback | null) => void
+}
+
+async function updatePassword(
+  newPassword: string,
+  { runStepUp, setSessionUser, setBusy, setStatus }: PasswordSettingsCardProps,
+  resetDialog: () => void,
+): Promise<void> {
+  setBusy('password')
+  try {
+    const updated = await runStepUp(() => changeCurrentUserPassword({ newPassword }))
+    setSessionUser(updated)
+    resetDialog()
+    setStatus(feedback('accountUsers.copy.passwordUpdatedOtherDevicesWereSignedOut'))
+  } catch (err) {
+    if (!isStepUpCancelled(err)) {
+      reportFeedbackError(err, 'accountUsers.copy.couldNotUpdatePassword')
+    }
+  } finally {
+    setBusy(null)
+  }
 }
 
 export function PasswordSettingsCard({
@@ -26,21 +46,21 @@ export function PasswordSettingsCard({
   runStepUp,
   setSessionUser,
   setBusy,
-  setError,
   setStatus,
 }: PasswordSettingsCardProps) {
+  const { t, locale } = useI18n()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordError, setPasswordError] = useState<AccountUsersFeedback | null>(null)
   const newPasswordId = useId()
   const confirmPasswordId = useId()
 
   const passwordStatus = user.passwordUpdatedAt
-    ? `Last changed: ${formatDateTime(user.passwordUpdatedAt)}`
+    ? t('accountUsers.password.lastChanged', { date: formatDateTime(user.passwordUpdatedAt, locale) })
     : user.lastLoginAt
-      ? `Last login: ${formatDateTime(user.lastLoginAt)}`
-      : 'Password has not been used yet.'
+      ? t('accountUsers.password.lastLogin', { date: formatDateTime(user.lastLoginAt, locale) })
+      : t('accountUsers.copy.passwordHasNotBeenUsedYet')
 
   function resetDialog(): void {
     setDialogOpen(false)
@@ -53,38 +73,25 @@ export function PasswordSettingsCard({
     event.preventDefault()
     if (busy) return
     setPasswordError(null)
-    setError(null)
     setStatus(null)
     if (newPassword.length < 12) {
-      setPasswordError('Password must be at least 12 characters.')
+      setPasswordError(feedback('accountUsers.copy.passwordMustBeAtLeast12Characters'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match.')
+      setPasswordError(feedback('accountUsers.copy.passwordsDoNotMatch'))
       return
     }
 
-    setBusy('password')
-    try {
-      const updated = await runStepUp(() => changeCurrentUserPassword({ newPassword }))
-      setSessionUser(updated)
-      resetDialog()
-      setStatus('Password updated. Other devices were signed out.')
-    } catch (err) {
-      if (!isStepUpCancelled(err)) {
-        setPasswordError(getErrorMessage(err, 'Could not update password.'))
-      }
-    } finally {
-      setBusy(null)
-    }
+    await updatePassword(newPassword, { user, busy, runStepUp, setSessionUser, setBusy, setStatus }, resetDialog)
   }
 
   return (
     <>
       <SecurityCard
         testId="security-password-card"
-        title="Password"
-        description="Change your password. Other devices are signed out after a successful update."
+        title={t('accountUsers.copy.password')}
+        description={t('accountUsers.copy.changeYourPasswordOtherDevicesAreSignedOutAfterASuccessfulUpdate')}
         status={passwordStatus}
         action={
           <Button
@@ -95,7 +102,7 @@ export function PasswordSettingsCard({
             onClick={() => setDialogOpen(true)}
             data-testid="security-change-password"
           >
-            <span>Change password</span>
+            <span>{t('accountUsers.copy.changePassword')}</span>
           </Button>
         }
       />
@@ -103,12 +110,12 @@ export function PasswordSettingsCard({
       <Dialog
         open={dialogOpen}
         onClose={resetDialog}
-        title="Change password"
+        title={t('accountUsers.copy.changePassword')}
         size="md"
         footer={
           <>
             <Button type="button" variant="secondary" size="sm" disabled={busy === 'password'} onClick={resetDialog}>
-              <span>Cancel</span>
+              <span>{t('accountUsers.copy.cancel')}</span>
             </Button>
             <Button
               type="submit"
@@ -118,14 +125,14 @@ export function PasswordSettingsCard({
               disabled={busy === 'password'}
               data-testid="security-password-submit"
             >
-              <span>{busy === 'password' ? 'Saving...' : 'Save password'}</span>
+              <span>{busy === 'password' ? t('accountUsers.copy.savingAlternate') : t('accountUsers.copy.savePassword')}</span>
             </Button>
           </>
         }
       >
         <form id="security-password-form" className={styles.dialogFields} onSubmit={(event) => void handleSubmit(event)}>
           <div className={styles.dialogField}>
-            <label htmlFor={newPasswordId} className={styles.dialogLabel}>New password</label>
+            <label htmlFor={newPasswordId} className={styles.dialogLabel}>{t('accountUsers.copy.newPassword')}</label>
             <Input
               id={newPasswordId}
               type="password"
@@ -136,7 +143,7 @@ export function PasswordSettingsCard({
             />
           </div>
           <div className={styles.dialogField}>
-            <label htmlFor={confirmPasswordId} className={styles.dialogLabel}>Confirm new password</label>
+            <label htmlFor={confirmPasswordId} className={styles.dialogLabel}>{t('accountUsers.copy.confirmNewPassword')}</label>
             <Input
               id={confirmPasswordId}
               type="password"
@@ -146,7 +153,7 @@ export function PasswordSettingsCard({
               data-testid="security-password-confirm"
             />
           </div>
-          {passwordError && <p className={styles.error} role="alert">{passwordError}</p>}
+          {passwordError && <p className={styles.error} role="alert">{renderFeedback(passwordError, locale, t)}</p>}
         </form>
       </Dialog>
     </>

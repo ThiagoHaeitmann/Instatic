@@ -1,3 +1,5 @@
+import { renderFeedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { useI18n } from '@admin/i18n'
 /**
  * RoleDialog — create / edit / view modal for CMS roles.
  *
@@ -20,13 +22,13 @@ import { OWNER_ONLY_CAPABILITIES, type CoreCapability } from '@core/capabilities
 import dialogStyles from '../../../shared/dialogs/SiteCreateDialog/SiteCreateDialog.module.css'
 import styles from '../UsersPage.module.css'
 import type { RoleDialogMode, RoleFormState } from '../types'
-import { CAPABILITY_GROUPS } from '../utils/capabilities'
+import { localizeRoleCapabilityGroups } from '../utils/capabilities'
 
 interface RoleDialogProps {
   mode: RoleDialogMode
   form: RoleFormState
   busy: boolean
-  error: string | null
+  error: AccountUsersFeedback | null
   onChange: (form: RoleFormState) => void
   onClose: () => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
@@ -44,7 +46,8 @@ export function RoleDialog({
   onClose,
   onSubmit,
 }: RoleDialogProps) {
-  const title = mode === 'create' ? 'Create Role' : mode === 'edit' ? 'Edit Role' : 'View Role'
+  const { t, locale } = useI18n()
+  const title = mode === 'create' ? t('accountUsers.copy.createRole') : mode === 'edit' ? t('accountUsers.copy.editRole') : t('accountUsers.copy.viewRole')
   const readonly = mode === 'view'
 
   const nameId = useId()
@@ -60,12 +63,12 @@ export function RoleDialog({
       footer={
         <>
           <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={busy}>
-            <span>{readonly ? 'Close' : 'Cancel'}</span>
+            <span>{readonly ? t('accountUsers.copy.close') : t('accountUsers.copy.cancel')}</span>
           </Button>
           {!readonly && (
             <Button type="submit" form={ROLE_FORM_ID} variant="primary" size="sm" disabled={busy}>
               <SaveSolidIcon size={14} aria-hidden="true" />
-              <span>{mode === 'create' ? 'Create Role' : 'Save Role'}</span>
+              <span>{mode === 'create' ? t('accountUsers.copy.createRole') : t('accountUsers.copy.saveRole')}</span>
             </Button>
           )}
         </>
@@ -74,18 +77,18 @@ export function RoleDialog({
       <form id={ROLE_FORM_ID} className={dialogStyles.form} onSubmit={(event) => void onSubmit(event)}>
         <div className={styles.roleIdentityGrid}>
           <div className={dialogStyles.field}>
-            <label htmlFor={nameId} className={dialogStyles.label}>Name</label>
+            <label htmlFor={nameId} className={dialogStyles.label}>{t('accountUsers.copy.name')}</label>
             <Input
               id={nameId}
               value={form.name}
               required
               disabled={readonly}
-              placeholder="Content editor"
+              placeholder={t('accountUsers.copy.contentEditor')}
               onChange={(event) => onChange({ ...form, name: event.currentTarget.value })}
             />
           </div>
           <div className={dialogStyles.field}>
-            <label htmlFor={slugId} className={dialogStyles.label}>Slug</label>
+            <label htmlFor={slugId} className={dialogStyles.label}>{t('accountUsers.copy.slug')}</label>
             <Input
               id={slugId}
               value={form.slug}
@@ -96,25 +99,25 @@ export function RoleDialog({
           </div>
         </div>
         <div className={dialogStyles.field}>
-          <label htmlFor={descriptionId} className={dialogStyles.label}>Description</label>
+          <label htmlFor={descriptionId} className={dialogStyles.label}>{t('accountUsers.copy.description')}</label>
           <Input
             id={descriptionId}
             value={form.description}
             disabled={readonly}
-            placeholder="What can someone with this role do?"
+            placeholder={t('accountUsers.copy.whatCanSomeoneWithThisRoleDo')}
             onChange={(event) => onChange({ ...form, description: event.currentTarget.value })}
           />
         </div>
 
         <CapabilityPicker
-          groups={CAPABILITY_GROUPS}
+          groups={localizeRoleCapabilityGroups(t)}
           selected={new Set(form.capabilities as CoreCapability[])}
           readonly={readonly}
           disabledCapabilities={readonly ? undefined : OWNER_ONLY_CAPABILITY_SET}
           onChange={(next) => onChange({ ...form, capabilities: [...next] })}
         />
 
-        {error && <p role="alert" className={dialogStyles.errorText}>{error}</p>}
+        {error && <p role="alert" className={dialogStyles.errorText}>{renderFeedback(error, locale, t)}</p>}
       </form>
     </Dialog>
   )

@@ -1,3 +1,5 @@
+import { feedback, reportFeedbackError, renderFeedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { formatNumber, useI18n } from '@admin/i18n'
 import { useEffect, useId, useReducer, type Dispatch, type FormEvent } from 'react'
 import type { CmsCurrentUser } from '@core/persistence'
 import {
@@ -14,7 +16,6 @@ import { SecurityCard } from './SecurityCard'
 import { isStepUpCancelled } from './securityErrors'
 import { formatDateTime } from './securityFormat'
 import styles from '../AccountPage.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 interface MfaSettingsCardsProps {
   user: CmsCurrentUser
@@ -22,8 +23,7 @@ interface MfaSettingsCardsProps {
   runStepUp: <T>(fn: () => Promise<T>) => Promise<T>
   setSessionUser: (user: CmsCurrentUser) => void
   setBusy: (v: string | null) => void
-  setError: (v: string | null) => void
-  setStatus: (v: string | null) => void
+  setStatus: (v: AccountUsersFeedback | null) => void
 }
 
 interface TotpSetup {
@@ -38,7 +38,7 @@ interface TotpQrCode {
 
 interface TotpQrError {
   otpauthUrl: string
-  message: string
+  message: AccountUsersFeedback
 }
 
 interface MfaState {
@@ -48,7 +48,6 @@ interface MfaState {
   totpQrError: TotpQrError | null
   secretCopied: boolean
   recoveryCodes: string[]
-  mfaError: string | null
 }
 
 type MfaAction =
@@ -56,11 +55,10 @@ type MfaAction =
   | { type: 'resetSetup' }
   | { type: 'setTotpCode'; code: string }
   | { type: 'qrRendered'; otpauthUrl: string; dataUrl: string }
-  | { type: 'qrFailed'; otpauthUrl: string; message: string }
+  | { type: 'qrFailed'; otpauthUrl: string; message: AccountUsersFeedback }
   | { type: 'copySecretSucceeded' }
   | { type: 'setRecoveryCodes'; recoveryCodes: string[] }
   | { type: 'clearRecoveryCodes' }
-  | { type: 'setMfaError'; message: string | null }
 
 const initialMfaState: MfaState = {
   totpSetup: null,
@@ -69,7 +67,6 @@ const initialMfaState: MfaState = {
   totpQrError: null,
   secretCopied: false,
   recoveryCodes: [],
-  mfaError: null,
 }
 
 function mfaReducer(state: MfaState, action: MfaAction): MfaState {
@@ -82,7 +79,6 @@ function mfaReducer(state: MfaState, action: MfaAction): MfaState {
         totpQrCode: null,
         totpQrError: null,
         secretCopied: false,
-        mfaError: null,
       }
     case 'resetSetup':
       return {
@@ -92,7 +88,6 @@ function mfaReducer(state: MfaState, action: MfaAction): MfaState {
         totpQrCode: null,
         totpQrError: null,
         secretCopied: false,
-        mfaError: null,
       }
     case 'setTotpCode':
       return { ...state, totpCode: action.code }
@@ -115,8 +110,6 @@ function mfaReducer(state: MfaState, action: MfaAction): MfaState {
       return { ...state, recoveryCodes: action.recoveryCodes }
     case 'clearRecoveryCodes':
       return { ...state, recoveryCodes: [] }
-    case 'setMfaError':
-      return { ...state, mfaError: action.message }
   }
 }
 
@@ -146,7 +139,7 @@ async function renderQrCode(
       dispatch({
         type: 'qrFailed',
         otpauthUrl: setup.otpauthUrl,
-        message: 'Could not render the QR code. Use the setup key instead.',
+        message: feedback('accountUsers.copy.couldNotRenderTheQRCodeUseTheSetupKeyInstead'),
       })
     }
   }
@@ -171,6 +164,7 @@ function TotpSetupDialog({
   onCopySecret,
   onCodeChange,
 }: TotpSetupDialogProps) {
+  const { t, locale } = useI18n()
   const currentTotpQrDataUrl =
     state.totpSetup && state.totpQrCode?.otpauthUrl === state.totpSetup.otpauthUrl ? state.totpQrCode.dataUrl : null
   const currentTotpQrError =
@@ -180,7 +174,7 @@ function TotpSetupDialog({
     <Dialog
       open={state.totpSetup !== null}
       onClose={onClose}
-      title="Enable two-factor authentication"
+      title={t('accountUsers.copy.enableTwoFactorAuthentication')}
       size="lg"
       footer={
         <>
@@ -191,7 +185,7 @@ function TotpSetupDialog({
             disabled={busy === 'mfa-enable'}
             onClick={onClose}
           >
-            <span>Cancel</span>
+            <span>{t('accountUsers.copy.cancel')}</span>
           </Button>
           <Button
             type="submit"
@@ -201,7 +195,7 @@ function TotpSetupDialog({
             disabled={busy === 'mfa-enable' || state.totpCode.trim().length < 6}
             data-testid="security-mfa-submit"
           >
-            <span>{busy === 'mfa-enable' ? 'Enabling...' : 'Enable MFA'}</span>
+            <span>{busy === 'mfa-enable' ? t('accountUsers.copy.enabling') : t('accountUsers.copy.enableMFA')}</span>
           </Button>
         </>
       }
@@ -214,28 +208,28 @@ function TotpSetupDialog({
                 {currentTotpQrDataUrl ? (
                   <img
                     src={currentTotpQrDataUrl}
-                    alt="Scan this QR code with your authenticator app"
+                    alt={t('accountUsers.copy.scanThisQRCodeWithYourAuthenticatorApp')}
                     data-testid="security-mfa-qr-code"
                   />
                 ) : (
                   <span className={styles.qrPlaceholder}>
-                    {currentTotpQrError ? 'QR code unavailable' : 'Rendering QR code'}
+                    {currentTotpQrError ? t('accountUsers.copy.qRCodeUnavailable') : t('accountUsers.copy.renderingQRCode')}
                   </span>
                 )}
               </div>
-              {currentTotpQrError && <p className={styles.error} role="alert">{currentTotpQrError}</p>}
+              {currentTotpQrError && <p className={styles.error} role="alert">{renderFeedback(currentTotpQrError, locale, t)}</p>}
             </div>
 
             <div className={styles.mfaSetupContent}>
               <div className={styles.mfaStep}>
-                <h3>Scan the QR code</h3>
+                <h3>{t('accountUsers.copy.scanTheQRCode')}</h3>
                 <p className={styles.secondaryText}>
-                  Use Google Authenticator, 1Password, Microsoft Authenticator, Authy, or any TOTP app.
+                  {t('accountUsers.copy.useGoogleAuthenticator1PasswordMicrosoftAuthenticatorAuthyOrAnyTOTPApp')}
                 </p>
               </div>
 
               <div className={styles.secretBox}>
-                <span className={styles.dialogLabel}>Manual setup key</span>
+                <span className={styles.dialogLabel}>{t('accountUsers.copy.manualSetupKey')}</span>
                 <code data-testid="security-mfa-secret">{state.totpSetup.secret}</code>
                 <Button
                   type="button"
@@ -245,16 +239,16 @@ function TotpSetupDialog({
                   data-testid="security-mfa-copy-secret"
                 >
                   <CopySolidIcon size={12} aria-hidden="true" />
-                  <span>{state.secretCopied ? 'Copied' : 'Copy key'}</span>
+                  <span>{state.secretCopied ? t('accountUsers.copy.copied') : t('accountUsers.copy.copyKey')}</span>
                 </Button>
               </div>
 
               <a className={styles.authenticatorLink} href={state.totpSetup.otpauthUrl}>
-                Open authenticator app
+                {t('accountUsers.copy.openAuthenticatorApp')}
               </a>
 
               <div className={styles.dialogField}>
-                <label htmlFor={totpCodeId} className={styles.dialogLabel}>Authentication code</label>
+                <label htmlFor={totpCodeId} className={styles.dialogLabel}>{t('accountUsers.copy.authenticationCode')}</label>
                 <Input
                   id={totpCodeId}
                   inputMode="numeric"
@@ -266,7 +260,6 @@ function TotpSetupDialog({
               </div>
             </div>
           </div>
-          {state.mfaError && <p className={styles.error} role="alert">{state.mfaError}</p>}
         </form>
       )}
     </Dialog>
@@ -279,21 +272,22 @@ interface RecoveryCodesDialogProps {
 }
 
 function RecoveryCodesDialog({ recoveryCodes, onClose }: RecoveryCodesDialogProps) {
+  const { t } = useI18n()
   return (
     <Dialog
       open={recoveryCodes.length > 0}
       onClose={onClose}
-      title="Recovery codes"
+      title={t('accountUsers.copy.recoveryCodes')}
       size="md"
       footer={
         <Button type="button" variant="primary" size="sm" onClick={onClose}>
-          <span>Done</span>
+          <span>{t('accountUsers.copy.done')}</span>
         </Button>
       }
     >
       <div className={styles.dialogFields}>
         <p className={styles.secondaryText}>
-          Save these recovery codes now. They will not be shown again.
+          {t('accountUsers.copy.saveTheseRecoveryCodesNowTheyWillNotBeShownAgain')}
         </p>
         <div className={styles.recoveryGrid}>
           {recoveryCodes.map((code) => (
@@ -305,25 +299,42 @@ function RecoveryCodesDialog({ recoveryCodes, onClose }: RecoveryCodesDialogProp
   )
 }
 
+async function runMfaAction<TResult>(
+  action: () => Promise<TResult>,
+  onSuccess: (result: TResult) => void,
+  onError: (error: unknown) => void,
+  setBusy: (value: string | null) => void,
+): Promise<void> {
+  try {
+    onSuccess(await action())
+  } catch (err) {
+    if (!isStepUpCancelled(err)) onError(err)
+  } finally {
+    setBusy(null)
+  }
+}
+
 export function MfaSettingsCards({
   user,
   busy,
   runStepUp,
   setSessionUser,
   setBusy,
-  setError,
   setStatus,
 }: MfaSettingsCardsProps) {
+  const { t, locale } = useI18n()
   const [state, dispatch] = useReducer(mfaReducer, initialMfaState)
   const totpCodeId = useId()
 
   const mfaStatus = user.mfaEnabled
-    ? `On${user.mfaEnabledAt ? ` since ${formatDateTime(user.mfaEnabledAt)}` : ''}`
-    : 'Off'
+    ? user.mfaEnabledAt
+      ? t('accountUsers.mfa.since', { date: formatDateTime(user.mfaEnabledAt, locale) })
+      : t('accountUsers.copy.on')
+    : t('accountUsers.copy.off')
 
   const recoveryStatus = user.mfaEnabled
-    ? `${user.mfaRecoveryCodesRemaining} recovery ${user.mfaRecoveryCodesRemaining === 1 ? 'code' : 'codes'} remaining.`
-    : 'Enable two-factor authentication before generating recovery codes.'
+    ? t('accountUsers.recovery.remaining', { count: user.mfaRecoveryCodesRemaining, formattedCount: formatNumber(user.mfaRecoveryCodesRemaining, undefined, locale) })
+    : t('accountUsers.copy.enableTwoFactorAuthenticationBeforeGeneratingRecoveryCodes')
 
   useEffect(() => {
     if (!state.totpSetup) return undefined
@@ -337,9 +348,8 @@ export function MfaSettingsCards({
 
   async function handleCopySecret(): Promise<void> {
     if (!state.totpSetup) return
-    dispatch({ type: 'setMfaError', message: null })
     if (!navigator.clipboard?.writeText) {
-      dispatch({ type: 'setMfaError', message: 'Clipboard is not available in this browser.' })
+      reportFeedbackError(null, 'accountUsers.copy.clipboardIsNotAvailableInThisBrowser')
       return
     }
 
@@ -348,26 +358,20 @@ export function MfaSettingsCards({
       dispatch({ type: 'copySecretSucceeded' })
     } catch (err) {
       console.error('[account-security] Copy MFA setup key failed:', err)
-      dispatch({ type: 'setMfaError', message: 'Could not copy the setup key.' })
+      reportFeedbackError(err, 'accountUsers.copy.couldNotCopyTheSetupKey')
     }
   }
 
   async function handleStartMfa(): Promise<void> {
     if (busy) return
     setBusy('mfa-start')
-    setError(null)
-    dispatch({ type: 'setMfaError', message: null })
     setStatus(null)
-    try {
-      const setup = await runStepUp(() => startCurrentUserTotpSetup())
-      dispatch({ type: 'setupStarted', setup })
-    } catch (err) {
-      if (!isStepUpCancelled(err)) {
-        setError(getErrorMessage(err, 'Could not start MFA setup.'))
-      }
-    } finally {
-      setBusy(null)
-    }
+    await runMfaAction(
+      () => runStepUp(() => startCurrentUserTotpSetup()),
+      (setup) => dispatch({ type: 'setupStarted', setup }),
+      (err) => reportFeedbackError(err, 'accountUsers.copy.couldNotStartMFASetup'),
+      setBusy,
+    )
   }
 
   async function handleEnableMfa(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -375,68 +379,58 @@ export function MfaSettingsCards({
     const setup = state.totpSetup
     if (busy || !setup) return
     setBusy('mfa-enable')
-    dispatch({ type: 'setMfaError', message: null })
-    setError(null)
     setStatus(null)
-    try {
-      const result = await runStepUp(() => enableCurrentUserTotp({ secret: setup.secret, code: state.totpCode }))
-      setSessionUser(result.user)
-      dispatch({ type: 'resetSetup' })
-      dispatch({ type: 'setRecoveryCodes', recoveryCodes: result.recoveryCodes })
-      setStatus('Two-factor authentication enabled.')
-    } catch (err) {
-      if (!isStepUpCancelled(err)) {
-        dispatch({ type: 'setMfaError', message: getErrorMessage(err, 'Could not enable MFA.') })
-      }
-    } finally {
-      setBusy(null)
-    }
+    await runMfaAction(
+      () => runStepUp(() => enableCurrentUserTotp({ secret: setup.secret, code: state.totpCode })),
+      (result) => {
+        setSessionUser(result.user)
+        dispatch({ type: 'resetSetup' })
+        dispatch({ type: 'setRecoveryCodes', recoveryCodes: result.recoveryCodes })
+        setStatus(feedback('accountUsers.copy.twoFactorAuthenticationEnabled'))
+      },
+      (err) => reportFeedbackError(err, 'accountUsers.copy.couldNotEnableMFA'),
+      setBusy,
+    )
   }
 
   async function handleDisableMfa(): Promise<void> {
     if (busy) return
     setBusy('mfa-disable')
-    setError(null)
     setStatus(null)
-    try {
-      const updated = await runStepUp(() => disableCurrentUserTotp())
-      setSessionUser(updated)
-      dispatch({ type: 'clearRecoveryCodes' })
-      setStatus('Two-factor authentication disabled.')
-    } catch (err) {
-      if (!isStepUpCancelled(err)) {
-        setError(getErrorMessage(err, 'Could not disable MFA.'))
-      }
-    } finally {
-      setBusy(null)
-    }
+    await runMfaAction(
+      () => runStepUp(() => disableCurrentUserTotp()),
+      (updated) => {
+        setSessionUser(updated)
+        dispatch({ type: 'clearRecoveryCodes' })
+        setStatus(feedback('accountUsers.copy.twoFactorAuthenticationDisabled'))
+      },
+      (err) => reportFeedbackError(err, 'accountUsers.copy.couldNotDisableMFA'),
+      setBusy,
+    )
   }
 
   async function handleRegenerateRecoveryCodes(): Promise<void> {
     if (busy || !user.mfaEnabled) return
     setBusy('recovery')
-    setError(null)
     setStatus(null)
-    try {
-      const result = await runStepUp(() => regenerateCurrentUserRecoveryCodes())
-      setSessionUser(result.user)
-      dispatch({ type: 'setRecoveryCodes', recoveryCodes: result.recoveryCodes })
-      setStatus('Recovery codes regenerated.')
-    } catch (err) {
-      if (!isStepUpCancelled(err)) {
-        setError(getErrorMessage(err, 'Could not regenerate recovery codes.'))
-      }
-    } finally {
-      setBusy(null)
-    }
+    await runMfaAction(
+      () => runStepUp(() => regenerateCurrentUserRecoveryCodes()),
+      (result) => {
+        setSessionUser(result.user)
+        dispatch({ type: 'setRecoveryCodes', recoveryCodes: result.recoveryCodes })
+        setStatus(feedback('accountUsers.copy.recoveryCodesRegenerated'))
+      },
+      (err) => reportFeedbackError(err, 'accountUsers.copy.couldNotRegenerateRecoveryCodes'),
+      setBusy,
+    )
   }
 
   return (
     <>
       <SecurityCard
         testId="security-mfa-card"
-        title="Two-factor authentication"
-        description="Use a TOTP authenticator app as a second factor when signing in."
+        title={t('accountUsers.copy.twoFactorAuthentication')}
+        description={t('accountUsers.copy.useATOTPAuthenticatorAppAsASecondFactorWhenSigningIn')}
         status={mfaStatus}
         statusActive={user.mfaEnabled}
         action={
@@ -449,7 +443,7 @@ export function MfaSettingsCards({
               onClick={() => void handleDisableMfa()}
               data-testid="security-mfa-disable"
             >
-              <span>{busy === 'mfa-disable' ? 'Disabling...' : 'Disable'}</span>
+              <span>{busy === 'mfa-disable' ? t('accountUsers.copy.disabling') : t('accountUsers.copy.disable')}</span>
             </Button>
           ) : (
             <Button
@@ -460,15 +454,15 @@ export function MfaSettingsCards({
               onClick={() => void handleStartMfa()}
               data-testid="security-mfa-enable"
             >
-              <span>{busy === 'mfa-start' ? 'Starting...' : 'Enable'}</span>
+              <span>{busy === 'mfa-start' ? t('accountUsers.copy.starting') : t('accountUsers.copy.enable')}</span>
             </Button>
           )
         }
       />
       <SecurityCard
         testId="security-recovery-card"
-        title="Recovery codes"
-        description="One-time codes you can use if you lose access to your authenticator app."
+        title={t('accountUsers.copy.recoveryCodes')}
+        description={t('accountUsers.copy.oneTimeCodesYouCanUseIfYouLoseAccessToYourAuthenticatorApp')}
         status={recoveryStatus}
         statusActive={user.mfaEnabled && user.mfaRecoveryCodesRemaining > 0}
         action={
@@ -480,7 +474,7 @@ export function MfaSettingsCards({
             onClick={() => void handleRegenerateRecoveryCodes()}
             data-testid="security-recovery-regenerate"
           >
-            <span>{busy === 'recovery' ? 'Generating...' : 'Generate codes'}</span>
+            <span>{busy === 'recovery' ? t('accountUsers.copy.generating') : t('accountUsers.copy.generateCodes')}</span>
           </Button>
         }
       />

@@ -1,9 +1,11 @@
+import { reportFeedbackError, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { useI18n } from '@admin/i18n'
 /**
  * Users → Roles tab.
  *
  * Lists every CMS role (system + custom) with capability count, type and an
- * action menu. System roles are immutable from the UI: only the View action
- * is available; Edit and Delete are hidden.
+ * action menu. Owner is immutable; other system roles can be edited but
+ * cannot be deleted.
  *
  * Capability picking is grouped (`CAPABILITY_GROUPS`) with per-group
  * "All" / "Clear" shortcuts. The role form supports a `'view'` mode that
@@ -45,7 +47,6 @@ import {
 } from '../types'
 import type { UsersPageData } from '../hooks/useUsersPageData'
 import styles from '../UsersPage.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 interface RolesTabProps {
   data: UsersPageData
@@ -61,7 +62,7 @@ async function saveRole(
   closeDialog: () => void,
   refresh: () => void,
   setBusy: (busy: boolean) => void,
-  setError: (error: string | null) => void,
+  setError: (error: AccountUsersFeedback | null) => void,
 ): Promise<void> {
   setBusy(true)
   setError(null)
@@ -79,7 +80,7 @@ async function saveRole(
     void refresh()
   } catch (err) {
     if (err instanceof Error && err.message === StepUpCancelledMessage) return
-    setError(getErrorMessage(err, 'Could not save role'))
+    reportFeedbackError(err, 'accountUsers.copy.couldNotSaveRole')
   } finally {
     setBusy(false)
   }
@@ -91,7 +92,7 @@ async function deleteRole(
   setRoles: (updater: (current: CmsRole[]) => CmsRole[]) => void,
   refresh: () => void,
   setBusy: (busy: boolean) => void,
-  setError: (error: string | null) => void,
+  setError: (error: AccountUsersFeedback | null) => void,
 ): Promise<void> {
   setBusy(true)
   setError(null)
@@ -101,13 +102,14 @@ async function deleteRole(
     void refresh()
   } catch (err) {
     if (err instanceof Error && err.message === StepUpCancelledMessage) return
-    setError(getErrorMessage(err, 'Could not delete role'))
+    reportFeedbackError(err, 'accountUsers.copy.couldNotDeleteRole')
   } finally {
     setBusy(false)
   }
 }
 
 export function RolesTab({ data, canManageRoles }: RolesTabProps) {
+  const { t, locale } = useI18n()
   const { roles, setRoles, setError, refresh, error } = data
   const { runStepUp } = useStepUp()
   const [busy, setBusy] = useState(false)
@@ -196,25 +198,25 @@ export function RolesTab({ data, canManageRoles }: RolesTabProps) {
     <section className={styles.section} aria-labelledby="roles-list-title">
       <div className={styles.sectionHeader}>
         <div>
-          <h2 id="roles-list-title">Roles</h2>
-          <p>System roles are fixed. Custom roles can be edited.</p>
+          <h2 id="roles-list-title">{t('accountUsers.copy.roles')}</h2>
+          <p>{t('accountUsers.copy.systemRolesAreFixedCustomRolesCanBeEdited')}</p>
         </div>
         {canManageRoles && (
           <Button type="button" variant="primary" size="sm" onClick={openCreate}>
             <PlusIcon size={14} aria-hidden="true" />
-            <span>Create Role</span>
+            <span>{t('accountUsers.copy.createRole')}</span>
           </Button>
         )}
       </div>
       {data.loading ? (
-        <DataTable aria-label="Loading roles" density="compact" aria-busy="true">
+        <DataTable aria-label={t('accountUsers.copy.loadingRoles')} density="compact" aria-busy="true">
           <DataTableHead>
             <DataTableRow>
-              <DataTableHeader scope="col">Role</DataTableHeader>
-              <DataTableHeader scope="col">Description</DataTableHeader>
-              <DataTableHeader scope="col">Capabilities</DataTableHeader>
-              <DataTableHeader scope="col">Type</DataTableHeader>
-              <DataTableHeader scope="col" className={styles.actionsHeader}>Actions</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.role')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.description')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.capabilities')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.type')}</DataTableHeader>
+              <DataTableHeader scope="col" className={styles.actionsHeader}>{t('accountUsers.copy.actions')}</DataTableHeader>
             </DataTableRow>
           </DataTableHead>
           <DataTableBody>
@@ -232,46 +234,46 @@ export function RolesTab({ data, canManageRoles }: RolesTabProps) {
           </DataTableBody>
         </DataTable>
       ) : roles.length > 0 ? (
-        <DataTable aria-label="Roles" density="compact">
+        <DataTable aria-label={t('accountUsers.copy.roles')} density="compact">
           <DataTableHead>
             <DataTableRow>
-              <DataTableHeader scope="col">Role</DataTableHeader>
-              <DataTableHeader scope="col">Description</DataTableHeader>
-              <DataTableHeader scope="col">Capabilities</DataTableHeader>
-              <DataTableHeader scope="col">Type</DataTableHeader>
-              <DataTableHeader scope="col" className={styles.actionsHeader}>Actions</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.role')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.description')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.capabilities')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.type')}</DataTableHeader>
+              <DataTableHeader scope="col" className={styles.actionsHeader}>{t('accountUsers.copy.actions')}</DataTableHeader>
             </DataTableRow>
           </DataTableHead>
           <DataTableBody>
             {roles.map((role) => (
-              <DataTableRow key={role.id} aria-label={`Role ${role.name}`}>
+              <DataTableRow key={role.id} aria-label={t('accountUsers.roles.row', { name: role.name })}>
                 <DataTableCell>
                   <strong className={styles.tableTitle}>{role.name}</strong>
                 </DataTableCell>
                 <DataTableCell>
-                  <span className={styles.secondaryText}>{role.description || 'No description'}</span>
+                  <span className={styles.secondaryText}>{role.description || t('accountUsers.copy.noDescription')}</span>
                 </DataTableCell>
                 <DataTableCell>
                   {role.capabilities.length > 0 ? (
-                    <span className={styles.secondaryText}>{formatCapabilitySummary(role.capabilities)}</span>
+                    <span className={styles.secondaryText}>{formatCapabilitySummary(role.capabilities, locale, t)}</span>
                   ) : (
-                    <Badge label="No admin capabilities" muted />
+                    <Badge label={t('accountUsers.copy.noAdminCapabilities')} muted />
                   )}
                 </DataTableCell>
                 <DataTableCell>
                   <div className={styles.badges}>
-                    <Badge label={role.isSystem ? 'System role' : 'Custom role'} muted={role.isSystem} />
+                    <Badge label={role.isSystem ? t('accountUsers.copy.systemRole') : t('accountUsers.copy.customRole')} muted={role.isSystem} />
                   </div>
                 </DataTableCell>
                 <DataTableCell className={styles.actionsCell}>
                   {canManageRoles && (
                     <RowActionMenu
-                      triggerLabel={`Actions for ${role.name}`}
-                      menuLabel={`Role actions for ${role.name}`}
+                      triggerLabel={t('accountUsers.actions.for', { name: role.name })}
+                      menuLabel={t('accountUsers.roles.actions', { name: role.name })}
                       disabled={busy}
                       items={[
                         {
-                          label: 'View',
+                          label: t('accountUsers.copy.view'),
                           icon: <EyeSolidIcon size={12} aria-hidden="true" />,
                           onSelect: () => openView(role),
                         },
@@ -283,13 +285,13 @@ export function RolesTab({ data, canManageRoles }: RolesTabProps) {
                         ...(role.slug !== 'owner'
                           ? [
                               {
-                                label: 'Edit',
+                                label: t('accountUsers.copy.edit'),
                                 icon: <EditSolidIcon size={12} aria-hidden="true" />,
                                 onSelect: () => openEdit(role),
                               },
                               ...(!role.isSystem
                                 ? [{
-                                    label: 'Delete',
+                                    label: t('accountUsers.copy.delete'),
                                     icon: <TrashSolidIcon size={12} aria-hidden="true" />,
                                     danger: true,
                                     onSelect: () => void remove(role),
@@ -306,7 +308,7 @@ export function RolesTab({ data, canManageRoles }: RolesTabProps) {
           </DataTableBody>
         </DataTable>
       ) : (
-        <p className={styles.emptyState}>No roles configured.</p>
+        <p className={styles.emptyState}>{t('accountUsers.copy.noRolesConfigured')}</p>
       )}
 
       {canManageRoles && dialogMode && (

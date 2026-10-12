@@ -566,7 +566,7 @@ describe('AccountPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('account-activity-suspicious')).toBeTruthy()
     })
-    expect(screen.getByTestId('account-activity-failed-count').textContent).toBe('1 failed in last 24h')
+    expect(screen.getByTestId('account-activity-failed-count').textContent).toBe('1 failed attempt in last 24h')
     expect(screen.getByText('Rate-limited')).toBeTruthy()
     expect(screen.getByText('Safari on iOS')).toBeTruthy()
     expect(screen.getByText('198.51.100.88')).toBeTruthy()
@@ -618,7 +618,7 @@ describe('AccountPage', () => {
     await waitFor(() => {
       // The chip counts only failure outcomes within the 24h window. The
       // single successful login is excluded.
-      expect(screen.getByTestId('account-activity-failed-count').textContent).toBe('2 failed in last 24h')
+      expect(screen.getByTestId('account-activity-failed-count').textContent).toBe('2 failed attempts in last 24h')
     })
     // Known device label is rendered as-is.
     expect(screen.getByText('Firefox on Linux')).toBeTruthy()

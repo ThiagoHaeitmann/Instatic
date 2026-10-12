@@ -8,6 +8,7 @@
 import type { ReactNode } from 'react'
 import type { CmsCurrentUser } from '@core/persistence'
 import type { CoreCapability } from '@core/capabilities'
+import type { MessageKey } from '@admin/i18n'
 
 export type Tab = 'users' | 'roles' | 'audit'
 export type UserDialogMode = 'create' | 'edit' | 'reset'
@@ -29,6 +30,7 @@ export interface RoleFormState {
 }
 
 export interface CapabilityGroup {
+  titleKey: MessageKey
   title: string
   capabilities: CoreCapability[]
 }

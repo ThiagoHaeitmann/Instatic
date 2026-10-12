@@ -15,10 +15,11 @@ import { formatNumber, useI18n } from '@admin/i18n'
 import { Button } from '@ui/components/Button'
 import { Checkbox } from '@ui/components/Checkbox'
 import type { CoreCapability } from '@core/capabilities'
-import { CAPABILITY_META, capabilityLabel } from './capabilityMeta'
+import { localizeCapabilityMetadata } from './capabilityMeta'
 import styles from './CapabilityPicker.module.css'
 
 export interface CapabilityPickerGroup {
+  id?: string
   title: string
   capabilities: readonly CoreCapability[]
 }
@@ -38,15 +39,17 @@ interface CapabilityPickerProps {
   title?: string
 }
 
+const NO_DISABLED_CAPABILITIES: ReadonlySet<CoreCapability> = new Set()
+
 export function CapabilityPicker({
   groups,
   selected,
   onChange,
   readonly = false,
-  disabledCapabilities = new Set(),
+  disabledCapabilities = NO_DISABLED_CAPABILITIES,
   title,
 }: CapabilityPickerProps) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const heading = title ?? t('shell.copy.capabilities')
   // De-duplicate across groups for the master count/toggle (groups are normally
   // disjoint, but don't assume it).
@@ -74,7 +77,7 @@ export function CapabilityPicker({
         <div className={styles.capabilityPickerSummary}>
           <h3 className={styles.capabilityPickerTitle}>{heading}</h3>
           <p className={styles.capabilityPickerCount}>
-            {t('shell.capabilities.selected', { selected: formatNumber(selectedCount), total: formatNumber(totalCount) })}
+            {t('shell.capabilities.selected', { selected: formatNumber(selectedCount, undefined, locale), total: formatNumber(totalCount, undefined, locale) })}
           </p>
         </div>
         {!readonly && (
@@ -99,7 +102,7 @@ export function CapabilityPicker({
           const groupTotal = selectableGroupCapabilities.length
           const groupAllSelected = groupTotal > 0 && groupSelected === groupTotal
           return (
-            <section key={group.title} className={styles.capabilityGroup}>
+            <section key={group.id ?? group.title} className={styles.capabilityGroup}>
               <header className={styles.capabilityGroupHeader}>
                 <div className={styles.capabilityGroupHeading}>
                   <h4>{group.title}</h4>
@@ -107,7 +110,7 @@ export function CapabilityPicker({
                     className={styles.capabilityGroupCount}
                     data-state={groupAllSelected ? 'full' : groupSelected > 0 ? 'partial' : 'empty'}
                   >
-                    {formatNumber(groupSelected)}/{formatNumber(groupTotal)}
+                    {formatNumber(groupSelected, undefined, locale)}/{formatNumber(groupTotal, undefined, locale)}
                   </span>
                 </div>
                 {!readonly && (
@@ -128,7 +131,7 @@ export function CapabilityPicker({
               </header>
               <ul className={styles.capabilityList}>
                 {group.capabilities.map((capability) => {
-                  const meta = CAPABILITY_META[capability]
+                  const meta = localizeCapabilityMetadata(capability, locale)
                   const checked = selected.has(capability)
                   const disabled = readonly || disabledCapabilities.has(capability)
                   return (
@@ -141,11 +144,9 @@ export function CapabilityPicker({
                         />
                         <span className={styles.capabilityRowText}>
                           <span className={styles.capabilityRowLabel}>
-                            {meta?.label ?? capabilityLabel(capability)}
+                            {meta.label}
                           </span>
-                          {meta && (
-                            <span className={styles.capabilityRowDescription}>{meta.description}</span>
-                          )}
+                          {meta.description && <span className={styles.capabilityRowDescription}>{meta.description}</span>}
                         </span>
                       </label>
                     </li>

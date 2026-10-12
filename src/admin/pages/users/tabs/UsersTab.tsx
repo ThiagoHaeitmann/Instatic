@@ -1,4 +1,5 @@
-import { useI18n } from '@admin/i18n'
+import { reportFeedbackError, feedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { formatNumber, useI18n } from '@admin/i18n'
 import { localizePresentationOptions, USER_STATUS_OPTIONS as STATUS_OPTIONS } from '@admin/shared/presentationCatalog'
 /**
  * Users → Users tab.
@@ -50,7 +51,6 @@ import {
 } from '../types'
 import type { UsersPageData } from '../hooks/useUsersPageData'
 import styles from '../UsersPage.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 interface UsersTabProps {
   data: UsersPageData
@@ -68,7 +68,7 @@ async function saveUser(
   closeDialog: () => void,
   refresh: () => void,
   setBusy: (busy: boolean) => void,
-  setError: (error: string | null) => void,
+  setError: (error: AccountUsersFeedback | null) => void,
 ): Promise<void> {
   setBusy(true)
   setError(null)
@@ -99,7 +99,7 @@ async function saveUser(
     void refresh()
   } catch (err) {
     if (err instanceof Error && err.message === StepUpCancelledMessage) return
-    setError(getErrorMessage(err, 'Could not save user'))
+    reportFeedbackError(err, 'accountUsers.copy.couldNotSaveUser')
   } finally {
     setBusy(false)
   }
@@ -112,7 +112,7 @@ async function toggleUserStatus(
   setUsers: (updater: (current: CmsCurrentUser[]) => CmsCurrentUser[]) => void,
   refresh: () => void,
   setBusy: (busy: boolean) => void,
-  setError: (error: string | null) => void,
+  setError: (error: AccountUsersFeedback | null) => void,
 ): Promise<void> {
   setBusy(true)
   setError(null)
@@ -124,7 +124,7 @@ async function toggleUserStatus(
     void refresh()
   } catch (err) {
     if (err instanceof Error && err.message === StepUpCancelledMessage) return
-    setError(getErrorMessage(err, 'Could not update user'))
+    reportFeedbackError(err, 'accountUsers.copy.couldNotUpdateUser')
   } finally {
     setBusy(false)
   }
@@ -136,7 +136,7 @@ async function deleteUser(
   setUsers: (updater: (current: CmsCurrentUser[]) => CmsCurrentUser[]) => void,
   refresh: () => void,
   setBusy: (busy: boolean) => void,
-  setError: (error: string | null) => void,
+  setError: (error: AccountUsersFeedback | null) => void,
 ): Promise<void> {
   setBusy(true)
   setError(null)
@@ -146,14 +146,14 @@ async function deleteUser(
     void refresh()
   } catch (err) {
     if (err instanceof Error && err.message === StepUpCancelledMessage) return
-    setError(getErrorMessage(err, 'Could not delete user'))
+    reportFeedbackError(err, 'accountUsers.copy.couldNotDeleteUser')
   } finally {
     setBusy(false)
   }
 }
 
 export function UsersTab({ data, canManageUsers }: UsersTabProps) {
-  const { locale } = useI18n()
+  const { t, locale } = useI18n()
   const statusOptions = localizePresentationOptions(STATUS_OPTIONS, locale)
   const { users, roles, defaultAssignableRoleId, setUsers, setError, refresh, error } = data
   const { runStepUp } = useStepUp()
@@ -237,7 +237,7 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
     event.preventDefault()
     if (!canManageUsers || !dialogMode) return
     if ((dialogMode === 'create' || dialogMode === 'reset' || userForm.password) && userForm.password.length < 12) {
-      setError('Password must be at least 12 characters')
+      setError(feedback('accountUsers.copy.passwordMustBeAtLeast12CharactersAlternate'))
       return
     }
     await saveUser(dialogMode, editingUserId, userForm, runStepUp, setUsers, closeDialog, refresh, setBusy, setError)
@@ -260,19 +260,19 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
     <section className={styles.section} aria-labelledby="all-users-title">
       <div className={styles.sectionHeader}>
         <div>
-          <h2 id="all-users-title">All Users</h2>
+          <h2 id="all-users-title">{t('accountUsers.copy.allUsers')}</h2>
           {/* Suppress "0 accounts" while loading — looks like an empty
               install. The skeleton table below carries the loading signal. */}
           <p>
             {data.loading
               ? ' '
-              : `${users.length} account${users.length === 1 ? '' : 's'} with admin access.`}
+              : t('accountUsers.users.count', { count: users.length, formattedCount: formatNumber(users.length, undefined, locale) })}
           </p>
         </div>
         {canManageUsers && (
           <Button type="button" variant="primary" size="sm" onClick={openCreate}>
             <PlusIcon size={14} aria-hidden="true" />
-            <span>Create User</span>
+            <span>{t('accountUsers.copy.createUser')}</span>
           </Button>
         )}
       </div>
@@ -281,13 +281,13 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
         // header row, same 4-column layout, same identity cluster
         // shape). Avoids the "no users yet" empty-state flash and
         // keeps the column widths stable when real rows swap in.
-        <DataTable aria-label="Loading users" density="compact" aria-busy="true">
+        <DataTable aria-label={t('accountUsers.copy.loadingUsers')} density="compact" aria-busy="true">
           <DataTableHead>
             <DataTableRow>
-              <DataTableHeader scope="col">User</DataTableHeader>
-              <DataTableHeader scope="col">Access</DataTableHeader>
-              <DataTableHeader scope="col">Last login</DataTableHeader>
-              <DataTableHeader scope="col" className={styles.actionsHeader}>Actions</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.user')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.access')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.lastLogin')}</DataTableHeader>
+              <DataTableHeader scope="col" className={styles.actionsHeader}>{t('accountUsers.copy.actions')}</DataTableHeader>
             </DataTableRow>
           </DataTableHead>
           <DataTableBody>
@@ -319,13 +319,13 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
           </DataTableBody>
         </DataTable>
       ) : users.length > 0 ? (
-        <DataTable aria-label="Users" density="compact">
+        <DataTable aria-label={t('accountUsers.copy.users')} density="compact">
           <DataTableHead>
             <DataTableRow>
-              <DataTableHeader scope="col">User</DataTableHeader>
-              <DataTableHeader scope="col">Access</DataTableHeader>
-              <DataTableHeader scope="col">Last login</DataTableHeader>
-              <DataTableHeader scope="col" className={styles.actionsHeader}>Actions</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.user')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.access')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.lastLogin')}</DataTableHeader>
+              <DataTableHeader scope="col" className={styles.actionsHeader}>{t('accountUsers.copy.actions')}</DataTableHeader>
             </DataTableRow>
           </DataTableHead>
           <DataTableBody>
@@ -333,7 +333,7 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
               const owner = isOwnerUser(user)
               const label = displayUserName(user)
               return (
-                <DataTableRow key={user.id} aria-label={`User ${user.email}`}>
+                <DataTableRow key={user.id} aria-label={t('accountUsers.users.row', { email: user.email })}>
                   <DataTableCell>
                     <div className={styles.identityRow}>
                       <UserAvatar user={user} size={32} alt={null} />
@@ -345,40 +345,40 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
                   </DataTableCell>
                   <DataTableCell>
                     <div className={styles.badges}>
-                      <Badge label={statusLabel(user.status)} />
+                      <Badge label={statusLabel(user.status, locale)} />
                       <Badge label={user.role.name} />
-                      {owner && <Badge label="Owner account" muted />}
+                      {owner && <Badge label={t('accountUsers.copy.ownerAccount')} muted />}
                     </div>
                   </DataTableCell>
                   <DataTableCell>
-                    <span className={styles.secondaryText}>{formatDateTime(user.lastLoginAt)}</span>
+                    <span className={styles.secondaryText}>{formatDateTime(user.lastLoginAt, locale, t)}</span>
                   </DataTableCell>
                   <DataTableCell className={styles.actionsCell}>
                     {canManageUsers && !owner && (
                       <RowActionMenu
-                        triggerLabel={`Actions for ${label}`}
-                        menuLabel={`User actions for ${label}`}
+                        triggerLabel={t('accountUsers.actions.for', { name: label })}
+                        menuLabel={t('accountUsers.users.actions', { name: label })}
                         disabled={busy}
                         items={[
                           {
-                            label: 'Edit',
+                            label: t('accountUsers.copy.edit'),
                             icon: <EditSolidIcon size={12} aria-hidden="true" />,
                             onSelect: () => openEdit(user),
                           },
                           {
-                            label: 'Reset password',
+                            label: t('accountUsers.copy.resetPassword'),
                             icon: <SaveSolidIcon size={12} aria-hidden="true" />,
                             onSelect: () => openResetPassword(user),
                           },
                           {
-                            label: user.status === 'active' ? 'Suspend' : 'Activate',
+                            label: user.status === 'active' ? t('accountUsers.copy.suspend') : t('accountUsers.copy.activate'),
                             icon: user.status === 'active'
                               ? <PowerOffIcon size={12} aria-hidden="true" />
                               : <PowerIcon size={12} aria-hidden="true" />,
                             onSelect: () => void toggleStatus(user),
                           },
                           {
-                            label: 'Delete',
+                            label: t('accountUsers.copy.delete'),
                             icon: <TrashSolidIcon size={12} aria-hidden="true" />,
                             danger: true,
                             onSelect: () => void remove(user),
@@ -393,7 +393,7 @@ export function UsersTab({ data, canManageUsers }: UsersTabProps) {
           </DataTableBody>
         </DataTable>
       ) : (
-        <p className={styles.emptyState}>No users yet.</p>
+        <p className={styles.emptyState}>{t('accountUsers.copy.noUsersYet')}</p>
       )}
 
       {canManageUsers && dialogMode && (

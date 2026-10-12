@@ -1,3 +1,6 @@
+import { feedback, feedbackError, reportFeedbackError, renderFeedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { formatDateTime } from './securityFormat'
+import { formatRelativeTime, translate, type SupportedLocale, useI18n } from '@admin/i18n'
 /**
  * Account → Active devices tab.
  *
@@ -17,11 +20,10 @@
  * succeed on the server (well, it would 400 — see `auth.ts`) but leaves the
  * cookie around, so we don't even surface the affordance.
  *
- * Step-up auth (C.3) is intentionally not gating these actions yet. When it
- * lands, the call paths in this file will route through the step-up dialog
- * if the current session has no fresh re-auth window.
+ * Revocations run through the shared step-up authentication flow.
  */
 import { useState } from 'react'
+import { isAbortError } from '@core/http'
 import { useAsyncResource } from '@admin/lib/useAsyncResource'
 import { Button } from '@ui/components/Button'
 import { SkeletonRows } from '@ui/components/Skeleton'
@@ -41,40 +43,36 @@ import {
 } from '@core/persistence'
 import { StepUpCancelledMessage, useStepUp } from '@admin/shared/StepUp'
 import styles from '../AccountPage.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
-function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString()
-}
-
-function formatLastSeen(value: string): string {
+function formatLastSeen(value: string, locale: SupportedLocale, t: typeof translate): string {
   const ms = Date.now() - new Date(value).getTime()
-  if (Number.isNaN(ms) || ms < 0) return formatDateTime(value)
+  if (Number.isNaN(ms) || ms < 0) return formatDateTime(value, locale)
   const minutes = Math.floor(ms / 60_000)
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes} min ago`
+  if (minutes < 1) return t('accountUsers.copy.justNow')
+  if (minutes < 60) return formatRelativeTime(-minutes, 'minute', undefined, locale)
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  if (hours < 24) return formatRelativeTime(-hours, 'hour', undefined, locale)
   const days = Math.floor(hours / 24)
-  if (days < 30) return `${days} day${days === 1 ? '' : 's'} ago`
-  return formatDateTime(value)
+  if (days < 30) return formatRelativeTime(-days, 'day', undefined, locale)
+  return formatDateTime(value, locale)
 }
 
 async function revokeSessionHelper(
   session: CmsSession,
   runStepUp: <T>(fn: () => Promise<T>) => Promise<T>,
   setBusy: (v: string | null) => void,
-  setActionError: (v: string | null) => void,
-  setStatus: (v: string | null) => void,
+  setStatus: (v: AccountUsersFeedback | null) => void,
   refresh: () => void,
 ): Promise<void> {
   try {
     await runStepUp(() => revokeCmsSession(session.id))
-    setStatus(`Signed out ${session.deviceLabel || 'device'}.`)
+    setStatus(session.deviceLabel
+      ? feedback('accountUsers.sessions.signedOut', { device: session.deviceLabel })
+      : feedback('accountUsers.sessions.signedOutUnknown'))
     refresh()
   } catch (err) {
     if (err instanceof Error && err.message === StepUpCancelledMessage) return
-    setActionError(getErrorMessage(err, 'Could not sign out device'))
+    reportFeedbackError(err, 'accountUsers.copy.couldNotSignOutDevice')
   } finally {
     setBusy(null)
   }
@@ -83,57 +81,71 @@ async function revokeSessionHelper(
 async function revokeAllOthersHelper(
   runStepUp: <T>(fn: () => Promise<T>) => Promise<T>,
   setBusy: (v: string | null) => void,
-  setActionError: (v: string | null) => void,
-  setStatus: (v: string | null) => void,
+  setStatus: (v: AccountUsersFeedback | null) => void,
   refresh: () => void,
 ): Promise<void> {
   try {
     const revokedCount = await runStepUp(() => logoutAllOtherCmsSessions())
     setStatus(
       revokedCount === 0
-        ? 'No other devices were signed in.'
-        : `Signed out ${revokedCount} other ${revokedCount === 1 ? 'device' : 'devices'}.`,
+        ? feedback('accountUsers.copy.noOtherDevicesWereSignedIn')
+        : feedback('accountUsers.sessions.revoked', { count: revokedCount }),
     )
     refresh()
   } catch (err) {
     if (err instanceof Error && err.message === StepUpCancelledMessage) return
-    setActionError(getErrorMessage(err, 'Could not sign out other devices'))
+    reportFeedbackError(err, 'accountUsers.copy.couldNotSignOutOtherDevices')
   } finally {
     setBusy(null)
   }
 }
 
+async function loadSessions(
+  signal: AbortSignal,
+  setLoadError: (error: AccountUsersFeedback | null) => void,
+): Promise<CmsSession[]> {
+  setLoadError(null)
+  try {
+    return await listCmsSessions()
+  } catch (err) {
+    if (!signal.aborted && !isAbortError(err)) {
+      setLoadError(feedbackError(err, 'accountUsers.copy.couldNotLoadSessions'))
+    }
+    // A failed load must stay a rejection so the resource retains its last successful data.
+    throw err
+  }
+}
+
 export function SessionsTab() {
+  const { t, locale } = useI18n()
   const { runStepUp } = useStepUp()
+  const [loadError, setLoadError] = useState<AccountUsersFeedback | null>(null)
   const {
     data,
     loading,
-    error: loadError,
     refresh,
-  } = useAsyncResource(() => listCmsSessions(), [], { fallbackError: 'Could not load sessions' })
-  const sessions: CmsSession[] = data ?? []
+  } = useAsyncResource((signal) => loadSessions(signal, setLoadError), [], {
+    // Render the locale-aware error above instead of the resource's string-only error channel.
+    swallowErrors: true,
+  })
+  const sessions = data ?? []
   const [busy, setBusy] = useState<string | null>(null)
-  const [status, setStatus] = useState<string | null>(null)
-  // Errors from revoke actions live alongside the load error from the
-  // resource; the view shows whichever is present.
-  const [actionError, setActionError] = useState<string | null>(null)
-  const error = loadError ?? actionError
+  const [status, setStatus] = useState<AccountUsersFeedback | null>(null)
+  const error = loadError
 
   async function handleRevoke(session: CmsSession): Promise<void> {
     if (busy) return
     setBusy(session.id)
-    setActionError(null)
     setStatus(null)
     // The user cancelling the step-up dialog is a silent dismiss — handled inside the helper.
-    await revokeSessionHelper(session, runStepUp, setBusy, setActionError, setStatus, refresh)
+    await revokeSessionHelper(session, runStepUp, setBusy, setStatus, refresh)
   }
 
   async function handleRevokeAllOthers(): Promise<void> {
     if (busy) return
     setBusy('all')
-    setActionError(null)
     setStatus(null)
-    await revokeAllOthersHelper(runStepUp, setBusy, setActionError, setStatus, refresh)
+    await revokeAllOthersHelper(runStepUp, setBusy, setStatus, refresh)
   }
 
   const otherCount = sessions.filter((s) => !s.isCurrent).length
@@ -142,8 +154,8 @@ export function SessionsTab() {
     <section className={styles.section} aria-labelledby="account-sessions-title">
       <div className={styles.sectionHeader}>
         <div>
-          <h2 id="account-sessions-title">Active devices</h2>
-          <p>Devices currently signed in to your account. Sign any out individually or all at once. For a record of past sign-in attempts (including failures), see Sign-in history.</p>
+          <h2 id="account-sessions-title">{t('accountUsers.copy.activeDevices')}</h2>
+          <p>{t('accountUsers.copy.devicesCurrentlySignedInToYourAccountSignAnyOutIndividuallyOrAllAtOnceForARecordOfPastSignInAttemptsIncludingFailuresSeeSignInHistory')}</p>
         </div>
         <Button
           type="button"
@@ -153,53 +165,53 @@ export function SessionsTab() {
           onClick={() => void handleRevokeAllOthers()}
           data-testid="account-sessions-sign-out-others"
         >
-          <span>{busy === 'all' ? 'Signing out…' : 'Sign out everywhere else'}</span>
+          <span>{busy === 'all' ? t('accountUsers.copy.signingOut') : t('accountUsers.copy.signOutEverywhereElse')}</span>
         </Button>
       </div>
 
-      {error && <p className={styles.error} role="alert">{error}</p>}
-      {status && <p className={styles.cardStatus} role="status">{status}</p>}
+      {error && <p className={styles.error} role="alert">{renderFeedback(error, locale, t)}</p>}
+      {status && <p className={styles.cardStatus} role="status">{renderFeedback(status, locale, t)}</p>}
 
       {loading ? (
-        <SkeletonRows count={4} rowHeight={36} ariaLabel="Loading sessions" />
+        <SkeletonRows count={4} rowHeight={36} ariaLabel={t('accountUsers.copy.loadingSessions')} />
       ) : sessions.length === 0 ? (
         // The current session is always present, so this branch is only
         // reached on transient empty responses (e.g. the list raced with a
         // global revoke). Render an honest empty state rather than a fake
         // "this device" placeholder.
-        <p className={styles.emptyState}>No active sessions.</p>
+        <p className={styles.emptyState}>{t('accountUsers.copy.noActiveSessions')}</p>
       ) : (
-        <DataTable aria-label="Active sessions" density="compact">
+        <DataTable aria-label={t('accountUsers.copy.activeSessions')} density="compact">
           <DataTableHead>
             <DataTableRow>
-              <DataTableHeader scope="col">Device</DataTableHeader>
-              <DataTableHeader scope="col">IP</DataTableHeader>
-              <DataTableHeader scope="col">Last active</DataTableHeader>
-              <DataTableHeader scope="col" className={styles.actionsHeader}>Actions</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.device')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.iP')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.lastActive')}</DataTableHeader>
+              <DataTableHeader scope="col" className={styles.actionsHeader}>{t('accountUsers.copy.actions')}</DataTableHeader>
             </DataTableRow>
           </DataTableHead>
           <DataTableBody>
             {sessions.map((session) => {
-              const labelText = session.deviceLabel || 'Unknown device'
+              const labelText = session.deviceLabel || t('accountUsers.copy.unknownDevice')
               return (
-                <DataTableRow key={session.id} aria-label={`Session ${labelText}`}>
+                <DataTableRow key={session.id} aria-label={t('accountUsers.sessions.row', { device: labelText })}>
                   <DataTableCell>
                     <div className={styles.deviceLabel}>
                       <strong>{labelText}</strong>
-                      <span>Signed in {formatDateTime(session.createdAt)}</span>
+                      <span>{t('accountUsers.sessions.signedIn', { date: formatDateTime(session.createdAt, locale) })}</span>
                     </div>
                   </DataTableCell>
                   <DataTableCell>
-                    <span className={styles.secondaryText}>{session.ipAddress ?? 'unknown'}</span>
+                    <span className={styles.secondaryText}>{session.ipAddress ?? t('accountUsers.copy.unknown')}</span>
                   </DataTableCell>
                   <DataTableCell>
                     <span className={styles.secondaryText}>
-                      {session.isCurrent ? 'This device' : formatLastSeen(session.lastSeenAt)}
+                      {session.isCurrent ? t('accountUsers.copy.thisDevice') : formatLastSeen(session.lastSeenAt, locale, t)}
                     </span>
                   </DataTableCell>
                   <DataTableCell className={styles.actionsCell}>
                     {session.isCurrent ? (
-                      <span className={styles.badgeMuted}>Current</span>
+                      <span className={styles.badgeMuted}>{t('accountUsers.copy.current')}</span>
                     ) : (
                       <Button
                         type="button"
@@ -209,7 +221,7 @@ export function SessionsTab() {
                         onClick={() => void handleRevoke(session)}
                         data-testid={`account-sessions-sign-out-${session.id}`}
                       >
-                        <span>{busy === session.id ? 'Signing out…' : 'Sign out'}</span>
+                        <span>{busy === session.id ? t('accountUsers.copy.signingOut') : t('accountUsers.copy.signOut')}</span>
                       </Button>
                     )}
                   </DataTableCell>

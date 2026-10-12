@@ -1,3 +1,5 @@
+import { renderFeedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { useI18n } from '@admin/i18n'
 /**
  * UserDialog — create / edit / reset-password modal for CMS users.
  *
@@ -31,7 +33,7 @@ interface UserDialogProps {
   roleOptions: Array<{ value: string | number; label: string; textValue: string }>
   statusOptions: Array<{ value: string; label: string; textValue: string }>
   busy: boolean
-  error: string | null
+  error: AccountUsersFeedback | null
   onChange: (form: UserFormState) => void
   onClose: () => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
@@ -50,8 +52,9 @@ export function UserDialog({
   onClose,
   onSubmit,
 }: UserDialogProps) {
-  const title = mode === 'create' ? 'Create User' : mode === 'edit' ? 'Edit User' : 'Reset Password'
-  const submitLabel = mode === 'create' ? 'Create User' : mode === 'edit' ? 'Save User' : 'Reset Password'
+  const { t, locale } = useI18n()
+  const title = mode === 'create' ? t('accountUsers.copy.createUser') : mode === 'edit' ? t('accountUsers.copy.editUser') : t('accountUsers.copy.resetPasswordAlternate')
+  const submitLabel = mode === 'create' ? t('accountUsers.copy.createUser') : mode === 'edit' ? t('accountUsers.copy.saveUser') : t('accountUsers.copy.resetPasswordAlternate')
   const emailId = useId()
   const displayNameId = useId()
   const passwordId = useId()
@@ -66,7 +69,7 @@ export function UserDialog({
       footer={
         <>
           <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={busy}>
-            <span>Cancel</span>
+            <span>{t('accountUsers.copy.cancel')}</span>
           </Button>
           <Button type="submit" form={USER_FORM_ID} variant="primary" size="sm" disabled={busy}>
             {mode === 'create' ? <PlusIcon size={14} aria-hidden="true" /> : <SaveSolidIcon size={14} aria-hidden="true" />}
@@ -79,7 +82,7 @@ export function UserDialog({
         {mode !== 'reset' && (
           <>
             <div className={dialogStyles.field}>
-              <label htmlFor={emailId} className={dialogStyles.label}>Email</label>
+              <label htmlFor={emailId} className={dialogStyles.label}>{t('accountUsers.copy.email')}</label>
               <Input
                 id={emailId}
                 value={form.email}
@@ -93,7 +96,7 @@ export function UserDialog({
               />
             </div>
             <div className={dialogStyles.field}>
-              <label htmlFor={displayNameId} className={dialogStyles.label}>Display name</label>
+              <label htmlFor={displayNameId} className={dialogStyles.label}>{t('accountUsers.copy.displayName')}</label>
               <Input
                 id={displayNameId}
                 value={form.displayName}
@@ -105,7 +108,7 @@ export function UserDialog({
           </>
         )}
         <div className={dialogStyles.field}>
-          <label htmlFor={passwordId} className={dialogStyles.label}>{mode === 'create' ? 'Initial password' : 'New password'}</label>
+          <label htmlFor={passwordId} className={dialogStyles.label}>{mode === 'create' ? t('accountUsers.copy.initialPassword') : t('accountUsers.copy.newPassword')}</label>
           <Input
             id={passwordId}
             value={form.password}
@@ -115,7 +118,7 @@ export function UserDialog({
             data-lpignore="true"
             data-1p-ignore="true"
             minLength={12}
-            placeholder={mode === 'edit' ? 'Leave blank to keep current password' : undefined}
+            placeholder={mode === 'edit' ? t('accountUsers.copy.leaveBlankToKeepCurrentPassword') : undefined}
             required={mode !== 'edit'}
             onChange={(event) => onChange({ ...form, password: event.currentTarget.value })}
           />
@@ -123,7 +126,7 @@ export function UserDialog({
         {mode !== 'reset' && (
           <>
             <div className={dialogStyles.field}>
-              <label htmlFor={roleId} className={dialogStyles.label}>Role</label>
+              <label htmlFor={roleId} className={dialogStyles.label}>{t('accountUsers.copy.role')}</label>
               <Select
                 id={roleId}
                 value={form.roleId}
@@ -134,7 +137,7 @@ export function UserDialog({
             </div>
             {mode === 'edit' && (
               <div className={dialogStyles.field}>
-                <label htmlFor={statusId} className={dialogStyles.label}>Status</label>
+                <label htmlFor={statusId} className={dialogStyles.label}>{t('accountUsers.copy.status')}</label>
                 <Select
                   id={statusId}
                   value={form.status}
@@ -146,7 +149,7 @@ export function UserDialog({
             )}
           </>
         )}
-        {error && <p role="alert" className={dialogStyles.errorText}>{error}</p>}
+        {error && <p role="alert" className={dialogStyles.errorText}>{renderFeedback(error, locale, t)}</p>}
       </form>
     </Dialog>
   )

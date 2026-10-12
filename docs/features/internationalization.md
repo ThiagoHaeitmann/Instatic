@@ -15,7 +15,7 @@ Instatic internationalizes its administration interface independently from site 
 - The selection is validated and stored under `instatic-locale`; storage events synchronize open tabs.
 - Messages support named `{{value}}` interpolation and `Intl.PluralRules` plural categories.
 - Dates, numbers, currency, relative time, lists, and byte sizes use helpers from `@admin/i18n`.
-- Admin shell, shared admin controls, authentication, Dashboard, Preferences, primitive-owned defaults, and host-owned structured metadata are localized; other workspace copy is not yet migrated.
+- Admin shell, shared admin controls, authentication, Dashboard, Preferences, Account, Users, primitive-owned defaults, and host-owned structured metadata are localized; other workspace copy is not yet migrated.
 - Shared primitives consume `src/ui/localization/`, with English defaults outside the admin provider; they never initialize admin locale state.
 
 ## Architecture
@@ -63,7 +63,7 @@ The stored shape is validated with TypeBox:
 
 ## Messages
 
-`src/admin/i18n/messages.ts` aggregates English and Brazilian Portuguese catalogs with exact key parity. Shell messages live in `shellMessages.ts`, Dashboard messages in `dashboardMessages.ts`, structured metadata in `metadataMessages.ts`, and primitive translations in `uiMessages.ts`; the primitive English source is `src/ui/localization/englishMessages.ts`. Catalogs are data-only and do not import workspace implementations. The runtime retains English fallback behavior for missing translations; parity and interpolation tests prevent missing keys in shipped resources.
+`src/admin/i18n/messages.ts` aggregates English and Brazilian Portuguese catalogs with exact key parity. Shell messages live in `shellMessages.ts`, Dashboard messages in `dashboardMessages.ts`, Account/Users messages in `accountUsersMessages.ts`, structured metadata in `metadataMessages.ts`, and primitive translations in `uiMessages.ts`; the primitive English source is `src/ui/localization/englishMessages.ts`. Catalogs are data-only and do not import workspace implementations. The runtime retains English fallback behavior for missing translations; parity and interpolation tests prevent missing keys in shipped resources.
 
 Translate host-owned metadata at render/read time, not once at module initialization. First-party Dashboard definitions expose translated name/description getters, and `useDashboardWidgets` subscribes to locale changes without replacing the registry snapshot. Plugin names and descriptions remain author-owned.
 
@@ -96,6 +96,21 @@ Plural messages use locale plural categories:
 ```
 
 Call the base key with a numeric `count`; `Intl.PluralRules` selects the suffix.
+
+## Account / Users presentation
+
+`accountUsersMessages.ts` contains 286 keys per locale for Account and Users workspace chrome: profile/avatar/password forms; step-up settings; MFA setup, QR fallback and recovery-code dialogs; active sessions and sign-in history; user/role management, capability groups, action menus, and audit events. Loading/empty states, accessible names, placeholders, field validation, operation feedback, and counts use the same runtime as the shell.
+
+- Names, emails, role names/descriptions/slugs, capability IDs, session/device labels, IPs, user agents, MFA secrets, recovery/authentication codes, and URLs remain verbatim. Audit presentation translates known host action sentences around their original values; unknown action IDs retain the existing diagnostic humanization rather than being translated. Unknown status and capability values remain raw.
+- `src/admin/shared/accountUsersFeedback.ts` stores host field validation, success feedback, and load fallbacks as message descriptors, resolved at render time. Raw server/diagnostic messages remain strings. Session refresh failures retain the last successfully loaded devices rather than replacing them with an empty list; the load error remains translatable and stale/unmounted failures are discarded. User-triggered operation failures use the global toast bus with a translated host title and the original server message; step-up cancellation remains silent. Toasts, like other caller-owned notifications, capture the locale at emission.
+- Capability rows reuse the Phase 2 message keys in `CapabilityPicker/capabilityMeta.ts`. Their snapshots take an explicit locale. Role groups have stable IDs independent of translated headings, preserving checkbox identity/focus during locale changes.
+- Dates, relative session activity, numbers, byte-size hints, and plural counts use the shared `Intl` helpers. Date, number, relative-time, and byte-size formatting accept an explicit locale for compiled consumers, while non-render callers can use the current runtime locale.
+
+### React Compiler locale dependencies
+
+A locale subscription alone does not invalidate cached calls to an ambient getter or formatter. `useI18n().t` captures the subscribed locale and passes it to `translate`, so the production compiler invalidates the translator closure and downstream render caches when that actual input changes. Metadata snapshots and date/number/relative-time helpers also receive locale explicitly. Do not add dummy dependencies or disable compilation to work around stale translations.
+
+`src/__tests__/admin/accountUsersI18n.test.tsx` uses `metadataCompilerHarness.ts` with the production React Compiler preset for both consumers **and the locale hook**. Mounted `en → pt-BR → en` regressions cover page shells, typed forms, open menus/dialogs, persisted validation/success/load feedback, MFA secrets/recovery codes, capability metadata/checkbox identity, unchanged user/role/audit data, session formatting, counts, ARIA, and loading/empty states. Each compiler invocation has distinct consumer, hook, and bridge paths, including repeated or differing extra-export/locale-hook configurations, so imported fixtures cannot collide in the module cache. Regressions verify both exported values and actual hook identity. Compiling only the consumer would miss a locale-independent cached translator in the hook. Password/MFA asynchronous operation handling stays outside component compiler scopes so `finally` cleanup remains intact without a compiler bailout; the capability picker's empty default set is module-owned for the same reason.
 
 ## Shared primitive isolation
 
@@ -134,7 +149,7 @@ Do not translate:
 1. **Foundation / pre-auth / Preferences — complete.** Locale runtime, persistence, formatting, React integration, pre-auth selection and authentication; Preferences language selection. Preference-catalog presentation is completed with Phase 3 metadata.
 2. **Shell / shared / Dashboard — complete.** Admin shell, shared controls, primitive defaults, capability presentation, Dashboard UI and first-party widget metadata; plugin isolation.
 3. **Structured metadata — complete.** Remaining Preferences catalogs; Spotlight core commands/groups/arguments/scopes/provider labels; AI provider/scope host metadata; admin field/status/filter/sort/storage-role/review presentation catalogs. Read-time lookup, live rendering, stable protocol values, and focused regression tests.
-4. **Account / Users — pending.** Workspace UI, profile/security forms, user/role management, audit UI, validation and operation feedback beyond shared metadata.
+4. **Account / Users — complete.** Profile/avatar/password/step-up/MFA/recovery forms and dialogs; sessions and sign-in history; user/role management and audit UI; validation, operation feedback, counts, locale-aware formatting, accessible/loading/empty states, capability metadata reuse, and mounted production-compiler locale-switch regressions.
 5. **Content — pending.** Collections, entries, body editor, content settings, validation and operation feedback beyond shared metadata.
 6. **Data / import / export — pending.** Table and field management UI, import/export flows, validation and operation feedback beyond shared metadata.
 7. **Media — pending.** Library, picker, uploads, bulk editing, storage UI and operation feedback beyond shared metadata.
@@ -174,6 +189,11 @@ Do not translate:
   - `src/admin/i18n/runtime.ts`
   - `src/admin/i18n/messages.ts`
   - `src/admin/i18n/metadataMessages.ts`
+  - `src/admin/i18n/accountUsersMessages.ts`
+  - `src/admin/shared/accountUsersFeedback.ts`
+  - `src/admin/shared/CapabilityPicker/capabilityMeta.ts`
+  - `src/admin/pages/users/utils/audit.ts`
+  - `src/admin/i18n/useI18n.ts`
   - `src/admin/ai/scopeCatalog.ts`
   - `src/admin/shared/presentationCatalog.ts`
   - `src/admin/i18n/format.ts`
@@ -182,6 +202,8 @@ Do not translate:
   - `src/admin/main.tsx`
 - Tests:
   - `src/__tests__/admin/i18n.test.tsx` — runtime and aggregate catalog parity.
+  - `src/__tests__/admin/accountUsersI18n.test.tsx` — Account/Users catalog parity, formatting/plurals, raw-value isolation, and mounted compiler-backed locale changes (including the compiled locale hook).
+  - `src/__tests__/admin/metadataCompilerHarness.ts` — production-preset compiler fixtures with an optional compiled locale-hook bridge and process-lifetime cleanup across test files.
   - `src/__tests__/admin/metadataI18n.test.tsx` — structured catalog parity/isolation, cached identity, translated search, live Preferences/Spotlight rendering, stable values, and plugin metadata preservation.
   - `src/__tests__/admin/shellI18n.test.tsx` — shared shell/authentication controls and metadata.
   - `src/__tests__/admin/dashboardI18n.test.tsx` — Dashboard widgets, metadata, pluralization, and plugin isolation.

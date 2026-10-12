@@ -1,3 +1,5 @@
+import { feedback, reportFeedbackError, renderFeedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { formatBytes, useI18n } from '@admin/i18n'
 /**
  * Account → Profile tab.
  *
@@ -21,7 +23,6 @@ import { useAdminSessionSetter } from '@admin/sessionContext'
 import { useStepUp } from '@admin/shared/StepUp'
 import { UserAvatar } from '@admin/shared/UserAvatar'
 import styles from '../AccountPage.module.css'
-import { getErrorMessage } from '@core/utils/errorMessage'
 import { isStepUpCancelled } from './securityErrors'
 
 interface ProfileTabProps {
@@ -29,7 +30,7 @@ interface ProfileTabProps {
 }
 
 type ProfileBusy = null | 'profile' | 'upload' | 'remove'
-type ProfileStatus = { tone: 'info' | 'error'; message: string } | null
+type ProfileStatus = { tone: 'info' | 'error'; message: AccountUsersFeedback } | null
 type ProfileForm = { displayName: string; email: string }
 
 async function uploadAvatarHelper(
@@ -41,13 +42,10 @@ async function uploadAvatarHelper(
   try {
     const updated = await uploadCurrentUserAvatar(file)
     setSessionUser(updated)
-    setStatus({ tone: 'info', message: 'Profile picture updated.' })
+    setStatus({ tone: 'info', message: feedback('accountUsers.copy.profilePictureUpdated') })
   } catch (err) {
     console.error('[profile-tab] avatar upload failed:', err)
-    setStatus({
-      tone: 'error',
-      message: getErrorMessage(err, 'Could not upload avatar.'),
-    })
+    reportFeedbackError(err, 'accountUsers.copy.couldNotUploadAvatar')
   } finally {
     setBusy(null)
   }
@@ -61,19 +59,17 @@ async function removeAvatarHelper(
   try {
     const updated = await deleteCurrentUserAvatar()
     setSessionUser(updated)
-    setStatus({ tone: 'info', message: 'Profile picture removed.' })
+    setStatus({ tone: 'info', message: feedback('accountUsers.copy.profilePictureRemoved') })
   } catch (err) {
     console.error('[profile-tab] avatar remove failed:', err)
-    setStatus({
-      tone: 'error',
-      message: getErrorMessage(err, 'Could not remove avatar.'),
-    })
+    reportFeedbackError(err, 'accountUsers.copy.couldNotRemoveAvatar')
   } finally {
     setBusy(null)
   }
 }
 
 export function ProfileTab({ user }: ProfileTabProps) {
+  const { t, locale } = useI18n()
   const setSessionUser = useAdminSessionSetter()
   const { runStepUp } = useStepUp()
   const [busy, setBusy] = useState<ProfileBusy>(null)
@@ -122,7 +118,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 
     const email = profileForm.email.trim()
     if (!isValidEmail(email)) {
-      setStatus({ tone: 'error', message: 'Enter a valid email address.' })
+      setStatus({ tone: 'error', message: feedback('accountUsers.copy.enterAValidEmailAddress') })
       return
     }
 
@@ -138,14 +134,11 @@ export function ProfileTab({ user }: ProfileTabProps) {
         displayName: updated.displayName,
         email: updated.email,
       })
-      setStatus({ tone: 'info', message: 'Profile saved.' })
+      setStatus({ tone: 'info', message: feedback('accountUsers.copy.profileSaved') })
     } catch (err) {
       if (!isStepUpCancelled(err)) {
         console.error('[profile-tab] profile update failed:', err)
-        setStatus({
-          tone: 'error',
-          message: getErrorMessage(err, 'Could not save profile.'),
-        })
+        reportFeedbackError(err, 'accountUsers.copy.couldNotSaveProfile')
       }
     }
     setBusy(null)
@@ -155,15 +148,15 @@ export function ProfileTab({ user }: ProfileTabProps) {
     <section className={styles.section} aria-labelledby="account-profile-title">
       <div className={styles.sectionHeader}>
         <div>
-          <h2 id="account-profile-title">Profile</h2>
-          <p>Your name, email, and role across the install.</p>
+          <h2 id="account-profile-title">{t('accountUsers.copy.profile')}</h2>
+          <p>{t('accountUsers.copy.yourNameEmailAndRoleAcrossTheInstall')}</p>
         </div>
       </div>
 
       <div className={styles.card}>
         <div className={styles.profileGrid}>
           <div className={styles.avatarColumn}>
-            <UserAvatar user={user} size={96} alt={`Avatar for ${displayName}`} />
+            <UserAvatar user={user} size={96} alt={t('shell.avatar.for', { name: displayName })} />
             <div className={styles.avatarActions}>
               <Button
                 variant="secondary"
@@ -176,10 +169,10 @@ export function ProfileTab({ user }: ProfileTabProps) {
               >
                 <span>
                   {busy === 'upload'
-                    ? 'Uploading…'
+                    ? t('accountUsers.copy.uploading')
                     : hasUploadedAvatar
-                      ? 'Change picture'
-                      : 'Upload picture'}
+                      ? t('accountUsers.copy.changePicture')
+                      : t('accountUsers.copy.uploadPicture')}
                 </span>
               </Button>
               {hasUploadedAvatar && (
@@ -193,11 +186,11 @@ export function ProfileTab({ user }: ProfileTabProps) {
                   aria-busy={busy === 'remove'}
                   data-testid="profile-avatar-remove"
                 >
-                  <span>{busy === 'remove' ? 'Removing…' : 'Remove'}</span>
+                  <span>{busy === 'remove' ? t('accountUsers.copy.removing') : t('accountUsers.copy.remove')}</span>
                 </Button>
               )}
             </div>
-            <p className={styles.avatarHint}>JPEG, PNG, GIF, or WebP, 5 MB maximum.</p>
+            <p className={styles.avatarHint}>{t('accountUsers.avatar.hint', { size: formatBytes(5 * 1024 * 1024, undefined, locale) })}</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -212,7 +205,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
           <form className={styles.profileForm} onSubmit={(event) => void handleProfileSubmit(event)}>
             <div className={styles.profileFields}>
               <div className={styles.profileField}>
-                <label className={styles.profileFieldLabel} htmlFor={displayNameId}>Name</label>
+                <label className={styles.profileFieldLabel} htmlFor={displayNameId}>{t('accountUsers.copy.name')}</label>
                 <Input
                   id={displayNameId}
                   value={profileForm.displayName}
@@ -226,7 +219,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
                 />
               </div>
               <div className={styles.profileField}>
-                <label className={styles.profileFieldLabel} htmlFor={emailId}>Email</label>
+                <label className={styles.profileFieldLabel} htmlFor={emailId}>{t('accountUsers.copy.email')}</label>
                 <Input
                   id={emailId}
                   type="email"
@@ -242,7 +235,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
                 />
               </div>
               <div className={styles.profileField}>
-                <span className={styles.profileFieldLabel}>Role</span>
+                <span className={styles.profileFieldLabel}>{t('accountUsers.copy.role')}</span>
                 <span className={styles.profileFieldValue}>{user.role.name}</span>
               </div>
             </div>
@@ -255,7 +248,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
                 aria-busy={busy === 'profile'}
                 data-testid="profile-save"
               >
-                <span>{busy === 'profile' ? 'Saving…' : 'Save profile'}</span>
+                <span>{busy === 'profile' ? t('accountUsers.copy.saving') : t('accountUsers.copy.saveProfile')}</span>
               </Button>
             </div>
           </form>
@@ -266,7 +259,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
             role={status.tone === 'error' ? 'alert' : 'status'}
             data-testid="profile-status"
           >
-            {status.message}
+            {renderFeedback(status.message, locale, t)}
           </p>
         )}
       </div>

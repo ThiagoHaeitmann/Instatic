@@ -1,3 +1,4 @@
+import { feedbackError, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
 /**
  * useUsersPageData — central data store for the Users workspace.
  *
@@ -23,7 +24,6 @@ import {
 } from '@core/persistence'
 import type { WorkspaceLoadState } from '@admin/lib/workspaceLoadState'
 import { emptyUserForm, type UsersPageLoadAccess } from '../types'
-import { getErrorMessage } from '@core/utils/errorMessage'
 
 interface LoadedData {
   users: CmsCurrentUser[]
@@ -31,7 +31,8 @@ interface LoadedData {
   events: CmsAuditEvent[]
 }
 
-export interface UsersPageData extends WorkspaceLoadState {
+export interface UsersPageData extends Omit<WorkspaceLoadState, 'error'> {
+  error: AccountUsersFeedback | null
   users: CmsCurrentUser[]
   roles: CmsRole[]
   events: CmsAuditEvent[]
@@ -43,7 +44,7 @@ export interface UsersPageData extends WorkspaceLoadState {
   defaultAssignableRoleId: string
   setUsers: (updater: (current: CmsCurrentUser[]) => CmsCurrentUser[]) => void
   setRoles: (updater: (current: CmsRole[]) => CmsRole[]) => void
-  setError: (value: string | null) => void
+  setError: (value: AccountUsersFeedback | null) => void
   refresh: () => Promise<void>
 }
 
@@ -65,7 +66,7 @@ export function useUsersPageData(access: UsersPageLoadAccess): UsersPageData {
   // the ~50-200 ms window between mount and first response — visually
   // identical to a fresh install and tragic UX.
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<AccountUsersFeedback | null>(null)
 
   // Exception #1 (react-hooks/exhaustive-deps): feeds the load effect's
   // dep array, so it needs a stable identity the static lint can see.
@@ -91,7 +92,7 @@ export function useUsersPageData(access: UsersPageLoadAccess): UsersPageData {
     try {
       applyLoadedData(await loadUsersPageData(loadAccess()))
     } catch (err) {
-      setError(getErrorMessage(err, 'Could not load users'))
+      setError(feedbackError(err, 'accountUsers.copy.couldNotLoadUsers'))
     }
   }
 
@@ -110,7 +111,7 @@ export function useUsersPageData(access: UsersPageLoadAccess): UsersPageData {
         if (!cancelled) applyLoadedData(data)
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(getErrorMessage(err, 'Could not load users'))
+        if (!cancelled) setError(feedbackError(err, 'accountUsers.copy.couldNotLoadUsers'))
       })
       .finally(() => {
         if (!cancelled) setLoading(false)

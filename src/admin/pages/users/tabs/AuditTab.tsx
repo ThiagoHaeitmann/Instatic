@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * Users → Audit tab.
  *
@@ -27,6 +28,7 @@ import type { UsersPageData } from '../hooks/useUsersPageData'
 import styles from '../UsersPage.module.css'
 
 export function AuditTab({ data }: { data: UsersPageData }) {
+  const { t, locale } = useI18n()
   const { users, roles, events } = data
   const usersById = new Map(users.map((user) => [user.id, user]))
   const rolesById = new Map(roles.map((role) => [role.id, role]))
@@ -35,18 +37,18 @@ export function AuditTab({ data }: { data: UsersPageData }) {
     <section className={styles.section} aria-labelledby="audit-events-title">
       <div className={styles.sectionHeader}>
         <div>
-          <h2 id="audit-events-title">Audit Events</h2>
-          <p>Security and access changes across the admin area.</p>
+          <h2 id="audit-events-title">{t('accountUsers.copy.auditEvents')}</h2>
+          <p>{t('accountUsers.copy.securityAndAccessChangesAcrossTheAdminArea')}</p>
         </div>
       </div>
       {data.loading ? (
-        <DataTable aria-label="Loading audit events" density="compact" aria-busy="true">
+        <DataTable aria-label={t('accountUsers.copy.loadingAuditEvents')} density="compact" aria-busy="true">
           <DataTableHead>
             <DataTableRow>
-              <DataTableHeader scope="col">Event</DataTableHeader>
-              <DataTableHeader scope="col">Actor</DataTableHeader>
-              <DataTableHeader scope="col">Details</DataTableHeader>
-              <DataTableHeader scope="col">Time</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.event')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.actor')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.details')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.time')}</DataTableHeader>
             </DataTableRow>
           </DataTableHead>
           <DataTableBody>
@@ -61,40 +63,40 @@ export function AuditTab({ data }: { data: UsersPageData }) {
           </DataTableBody>
         </DataTable>
       ) : events.length > 0 ? (
-        <DataTable aria-label="Audit events" density="compact">
+        <DataTable aria-label={t('accountUsers.copy.auditEventsAlternate')} density="compact">
           <DataTableHead>
             <DataTableRow>
-              <DataTableHeader scope="col">Event</DataTableHeader>
-              <DataTableHeader scope="col">Actor</DataTableHeader>
-              <DataTableHeader scope="col">Details</DataTableHeader>
-              <DataTableHeader scope="col">Time</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.event')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.actor')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.details')}</DataTableHeader>
+              <DataTableHeader scope="col">{t('accountUsers.copy.time')}</DataTableHeader>
             </DataTableRow>
           </DataTableHead>
           <DataTableBody>
             {events.map((event) => (
               <DataTableRow key={event.id}>
                 <DataTableCell>
-                  <strong className={styles.auditTitle}>{auditTitle(event, usersById, rolesById)}</strong>
+                  <strong className={styles.auditTitle}>{auditTitle(event, usersById, rolesById, t)}</strong>
                 </DataTableCell>
                 <DataTableCell>
-                  <span className={styles.secondaryText}>{auditActor(event, usersById)}</span>
+                  <span className={styles.secondaryText}>{auditActor(event, usersById, t)}</span>
                 </DataTableCell>
                 <DataTableCell>
                   <div className={styles.auditDetails}>
-                    {auditDetails(event, rolesById).map((detail) => (
+                    {auditDetails(event, rolesById, locale, t).map((detail) => (
                       <Badge key={detail} label={detail} />
                     ))}
                   </div>
                 </DataTableCell>
                 <DataTableCell>
-                  <span className={styles.secondaryText}>{formatDateTime(event.createdAt)}</span>
+                  <span className={styles.secondaryText}>{formatDateTime(event.createdAt, locale, t)}</span>
                 </DataTableCell>
               </DataTableRow>
             ))}
           </DataTableBody>
         </DataTable>
       ) : (
-        <p className={styles.emptyState}>No audit events yet.</p>
+        <p className={styles.emptyState}>{t('accountUsers.copy.noAuditEventsYet')}</p>
       )}
     </section>
   )

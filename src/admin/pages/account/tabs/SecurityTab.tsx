@@ -1,3 +1,5 @@
+import { renderFeedback, type AccountUsersFeedback } from '@admin/shared/accountUsersFeedback'
+import { useI18n } from '@admin/i18n'
 import { useState } from 'react'
 import type { CmsCurrentUser } from '@core/persistence'
 import { Button } from '@ui/components/Button'
@@ -14,23 +16,22 @@ interface SecurityTabProps {
 }
 
 export function SecurityTab({ user }: SecurityTabProps) {
+  const { t, locale } = useI18n()
   const { runStepUp } = useStepUp()
   const setSessionUser = useAdminSessionSetter()
   const [busy, setBusy] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [status, setStatus] = useState<string | null>(null)
+  const [status, setStatus] = useState<AccountUsersFeedback | null>(null)
 
   return (
     <section className={styles.section} aria-labelledby="account-security-title">
       <div className={styles.sectionHeader}>
         <div>
-          <h2 id="account-security-title">Security</h2>
-          <p>Password, step-up authentication, two-factor authentication, and connected sign-ins.</p>
+          <h2 id="account-security-title">{t('accountUsers.copy.security')}</h2>
+          <p>{t('accountUsers.copy.passwordStepUpAuthenticationTwoFactorAuthenticationAndConnectedSignIns')}</p>
         </div>
       </div>
 
-      {error && <p className={styles.error} role="alert">{error}</p>}
-      {status && <p className={styles.cardStatus} role="status">{status}</p>}
+      {status && <p className={styles.cardStatus} role="status">{renderFeedback(status, locale, t)}</p>}
 
       <div className={styles.cards}>
         <PasswordSettingsCard
@@ -39,7 +40,6 @@ export function SecurityTab({ user }: SecurityTabProps) {
           runStepUp={runStepUp}
           setSessionUser={setSessionUser}
           setBusy={setBusy}
-          setError={setError}
           setStatus={setStatus}
         />
         <StepUpSettingsCard
@@ -48,7 +48,6 @@ export function SecurityTab({ user }: SecurityTabProps) {
           runStepUp={runStepUp}
           setSessionUser={setSessionUser}
           setBusy={setBusy}
-          setError={setError}
           setStatus={setStatus}
         />
         <MfaSettingsCards
@@ -57,23 +56,22 @@ export function SecurityTab({ user }: SecurityTabProps) {
           runStepUp={runStepUp}
           setSessionUser={setSessionUser}
           setBusy={setBusy}
-          setError={setError}
           setStatus={setStatus}
         />
         <SecurityCard
           testId="security-connected-card"
-          title="Connected sign-ins"
-          description="OAuth providers and passkeys you can use alongside your password."
-          status="Email + password is the only sign-in method right now."
+          title={t('accountUsers.copy.connectedSignIns')}
+          description={t('accountUsers.copy.oAuthProvidersAndPasskeysYouCanUseAlongsideYourPassword')}
+          status={t('accountUsers.copy.emailPasswordIsTheOnlySignInMethodRightNow')}
           action={
             <Button
               type="button"
               variant="secondary"
               size="sm"
               disabled
-              tooltip="OAuth and passkeys are a separate sign-in provider pass."
+              tooltip={t('accountUsers.copy.oAuthAndPasskeysAreASeparateSignInProviderPass')}
             >
-              <span>Add provider</span>
+              <span>{t('accountUsers.copy.addProvider')}</span>
             </Button>
           }
         />

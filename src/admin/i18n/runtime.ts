@@ -92,8 +92,7 @@ export function subscribeToLocale(listener: () => void): () => void {
   return () => subscribers.delete(listener)
 }
 
-export function translate(key: TranslationKey, values: MessageValues = {}): string {
-  const locale = getLocale()
+export function translate(key: TranslationKey, values: MessageValues = {}, locale: SupportedLocale = getLocale()): string {
   return translateMessage(locale, key, values, catalogs[locale], englishMessages)
 }
 

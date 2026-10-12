@@ -1,3 +1,4 @@
+import { useI18n } from '@admin/i18n'
 /**
  * AccountPage — `/admin/account`.
  *
@@ -11,7 +12,6 @@
  *   - Active devices — live session list + per-row sign-out + "sign out
  *                       everywhere else"
  *   - Security       — password / MFA / recovery / connected sign-ins
- *                       (placeholder shell with disabled CTAs until C.4)
  *   - Sign-in history — login_attempts audit feed scoped to the current user
  *                       (successes AND failures, with a failed-attempt count
  *                       and suspicious-activity banner)
@@ -39,16 +39,17 @@ import styles from './AccountPage.module.css'
 
 type AccountTab = 'profile' | 'sessions' | 'security' | 'activity'
 
-const TAB_LABELS: Record<AccountTab, string> = {
-  profile: 'Profile',
-  sessions: 'Active devices',
-  security: 'Security',
-  activity: 'Sign-in history',
+const TAB_KEYS: Record<AccountTab, string> = {
+  profile: 'accountUsers.copy.profile',
+  sessions: 'accountUsers.copy.activeDevices',
+  security: 'accountUsers.copy.security',
+  activity: 'accountUsers.copy.signInHistory',
 }
 
 const TAB_ORDER: readonly AccountTab[] = ['profile', 'sessions', 'security', 'activity']
 
 export function AccountPage() {
+  const { t } = useI18n()
   // The page renders inside the authenticated branch of `AdminEntry` — by
   // the time we get here, a session user is guaranteed. The strict variant
   // throws if that contract is violated, so the rest of the component can
@@ -58,10 +59,10 @@ export function AccountPage() {
   const [tab, setTab] = useState<AccountTab>('profile')
 
   const tabs = (
-    <TabList ariaLabel="Account sections">
+    <TabList ariaLabel={t('accountUsers.copy.accountSections')}>
       {TAB_ORDER.map((id) => (
         <Tab key={id} value={id} testId={`account-tab-${id}`}>
-          <span>{TAB_LABELS[id]}</span>
+          <span>{t(TAB_KEYS[id])}</span>
         </Tab>
       ))}
     </TabList>
@@ -71,9 +72,9 @@ export function AccountPage() {
     <Tabs value={tab} onChange={setTab}>
       <AdminPageLayout
         workspace="account"
-        title="Account"
+        title={t('accountUsers.copy.account')}
         titleId="account-title"
-        description="Manage your profile, devices, security, and sign-in activity."
+        description={t('accountUsers.copy.manageYourProfileDevicesSecurityAndSignInActivity')}
         tabs={tabs}
       >
         <div className={styles.body}>

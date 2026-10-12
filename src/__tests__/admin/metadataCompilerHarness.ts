@@ -1,4 +1,3 @@
-import { afterAll } from 'bun:test'
 import { transformSync } from '@babel/core'
 import { reactCompilerPreset } from '@vitejs/plugin-react'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -9,7 +8,7 @@ const temporaryRoot = fileURLToPath(new URL('../../../.tmp/', import.meta.url))
 mkdirSync(temporaryRoot, { recursive: true })
 const compiledDirectory = mkdtempSync(join(temporaryRoot, 'metadata-compiler-'))
 
-afterAll(() => {
+process.once('exit', () => {
   rmSync(compiledDirectory, { recursive: true, force: true })
 })
 
@@ -17,7 +16,10 @@ afterAll(() => {
 export async function compileAdminMetadataModule<TModule>(
   sourceUrl: URL,
   extraExports: readonly string[] = [],
-): Promise<{ module: TModule; code: string }> {
+  compileLocaleHook = false,
+): Promise<{ module: TModule; code: string; output: string }> {
+  // Every invocation owns its modules, including hook bridges, regardless of source/config.
+  const invocationDirectory = mkdtempSync(join(compiledDirectory, 'compilation-'))
   const filename = fileURLToPath(sourceUrl)
   const source = readFileSync(filename, 'utf8')
   const result = transformSync(
@@ -36,13 +38,21 @@ export async function compileAdminMetadataModule<TModule>(
 
   // The compiled fixture lives outside its source folder; resolve relative
   // imports back to that folder so contexts, metadata and UI remain real.
-  const code = result.code.replace(
+  let code = result.code.replace(
     /(from\s+['"])(\.[^'"]+)(['"])/g,
     (_match, before: string, specifier: string, after: string) =>
       before + resolve(dirname(filename), specifier) + after,
   )
-  const output = join(compiledDirectory, `${dirname(filename).split('/').at(-1)}-${sourceUrl.pathname.split('/').at(-1)}`)
+  if (compileLocaleHook) {
+    // Compiling just the consumer misses a translator cached by the production hook.
+    const hook = await compileAdminMetadataModule(new URL('../../admin/i18n/useI18n.ts', import.meta.url))
+    const bridge = join(invocationDirectory, 'compiled-i18n.ts')
+    const barrel = fileURLToPath(new URL('../../admin/i18n/index.ts', import.meta.url))
+    writeFileSync(bridge, `export * from ${JSON.stringify(barrel)}\nexport { useI18n } from ${JSON.stringify(hook.output)}\n`)
+    code = code.replace(/(from\s+['"])@admin\/i18n(['"])/g, `$1${bridge}$2`)
+  }
+  const output = join(invocationDirectory, `${dirname(filename).split('/').at(-1)}-${sourceUrl.pathname.split('/').at(-1)}`)
   writeFileSync(output, code)
   const module = await import(output) as TModule
-  return { module, code: result.code }
+  return { module, code: result.code, output }
 }
